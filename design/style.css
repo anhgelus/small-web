@@ -7,6 +7,9 @@
 
     --font-size-tiny: 0.85rem; /* quote, legend, code */
 
+    --content-width: 700px;
+    --deco-width: 900px;
+
     font-size: 20px;
 }
 
@@ -24,7 +27,7 @@ body * {
 }
 
 article {
-    max-width: 700px;
+    max-width: var(--content-width);
     margin: 0 auto;
 }
 
@@ -120,7 +123,7 @@ figure {
         max-height: max(60vh, 400px);
 
         &.larger {
-            --max-width: 130%;
+            --max-width: var(--deco-width);
             --width: min(calc(100vw - 4rem), var(--max-width));
             margin-left: max(-15%, calc((100% - var(--width))/2));
             width: var(--max-width);
@@ -163,6 +166,50 @@ pre {
 
         background: none;
         border: none;
+    }
+}
+
+header {
+    max-width: var(--deco-width);
+    height: 8rem;
+
+    margin: 0 auto 4rem auto;
+    padding-bottom: 2rem;
+
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+
+    border-bottom: var(--color-light) 2px solid;
+
+    @media only screen and (max-width: 600px) {
+        flex-direction: column;
+        height: auto;
+        min-height: 8rem;
+    }
+
+    & img {
+        filter: saturate(0.9) sepia(0.1);
+
+        @media only screen and (max-width: 600px) {
+            width: max(33%, 128px);
+            margin: 0 auto;
+        }
+    }
+
+    & nav {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        & a {
+            display: block;
+
+            min-width: 8rem;
+
+            font-family: monospace;
+        }
     }
 }
 
