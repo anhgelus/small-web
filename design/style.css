@@ -1,10 +1,9 @@
 :root {
-    --color-dark: #04151F;
-    --color-gray: #BCB3BB; /* quote and legend */
+    --color-dark: hsl(202, 25%, 9%);
     --color-light: #EFF7F6;
+    --color-gray: #BCB3BB; /* quote and legend */
     --color-rose: #F2B5D4; /* link accent */
-    --color-light-rose: #F6CBE1; /* link accent hover */
-    --color-green: #C9CBA3; /* highlight */
+    --color-light-rose: hsl(330, 55%, 70%, 0.2); /* link accent hover and highlight */
 
     --font-size-tiny: 0.85rem; /* quote, legend */
 
@@ -36,23 +35,23 @@ h1, h2, h3 {
 }
 
 h1 {
-    font-size: 2.75rem;
+    font-size: 2rem;
 }
 
 h2 {
-    font-size: 2rem;
+    font-size: 1.66rem;
+
+    margin-top: 2.5rem;
+}
+
+h3 {
+    font-size: 1.33rem;
 
     margin-top: 2rem;
 }
 
-h3 {
-    font-size: 1.5rem;
-
-    margin-top: 1.5rem;
-}
-
 p {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 a {
@@ -60,7 +59,7 @@ a {
     text-decoration: underline;
 
     &:hover {
-        color: #F6CBE1;
+        background: var(--color-light-rose);
     }
 }
 
@@ -68,15 +67,12 @@ em, cite {
     font-style: italic;
 }
 
-b, *::selection {
-    background: var(--color-green);
-    color: var(--color-dark);
+b {
+    background: var(--color-light-rose);
+    /* color: var(--color-dark); */
+    font-weight: 500;
 
     padding: 0.05em 0.1em;
-
-    &::selection {
-        background: var(--color-light);
-    }
 }
 
 ul, ol {
@@ -121,12 +117,14 @@ figure {
     text-align: center;
 
     & img {
-        width: auto;
-        max-height: 60vh;
+        max-height: max(60vh, 400px);
 
         &.larger {
-            margin-left: -15%;
-            width: 130%;
+            --max-width: 130%;
+            --width: min(calc(100vw - 4rem), var(--max-width));
+            margin-left: max(-15%, calc((100% - var(--width))/2));
+            width: var(--max-width);
+            max-width: var(--width);
             max-height: none;
         }
     }
