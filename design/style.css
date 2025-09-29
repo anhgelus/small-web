@@ -6,6 +6,8 @@
     --color-light-rose: #F6CBE1; /* link accent hover */
     --color-green: #C9CBA3; /* highlight */
 
+    --font-size-tiny: 0.85rem; /* quote, legend */
+
     font-size: 20px;
 }
 
@@ -15,7 +17,7 @@ body {
     background: var(--color-dark);
     color: var(--color-light);
 
-    padding: 2rem 4rem;
+    padding: 2rem;
 }
 
 body * {
@@ -23,7 +25,7 @@ body * {
 }
 
 article {
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
@@ -39,11 +41,13 @@ h1 {
 
 h2 {
     font-size: 2rem;
+
     margin-top: 2rem;
 }
 
 h3 {
     font-size: 1.5rem;
+
     margin-top: 1.5rem;
 }
 
@@ -54,6 +58,7 @@ p {
 a {
     color: var(--color-rose);
     text-decoration: underline;
+
     &:hover {
         color: #F6CBE1;
     }
@@ -66,14 +71,36 @@ em, cite {
 b, *::selection {
     background: var(--color-green);
     color: var(--color-dark);
+
     padding: 0.05em 0.1em;
+
     &::selection {
         background: var(--color-light);
     }
 }
 
+ul, ol {
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    margin-left: 1rem;
+
+    list-style-position: outside;
+}
+
+ul {
+    list-style-type: disc;
+}
+
+ol {
+    list-style-type: roman;
+}
+
+li {
+    margin-bottom: 0.25rem;
+}
+
 .quote {
-    font-size: 0.85rem;
+    font-size: var(--font-size-tiny);
 }
 
 blockquote {
@@ -89,22 +116,25 @@ figure {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    text-align: center;
     gap: 0.5rem;
+
+    text-align: center;
 
     & img {
         width: auto;
         max-height: 60vh;
+
         &.larger {
-            width: 120%;
-            margin-left: -10%;
+            margin-left: -15%;
+            width: 130%;
             max-height: none;
         }
     }
 }
 
 figcaption {
-    font-size: 0.85rem;
+    font-size: var(--font-size-tiny);
+
     color: var(--color-gray);
 }
 
