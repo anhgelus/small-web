@@ -1,6 +1,6 @@
 :root {
     --color-dark: #04151F;
-    --color-gray: #BCB3BB; /* quote */
+    --color-gray: #BCB3BB; /* quote and legend */
     --color-light: #EFF7F6;
     --color-rose: #F2B5D4; /* link accent */
     --color-light-rose: #F6CBE1; /* link accent hover */
@@ -83,5 +83,28 @@ blockquote {
     color: var(--color-gray);
     
     border-left: var(--color-rose) solid 0.25em;
+}
+
+figure {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    gap: 0.5rem;
+
+    & img {
+        width: auto;
+        max-height: 60vh;
+        &.larger {
+            width: 120%;
+            margin-left: -10%;
+            max-height: none;
+        }
+    }
+}
+
+figcaption {
+    font-size: 0.85rem;
+    color: var(--color-gray);
 }
 

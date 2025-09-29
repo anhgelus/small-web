@@ -12,6 +12,7 @@ It aims to be simple, minimalist, brutalist, indie, and personnal.
 ## How it works
 
 Backend written in modern Go.
+[gomarkdown/markdown](https://github.com/gomarkdown/markdown) looks like to be a good library.
 
 Light CSS, light JS, runs everywhere.
 SSR first.
