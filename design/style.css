@@ -213,3 +213,14 @@ header {
     }
 }
 
+footer {
+    max-width: var(--deco-width);
+    height: 8rem;
+
+    margin: 4rem auto 0 auto;
+    padding-top: 2rem;
+
+    border-top: var(--color-light) 2px solid;
+
+    font-size: var(--font-size-tiny);
+}
