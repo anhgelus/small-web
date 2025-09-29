@@ -10,6 +10,8 @@
     --content-width: 700px;
     --deco-width: 900px;
 
+    --base-margin: 1.5rem;
+
     font-size: 20px;
 }
 
@@ -44,17 +46,17 @@ h1 {
 h2 {
     font-size: 1.66rem;
 
-    margin-top: 2.5rem;
+    margin-top: calc(var(--base-margin) + 1rem);
 }
 
 h3 {
     font-size: 1.33rem;
 
-    margin-top: 2rem;
+    margin-top: calc(var(--base-margin) + 0.5rem);
 }
 
 p {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--base-margin);
 }
 
 a {
@@ -80,7 +82,7 @@ b {
 
 ul, ol {
     margin-top: -0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--base-margin - 0.5rem);
     margin-left: 1rem;
 
     list-style-position: outside;
@@ -156,10 +158,8 @@ code {
 pre {
     border: var(--color-light) 2px solid;
 
-    margin-bottom: 1.5rem;
+    margin: 0 -1rem var(--base-margin) -1rem;
     padding: 0.5rem 1rem;
-    margin-left: -1rem;
-    margin-right: -1rem;
 
     & code {
         padding: 0;
