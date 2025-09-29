@@ -1,0 +1,87 @@
+:root {
+    --color-dark: #04151F;
+    --color-gray: #BCB3BB; /* quote */
+    --color-light: #EFF7F6;
+    --color-rose: #F2B5D4; /* link accent */
+    --color-light-rose: #F6CBE1; /* link accent hover */
+    --color-green: #C9CBA3; /* highlight */
+
+    font-size: 20px;
+}
+
+body {
+    font-family: Raveo, Inter, sans-serif;
+
+    background: var(--color-dark);
+    color: var(--color-light);
+
+    padding: 2rem 4rem;
+}
+
+body * {
+    line-height: 1.4em;
+}
+
+article {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+h1, h2, h3 {
+    font-weight: 500;
+
+    margin-bottom: 0.5rem;
+}
+
+h1 {
+    font-size: 2.75rem;
+}
+
+h2 {
+    font-size: 2rem;
+    margin-top: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+a {
+    color: var(--color-rose);
+    text-decoration: underline;
+    &:hover {
+        color: #F6CBE1;
+    }
+}
+
+em, cite {
+    font-style: italic;
+}
+
+b, *::selection {
+    background: var(--color-green);
+    color: var(--color-dark);
+    padding: 0.05em 0.1em;
+    &::selection {
+        background: var(--color-light);
+    }
+}
+
+.quote {
+    font-size: 0.85rem;
+}
+
+blockquote {
+    padding: 0.5rem 2rem;
+    margin-bottom: 0.25rem;
+
+    color: var(--color-gray);
+    
+    border-left: var(--color-rose) solid 0.25em;
+}
+
