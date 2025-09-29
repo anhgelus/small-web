@@ -5,7 +5,7 @@
     --color-rose: #F2B5D4; /* link accent */
     --color-light-rose: hsl(330, 55%, 70%, 0.2); /* link accent hover and highlight */
 
-    --font-size-tiny: 0.85rem; /* quote, legend */
+    --font-size-tiny: 0.85rem; /* quote, legend, code */
 
     font-size: 20px;
 }
@@ -134,5 +134,35 @@ figcaption {
     font-size: var(--font-size-tiny);
 
     color: var(--color-gray);
+}
+
+code, pre {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+code {
+    padding: 0.05em 0.1em;
+
+    font-family: monospace;
+    font-size: var(--font-size-tiny);
+
+    color: var(--color-gray);
+    border: var(--color-light) 1px solid;
+}
+
+pre {
+    border: var(--color-light) 2px solid;
+
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+
+    & code {
+        padding: 0;
+
+        background: none;
+        border: none;
+    }
 }
 
