@@ -3,20 +3,21 @@ package mardown
 import (
 	"errors"
 	"fmt"
+	"html/template"
 )
 
 var ErrUnkownLexType = errors.New("unkown lex type")
 
 type block interface {
-	Eval() error
+	Eval() (template.HTML, error)
 }
 
 type tree struct {
 	blocks []block
 }
 
-func (t *tree) Eval() error {
-	return nil
+func (t *tree) Eval() (template.HTML, error) {
+	return "", nil
 }
 
 func ast(lxs lexers) (*tree, error) {
@@ -42,7 +43,8 @@ func getBlock(lxs lexers) (block, error) {
 	case lexerCode:
 	case lexerEscape:
 	case lexerQuote:
-	case lexerLiteral, lexerBreak:
+	case lexerBreak:
+	case lexerLiteral:
 		b = astLiteral(lxs.Current().Value)
 	default:
 		err = errors.Join(ErrUnkownLexType, fmt.Errorf("type received: %s", lxs.Current().Type))
