@@ -12,6 +12,8 @@ const (
 	lexerHeader   lexerType = "header"
 	lexerQuote    lexerType = "quote"
 
+	lexerExternal lexerType = "external"
+
 	lexerLiteral lexerType = "literal"
 )
 
@@ -36,6 +38,14 @@ func (l *lexers) Next() lexer {
 
 func (l *lexers) Finished() bool {
 	return l.current+1 >= len(l.lexers)
+}
+
+func (l *lexers) String() string {
+	s := "Lexers["
+	for _, l := range l.lexers {
+		s += l.String() + " "
+	}
+	return s + "]"
 }
 
 func lex(s string) *lexers {
@@ -63,9 +73,14 @@ func lex(s string) *lexers {
 			fn(c, lexerHeader)
 		case '>':
 			fn(c, lexerQuote)
+		case '[', ']', '(', ')', '!':
+			fn(c, lexerExternal)
 		default:
 			fn(c, lexerLiteral)
 		}
+	}
+	if len(previous) > 0 {
+		lexs = append(lexs, lexer{Type: currentType, Value: previous})
 	}
 	lxs.lexers = lexs
 	return lxs
