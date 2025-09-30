@@ -17,7 +17,9 @@ func TestAst(t *testing.T) {
 		t.Errorf("failed, got %s", c)
 		t.Logf("lxs: %s\ntree: %s", lxs, tree)
 	}
-	content = "***bon*soir**"
+	content = `
+***bon*soir**
+`
 	lxs = lex(content)
 	tree, err = ast(lxs)
 	if err != nil {
@@ -42,6 +44,23 @@ func TestAst(t *testing.T) {
 		t.Fatal(err)
 	}
 	if c != "<p>je suis un <code>code</code></p>" {
+		t.Errorf("failed, got %s", c)
+		t.Logf("lxs: %s\ntree: %s", lxs, tree)
+	}
+	content = `
+> Bonsoir, je suis un **code**
+avec une source
+`
+	lxs = lex(content)
+	tree, err = ast(lxs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err = tree.Eval()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c != `<div class="quote"><blockquote>Bonsoir, je suis un <b>code</b></blockquote><p>avec une source</p></div>` {
 		t.Errorf("failed, got %s", c)
 		t.Logf("lxs: %s\ntree: %s", lxs, tree)
 	}

@@ -73,6 +73,9 @@ func modifier(lxs *lexers) (*astModifier, error) {
 			modInside.content = append(modInside.content, astLiteral(s))
 			s = ""
 			modInside = modInside.parent
+		case lexerBreak:
+			lxs.current-- // because we did not use it
+			return mod, nil
 		default:
 			return nil, ErrInvalidTypeInModifier
 		}

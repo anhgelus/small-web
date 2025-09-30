@@ -42,7 +42,9 @@ func ast(lxs *lexers) (*tree, error) {
 		if err != nil {
 			return nil, err
 		}
-		tr.blocks = append(tr.blocks, b)
+		if b != nil {
+			tr.blocks = append(tr.blocks, b)
+		}
 		if !lxs.Finished() {
 			newLine = lxs.Current().Type == lexerBreak
 		}
@@ -67,6 +69,11 @@ func getBlock(lxs *lexers, newLine bool) (block, error) {
 			b, err = paragraph(lxs, false)
 		}
 	case lexerQuote:
+		if newLine {
+			b, err = quote(lxs)
+		} else {
+			b, err = paragraph(lxs, false)
+		}
 	case lexerCode:
 		if newLine && len(lxs.Current().Value) == 3 {
 			//TODO: handle

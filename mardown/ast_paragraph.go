@@ -44,21 +44,24 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 		switch lxs.Current().Type {
 		case lexerBreak:
 			n++
-		case lexerLiteral, lexerHeader:
+		case lexerLiteral, lexerHeader, lexerQuote:
+			n = 0
 			tree.content = append(tree.content, astLiteral(lxs.Current().Value))
 		case lexerModifier:
+			n = 0
 			mod, err := modifier(lxs)
 			if err != nil {
 				return nil, err
 			}
 			tree.content = append(tree.content, mod)
-		case lexerQuote:
-			//TODO: handle
 		case lexerEscape:
+			n = 0
 			//TODO: handle
 		case lexerExternal:
+			n = 0
 			//TODO: handle
 		case lexerCode:
+			n = 0
 			if len(lxs.Current().Value) == 3 {
 				if n == 0 {
 					return nil, ErrInvalidCodeBlockPosition
