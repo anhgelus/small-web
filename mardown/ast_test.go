@@ -17,4 +17,18 @@ func TestAst(t *testing.T) {
 		t.Errorf("failed, got %s", c)
 		t.Logf("lxs: %s\ntree: %s", lxs, tree)
 	}
+	content = "***bon*soir**"
+	lxs = lex(content)
+	tree, err = ast(lxs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err = tree.Eval()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c != "<p><b><em>bon</em>soir</b></p>" {
+		t.Errorf("failed, got %s", c)
+		t.Logf("lxs: %s\ntree: %s", lxs, tree)
+	}
 }

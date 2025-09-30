@@ -57,13 +57,13 @@ func modifier(lxs *lexers) (*astModifier, error) {
 			}
 		}
 	}
-	n := len(modInside.symbols)
 	var s string
 	for lxs.Next() {
 		switch lxs.Current().Type {
 		case lexerLiteral:
 			s += lxs.Current().Value
 		case lexerModifier:
+			n := len(modInside.symbols)
 			if len(lxs.Current().Value) < n {
 				return nil, ErrInvalidModifier
 			}
@@ -92,8 +92,13 @@ func modifierDetect(val string) *astModifier {
 		return mod
 	}
 	if val[:2] == "**" || val[:2] == "__" {
-		mod.symbols = val
+		mod.symbols = val[:2]
 		mod.tag = boldTag
+		if len(val) > 2 {
+			next := modifierDetect(val[2:])
+			next.parent = mod
+			mod.content = append(mod.content, next)
+		}
 	} else {
 		mod = modifierDetect(val[:1])
 		next := modifierDetect(val[1:])
