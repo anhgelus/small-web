@@ -7,8 +7,7 @@ import (
 )
 
 var (
-	ErrInvalidParagraph         = errors.New("invalid paragraph")
-	ErrInvalidCodeBlockPosition = errors.Join(ErrInvalidParagraph, errors.New("invalid code block position"))
+	ErrInvalidParagraph = errors.New("invalid paragraph")
 )
 
 type astParagraph struct {
@@ -61,19 +60,12 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 			n = 0
 			//TODO: handle
 		case lexerCode:
-			n = 0
-			if len(lxs.Current().Value) == 3 {
-				if n == 0 {
-					return nil, ErrInvalidCodeBlockPosition
-				}
-				lxs.current-- // because we do not use it before the next
-				return tree, nil
-			}
-			mod, err := modifier(lxs)
+			b, err := code(lxs)
 			if err != nil {
 				return nil, err
 			}
-			tree.content = append(tree.content, mod)
+			tree.content = append(tree.content, b)
+			return tree, nil
 		}
 	}
 	return tree, nil

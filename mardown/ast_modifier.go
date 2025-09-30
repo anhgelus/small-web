@@ -17,7 +17,6 @@ type modifierTag string
 const (
 	boldTag modifierTag = "b"
 	emTag   modifierTag = "em"
-	codeTag modifierTag = "code"
 )
 
 type astModifier struct {
@@ -62,7 +61,7 @@ func modifier(lxs *lexers) (*astModifier, error) {
 		switch lxs.Current().Type {
 		case lexerLiteral:
 			s += lxs.Current().Value
-		case lexerModifier, lexerCode:
+		case lexerModifier:
 			n := len(modInside.symbols)
 			if len(lxs.Current().Value) < n {
 				return nil, ErrInvalidModifier
@@ -87,11 +86,7 @@ func modifierDetect(val string) *astModifier {
 	mod := new(astModifier)
 	if len(val) == 1 {
 		mod.symbols = val
-		if val == "`" {
-			mod.tag = codeTag
-		} else {
-			mod.tag = emTag
-		}
+		mod.tag = emTag
 		return mod
 	}
 	if val[:2] == "**" || val[:2] == "__" {
