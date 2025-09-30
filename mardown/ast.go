@@ -39,7 +39,11 @@ func getBlock(lxs lexers, newLine bool) (block, error) {
 	var err error
 	switch lxs.Current().Type {
 	case lexerHeader:
-		b, err = header(lxs)
+		if !newLine {
+			b, err = paragraph(lxs, false)
+		} else {
+			b, err = header(lxs)
+		}
 	case lexerExternal:
 		if newLine && lxs.Current().Value == "!" {
 			//TODO: handle
