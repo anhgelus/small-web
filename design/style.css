@@ -7,10 +7,12 @@
 
     --font-size-tiny: 0.85rem; /* quote, legend, code */
 
-    --content-width: 700px;
-    --deco-width: 900px;
+    --width-content: 700px;
+    --width-deco: 900px;
+    --height-header: 8rem;
 
-    --base-margin: 1.5rem;
+    --margin-base: 1.5rem;
+    --margin-header: calc(var(--height-header) / 2);
 
     font-size: 20px;
 }
@@ -28,8 +30,8 @@ body * {
     line-height: 1.4em;
 }
 
-article {
-    max-width: var(--content-width);
+main, article {
+    max-width: var(--width-content);
     margin: 0 auto;
 }
 
@@ -41,22 +43,23 @@ h1, h2, h3 {
 
 h1 {
     font-size: 2rem;
+    font-weight: 600;
 }
 
 h2 {
     font-size: 1.66rem;
 
-    margin-top: calc(var(--base-margin) + 1rem);
+    margin-top: calc(var(--margin-base) + 1rem);
 }
 
 h3 {
     font-size: 1.33rem;
 
-    margin-top: calc(var(--base-margin) + 0.5rem);
+    margin-top: calc(var(--margin-base) + 0.5rem);
 }
 
 p {
-    margin-bottom: var(--base-margin);
+    margin-bottom: var(--margin-base);
 }
 
 a {
@@ -82,7 +85,7 @@ b {
 
 ul, ol {
     margin-top: -0.5rem;
-    margin-bottom: var(--base-margin - 0.5rem);
+    margin-bottom: var(--margin-base - 0.5rem);
     margin-left: 1rem;
 
     list-style-position: outside;
@@ -121,11 +124,13 @@ figure {
 
     text-align: center;
 
+    margin-bottom: var(--margin-base);
+
     & img {
         max-height: max(60vh, 400px);
 
         &.larger {
-            --max-width: var(--deco-width);
+            --max-width: var(--width-deco);
             --width: min(calc(100vw - 4rem), var(--max-width));
             margin-left: max(-15%, calc((100% - var(--width))/2));
             width: var(--max-width);
@@ -158,7 +163,7 @@ code {
 pre {
     border: var(--color-light) 2px solid;
 
-    margin: 0 -1rem var(--base-margin) -1rem;
+    margin: 0 -1rem var(--margin-base) -1rem;
     padding: 0.5rem 1rem;
 
     & code {
@@ -170,10 +175,10 @@ pre {
 }
 
 header {
-    max-width: var(--deco-width);
-    height: 8rem;
+    max-width: var(--width-deco);
+    height: var(--height-header);
 
-    margin: 0 auto 4rem auto;
+    margin: 0 auto var(--margin-header) auto;
     padding-bottom: 2rem;
 
     display: flex;
@@ -185,13 +190,8 @@ header {
     @media only screen and (max-width: 600px) {
         flex-direction: column;
         height: auto;
-        min-height: 8rem;
-    }
-
-    & img {
-        filter: saturate(0.9) sepia(0.1);
-
-        @media only screen and (max-width: 600px) {
+        min-height: var(--height-header);
+        & img {
             width: max(33%, 128px);
             margin: 0 auto;
         }
@@ -214,13 +214,24 @@ header {
 }
 
 footer {
-    max-width: var(--deco-width);
-    height: 8rem;
+    max-width: var(--width-deco);
+    height: var(--height-header);
 
-    margin: 4rem auto 0 auto;
+    margin: var(--margin-header) auto 0 auto;
     padding-top: 2rem;
 
     border-top: var(--color-light) 2px solid;
 
     font-size: var(--font-size-tiny);
+}
+
+.introduction {
+    margin: var(--margin-header) 0;
+}
+
+article article {
+    margin-bottom: var(--margin-header);
+    &:last-child {
+        margin-bottom: 0;
+    }
 }
