@@ -12,7 +12,6 @@ It aims to be simple, minimalist, brutalist, indie, and personnal.
 ## How it works
 
 Backend written in modern Go.
-[gomarkdown/markdown](https://github.com/gomarkdown/markdown) looks like to be a good library.
 
 Light CSS, light JS, runs everywhere.
 SSR first.
@@ -28,4 +27,8 @@ This repository contains only the source code of the website, not the contents.
 
 Mock-ups are in `design`.
 Only HTML and raw CSS here.
+
+This project uses a custom markdown parser.
+It is located in `markdown`.
+I made my custom parser because I have extended its specification.
 
