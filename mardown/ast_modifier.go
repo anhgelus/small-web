@@ -62,7 +62,7 @@ func modifier(lxs *lexers) (*astModifier, error) {
 		switch lxs.Current().Type {
 		case lexerLiteral:
 			s += lxs.Current().Value
-		case lexerModifier:
+		case lexerModifier, lexerCode:
 			n := len(modInside.symbols)
 			if len(lxs.Current().Value) < n {
 				return nil, ErrInvalidModifier
