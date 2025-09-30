@@ -1,6 +1,7 @@
 package mardown
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -17,7 +18,20 @@ type tree struct {
 }
 
 func (t *tree) Eval() (template.HTML, error) {
-	return "", nil
+	var content template.HTML
+	for _, c := range t.blocks {
+		ct, err := c.Eval()
+		if err != nil {
+			return "", err
+		}
+		content += ct
+	}
+	return content, nil
+}
+
+func (t *tree) String() string {
+	b, _ := json.MarshalIndent(t, "", "  ")
+	return string(b)
 }
 
 func ast(lxs *lexers) (*tree, error) {
@@ -29,7 +43,9 @@ func ast(lxs *lexers) (*tree, error) {
 			return nil, err
 		}
 		tr.blocks = append(tr.blocks, b)
-		newLine = lxs.Current().Type == lexerBreak
+		if !lxs.Finished() {
+			newLine = lxs.Current().Type == lexerBreak
+		}
 	}
 	return tr, nil
 }

@@ -42,7 +42,7 @@ func (l *lexers) Current() lexer {
 }
 
 func (l *lexers) Finished() bool {
-	return l.current >= len(l.lexers)-1
+	return l.current >= len(l.lexers)
 }
 
 func (l *lexers) String() string {
