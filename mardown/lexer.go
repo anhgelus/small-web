@@ -34,7 +34,7 @@ type lexers struct {
 
 func (l *lexers) Next() bool {
 	l.current++
-	return l.Finished()
+	return !l.Finished()
 }
 
 func (l *lexers) Current() lexer {
@@ -42,7 +42,7 @@ func (l *lexers) Current() lexer {
 }
 
 func (l *lexers) Finished() bool {
-	return l.current+1 >= len(l.lexers)
+	return l.current >= len(l.lexers)-1
 }
 
 func (l *lexers) String() string {

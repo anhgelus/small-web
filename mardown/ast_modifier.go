@@ -39,7 +39,7 @@ func (a *astModifier) Eval() (template.HTML, error) {
 	return template.HTML(fmt.Sprintf("<%s>%s</%s>", a.tag, content, a.tag)), nil
 }
 
-func modifier(lxs lexers) (*astModifier, error) {
+func modifier(lxs *lexers) (*astModifier, error) {
 	current := lxs.Current().Value
 	mod := modifierDetect(current)
 	modInside := mod

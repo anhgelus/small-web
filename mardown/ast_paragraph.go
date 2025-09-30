@@ -31,7 +31,7 @@ func (a *astParagraph) Eval() (template.HTML, error) {
 	return template.HTML(fmt.Sprintf("<p>%s</p>", content)), nil
 }
 
-func paragraph(lxs lexers, oneLine bool) (*astParagraph, error) {
+func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 	tree := new(astParagraph)
 	tree.oneLine = oneLine
 	maxBreak := 2
