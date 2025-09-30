@@ -37,13 +37,13 @@ func getBlock(lxs lexers) (block, error) {
 	switch lxs.Current().Type {
 	case lexerHeader:
 		b, err = header(lxs)
-	case lexerBreak:
 	case lexerExternal:
 	case lexerModifier:
 	case lexerCode:
 	case lexerEscape:
 	case lexerQuote:
-	case lexerLiteral:
+	case lexerLiteral, lexerBreak:
+		b = astLiteral(lxs.Current().Value)
 	default:
 		err = errors.Join(ErrUnkownLexType, fmt.Errorf("type received: %s", lxs.Current().Type))
 	}

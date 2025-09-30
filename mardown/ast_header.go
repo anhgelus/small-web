@@ -16,8 +16,14 @@ func header(lxs lexers) (block, error) {
 		if err != nil {
 			return nil, err
 		}
+		// if this is a header, just consider it as literal #
 		if h, ok := bl.(*astHeader); ok {
-			//TODO: handle
+			var s string
+			for range h.level {
+				s += "#"
+			}
+			b.content = append(b.content, astLiteral(s))
+			b.content = append(b.content, h.content...)
 		}
 		b.content = append(b.content, bl)
 	}
