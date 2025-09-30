@@ -7,9 +7,9 @@
 
     --font-size-tiny: 0.85rem; /* quote, legend, code */
 
-    --width-content: 700px;
-    --width-deco: 900px;
-    --height-header: 8rem;
+    --width-content: 700px; /* main, article */
+    --width-deco: 900px; /* header, footer, large image */
+    --height-header: 8rem; /* header, footer, introduction */
 
     --margin-base: 1.5rem;
     --margin-header: calc(var(--height-header) / 2);
@@ -129,7 +129,7 @@ figure {
     & img {
         max-height: max(60vh, 400px);
 
-        &.larger {
+        &.large {
             --max-width: var(--width-deco);
             --width: min(calc(100vw - 4rem), var(--max-width));
             margin-left: max(-15%, calc((100% - var(--width))/2));
@@ -234,4 +234,11 @@ article article {
     &:last-child {
         margin-bottom: 0;
     }
+}
+
+.pagination {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--margin-base);
 }
