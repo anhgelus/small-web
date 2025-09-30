@@ -22,30 +22,40 @@ func (t *tree) Eval() (template.HTML, error) {
 
 func ast(lxs lexers) (*tree, error) {
 	tr := new(tree)
+	newLine := false
 	for lxs.Next() {
-		b, err := getBlock(lxs)
+		b, err := getBlock(lxs, newLine)
 		if err != nil {
 			return nil, err
 		}
 		tr.blocks = append(tr.blocks, b)
+		newLine = lxs.Current().Type == lexerBreak
 	}
 	return tr, nil
 }
 
-func getBlock(lxs lexers) (block, error) {
+func getBlock(lxs lexers, newLine bool) (block, error) {
 	var b block
 	var err error
 	switch lxs.Current().Type {
 	case lexerHeader:
 		b, err = header(lxs)
 	case lexerExternal:
-	case lexerModifier:
-	case lexerCode:
-	case lexerEscape:
+		if newLine && lxs.Current().Value == "!" {
+			//TODO: handle
+		} else {
+			b, err = paragraph(lxs)
+		}
 	case lexerQuote:
-	case lexerBreak:
-	case lexerLiteral:
-		b = astLiteral(lxs.Current().Value)
+	case lexerCode:
+		if newLine && len(lxs.Current().Value) == 3 {
+			//TODO: handle
+		} else {
+			b, err = paragraph(lxs)
+		}
+	case lexerLiteral, lexerEscape, lexerModifier:
+		b, err = paragraph(lxs)
+	case lexerBreak: // do nothing
 	default:
 		err = errors.Join(ErrUnkownLexType, fmt.Errorf("type received: %s", lxs.Current().Type))
 	}
