@@ -25,7 +25,7 @@ func (a *astHeader) Eval() (template.HTML, error) {
 	return template.HTML(fmt.Sprintf("<h%d>%s</h%d>", a.level, content, a.level)), nil
 }
 
-func header(lxs lexers) (block, error) {
+func header(lxs lexers) (*astHeader, error) {
 	b := &astHeader{level: uint(len(lxs.Current().Value))}
 	var err error
 	b.content, err = paragraph(lxs, true)

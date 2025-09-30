@@ -47,7 +47,11 @@ func paragraph(lxs lexers, oneLine bool) (*astParagraph, error) {
 		case lexerLiteral, lexerHeader:
 			tree.content = append(tree.content, astLiteral(lxs.Current().Value))
 		case lexerModifier:
-			//TODO: handle
+			mod, err := modifier(lxs)
+			if err != nil {
+				return nil, err
+			}
+			tree.content = append(tree.content, mod)
 		case lexerQuote:
 			//TODO: handle
 		case lexerEscape:
@@ -62,7 +66,11 @@ func paragraph(lxs lexers, oneLine bool) (*astParagraph, error) {
 				lxs.current-- // because we do not use it before the next
 				return tree, nil
 			}
-			//TODO: handle
+			mod, err := modifier(lxs)
+			if err != nil {
+				return nil, err
+			}
+			tree.content = append(tree.content, mod)
 		}
 	}
 	return tree, nil
