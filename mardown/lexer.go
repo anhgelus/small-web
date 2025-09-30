@@ -32,8 +32,12 @@ type lexers struct {
 	lexers  []lexer
 }
 
-func (l *lexers) Next() lexer {
+func (l *lexers) Next() bool {
 	l.current++
+	return l.Finished()
+}
+
+func (l *lexers) Current() lexer {
 	return l.lexers[l.current]
 }
 
