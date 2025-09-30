@@ -126,8 +126,10 @@ figure {
 
     margin-bottom: var(--margin-base);
 
-    & img {
+    & a, img {
         max-height: max(60vh, 400px);
+        max-width: 100%;
+        display: block;
 
         &.large {
             --max-width: var(--width-deco);
