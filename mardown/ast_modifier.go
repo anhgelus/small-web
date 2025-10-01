@@ -75,7 +75,12 @@ func modifier(lxs *lexers) (*astModifier, error) {
 		case lexerBreak:
 			lxs.current-- // because we did not use it
 			return mod, nil
+		case lexerExternal:
+			if lxs.Current().Value == "!" {
+				s += lxs.Current().Value
+			}
 		default:
+			println(lxs.Current().Type, lxs.Current().Value)
 			return nil, ErrInvalidTypeInModifier
 		}
 	}
