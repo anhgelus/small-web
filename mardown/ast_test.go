@@ -1,6 +1,41 @@
 package mardown
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
+
+var raw = `
+# Je suis un titre
+Avec une description classique,
+sur plusieurs lignes !
+
+Et je peux mettre du texte en **gras**,
+en *italique* et les **_deux en même temps_** !
+
+> Je suis une magnifique citation
+> sur plusieurs lignes
+avec une source
+`
+
+var parsed = `
+<h1>Je suis un titre</h1>
+<p>Avec une description classique, sur plusieurs lignes</p>
+<p>Et je peux mettre du texte en <b>gras</b>, en <em>italique</em> et les <b><em>deux en même temps</em></b> !</p>
+<div class="quote"><blockquote>Je suis une magnifique source sur plusieurs lignes</blockquote><p>avec une source</p></div>
+`
 
 func TestAst(t *testing.T) {
+	lxs := lex(raw)
+	tree, err := ast(lxs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := tree.Eval()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(res) != strings.ReplaceAll(parsed, "\n", "") {
+		t.Errorf("invalid string, got %s", res)
+	}
 }

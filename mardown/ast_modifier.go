@@ -57,7 +57,7 @@ func modifier(lxs *lexers) (*astModifier, error) {
 		}
 	}
 	var s string
-	for lxs.Next() {
+	for modInside != nil && lxs.Next() {
 		switch lxs.Current().Type {
 		case lexerLiteral:
 			s += lxs.Current().Value
