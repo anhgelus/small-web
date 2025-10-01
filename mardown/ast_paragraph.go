@@ -42,7 +42,7 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 	for lxs.Next() && n < maxBreak {
 		switch lxs.Current().Type {
 		case lexerBreak:
-			n++
+			n = len(lxs.Current().Value)
 		case lexerQuote:
 			if n > 0 {
 				lxs.Before()
@@ -66,6 +66,7 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 			n = 0
 			//TODO: handle
 		case lexerCode:
+			n = 0
 			b, err := code(lxs)
 			if err != nil {
 				return nil, err

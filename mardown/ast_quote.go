@@ -42,7 +42,7 @@ func quote(lxs *lexers) (*astQuote, error) {
 	for lxs.Next() && n < 2 {
 		switch lxs.Current().Type {
 		case lexerBreak:
-			n++
+			n = len(lxs.Current().Value)
 			quoteContinue = false
 		case lexerQuote:
 			n = 0
