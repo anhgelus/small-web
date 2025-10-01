@@ -20,7 +20,7 @@ avec une source
 
 var parsed = `
 <h1>Je suis un titre</h1>
-<p>Avec une description classique, sur plusieurs lignes</p>
+<p>Avec une description classique, sur plusieurs lignes !</p>
 <p>Et je peux mettre du texte en <b>gras</b>, en <em>italique</em> et les <b><em>deux en même temps</em></b> !</p>
 <div class="quote"><blockquote>Je suis une magnifique citation sur plusieurs lignes</blockquote><p>avec une source</p></div>
 `
@@ -37,7 +37,7 @@ func TestAst(t *testing.T) {
 	}
 	wanted := strings.ReplaceAll(parsed, "\n", "")
 	if string(res) != wanted {
-		t.Errorf("invalid string, got %s", res)
-		t.Logf("wanted %s", wanted)
+		t.Errorf("invalid string, got\n%s", res)
+		t.Logf("wanted\n%s", wanted)
 	}
 }

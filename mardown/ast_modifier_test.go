@@ -4,7 +4,7 @@ import "testing"
 
 func TestModifier(t *testing.T) {
 	content := `
-***bon*soir**
+**bo*n*soir**
 `
 	lxs := lex(content)
 	tree, err := ast(lxs)
@@ -15,7 +15,7 @@ func TestModifier(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c != "<p><b><em>bon</em>soir</b></p>" {
+	if c != "<p><b>bo<em>n</em>soir</b></p>" {
 		t.Errorf("failed, got %s", c)
 		t.Logf("lxs: %s\ntree: %s", lxs, tree)
 	}

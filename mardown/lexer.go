@@ -74,7 +74,14 @@ func lex(s string) *lexers {
 	for _, c := range []rune(s) {
 		switch c {
 		case '*', '_':
-			fn(c, lexerModifier)
+			if (currentType != lexerModifier && len(previous) > 0) ||
+				(len(previous) > 0 && []rune(previous)[0] != c) ||
+				len(previous) > 2 {
+				lexs = append(lexs, lexer{Type: currentType, Value: previous})
+				previous = ""
+			}
+			currentType = lexerModifier
+			previous += string(c)
 		case '`':
 			fn(c, lexerCode)
 		case '\n':

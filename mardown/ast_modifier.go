@@ -1,6 +1,7 @@
 package mardown
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -23,7 +24,6 @@ type astModifier struct {
 	symbols string
 	tag     modifierTag
 	content []block
-	parent  *astModifier
 }
 
 func (a *astModifier) Eval() (template.HTML, error) {
@@ -38,75 +38,79 @@ func (a *astModifier) Eval() (template.HTML, error) {
 	return template.HTML(fmt.Sprintf("<%s>%s</%s>", a.tag, content, a.tag)), nil
 }
 
+func (a *astModifier) String() string {
+	content := "["
+	for _, c := range a.content {
+		content += "\n\t"
+		if v, ok := c.(fmt.Stringer); ok {
+			content += v.String()
+		} else {
+			b, _ := json.MarshalIndent(a.content, "\t", "  ")
+			content += string(b)
+		}
+		content += ",\n\t"
+	}
+	content += "]"
+	return fmt.Sprintf("modifier{sym: %s, tag: %s, content: %s\n}", a.symbols, a.tag, content)
+}
+
 func modifier(lxs *lexers) (*astModifier, error) {
 	current := lxs.Current().Value
-	mod := modifierDetect(current)
-	modInside := mod
-	if len(mod.content) > 0 {
-		var ok bool
-		modInside, ok = mod.content[0].(*astModifier)
-		if modInside.content != nil && !ok {
-			return nil, ErrInternalError
-		}
-		// getting the last modifier
-		for len(modInside.content) > 0 {
-			modInside, ok = modInside.content[0].(*astModifier)
-			if modInside.content != nil && !ok {
-				return nil, ErrInternalError
-			}
-		}
+	mod, err := modifierDetect(current)
+	if err != nil {
+		return nil, err
 	}
 	var s string
-	for modInside != nil && lxs.Next() {
+	for lxs.Next() {
 		switch lxs.Current().Type {
-		case lexerLiteral:
+		case lexerLiteral, lexerHeader:
 			s += lxs.Current().Value
 		case lexerModifier:
-			n := len(modInside.symbols)
-			if len(lxs.Current().Value) < n {
-				return nil, ErrInvalidModifier
+			if lxs.Current().Value == mod.symbols {
+				mod.content = append(mod.content, astLiteral(s))
+				return mod, nil
 			}
-			if lxs.Current().Value[:n] != modInside.symbols {
-				return nil, ErrInvalidModifier
+			if len(s) != 0 {
+				mod.content = append(mod.content, astLiteral(s))
+				s = ""
 			}
-			modInside.content = append(modInside.content, astLiteral(s))
-			s = ""
-			modInside = modInside.parent
+			c, err := modifier(lxs)
+			if err != nil {
+				return nil, err
+			}
+			mod.content = append(mod.content, c)
 		case lexerBreak:
-			lxs.current-- // because we did not use it
+			lxs.Before() // because we did not use it
+			if len(s) != 0 {
+				return nil, ErrInvalidModifier
+			}
 			return mod, nil
 		case lexerExternal:
 			if lxs.Current().Value == "!" {
 				s += lxs.Current().Value
 			}
 		default:
-			println(lxs.Current().Type, lxs.Current().Value)
 			return nil, ErrInvalidTypeInModifier
 		}
+	}
+	if len(s) != 0 {
+		return nil, ErrInvalidModifier
 	}
 	return mod, nil
 }
 
-func modifierDetect(val string) *astModifier {
+func modifierDetect(val string) (*astModifier, error) {
 	mod := new(astModifier)
-	if len(val) == 1 {
+	switch len(val) {
+	case 1:
 		mod.symbols = val
 		mod.tag = emTag
-		return mod
-	}
-	if val[:2] == "**" || val[:2] == "__" {
-		mod.symbols = val[:2]
+		return mod, nil
+	case 2:
+		mod.symbols = val
 		mod.tag = boldTag
-		if len(val) > 2 {
-			next := modifierDetect(val[2:])
-			next.parent = mod
-			mod.content = append(mod.content, next)
-		}
-	} else {
-		mod = modifierDetect(val[:1])
-		next := modifierDetect(val[1:])
-		next.parent = mod
-		mod.content = append(mod.content, next)
+		return mod, nil
+	default:
+		return nil, ErrInvalidModifier
 	}
-	return mod
 }

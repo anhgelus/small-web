@@ -69,6 +69,9 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 			//TODO: handle
 		case lexerExternal:
 			n = 0
+			if lxs.Current().Value == "!" {
+				tree.content = append(tree.content, astLiteral(lxs.Current().Value))
+			}
 			//TODO: handle
 		case lexerCode:
 			n = 0
