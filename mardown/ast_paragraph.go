@@ -43,9 +43,9 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 		switch lxs.Current().Type {
 		case lexerBreak:
 			n = len(lxs.Current().Value)
-		case lexerQuote:
+		case lexerQuote, lexerList:
 			if n > 0 {
-				lxs.Before()
+				lxs.Before() // because we did not use it
 				return tree, nil
 			}
 			tree.content = append(tree.content, astLiteral(lxs.Current().Value))

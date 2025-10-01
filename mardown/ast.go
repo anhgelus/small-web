@@ -75,6 +75,12 @@ func getBlock(lxs *lexers, newLine bool) (block, error) {
 		} else {
 			b, err = paragraph(lxs, false)
 		}
+	case lexerList:
+		if newLine {
+			b, err = list(lxs)
+		} else {
+			b, err = paragraph(lxs, false)
+		}
 	case lexerCode:
 		if !newLine && len(lxs.Current().Value) == 3 {
 			return nil, ErrInvalidCodeBlockPosition

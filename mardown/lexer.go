@@ -5,13 +5,17 @@ import "fmt"
 type lexerType string
 
 const (
-	lexerBreak  lexerType = "break"
+	lexerBreak lexerType = "break"
+
 	lexerEscape lexerType = "escape"
 
 	lexerModifier lexerType = "modifier"
-	lexerCode     lexerType = "code"
-	lexerHeader   lexerType = "header"
-	lexerQuote    lexerType = "quote"
+
+	lexerCode lexerType = "code"
+
+	lexerHeader lexerType = "header"
+	lexerQuote  lexerType = "quote"
+	lexerList   lexerType = "list"
 
 	lexerExternal lexerType = "external"
 
@@ -94,6 +98,8 @@ func lex(s string) *lexers {
 			fn(c, lexerExternal)
 		case '\\':
 			fn(c, lexerEscape)
+		case '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
+			fn(c, lexerList)
 		default:
 			fn(c, lexerLiteral)
 		}
