@@ -50,8 +50,13 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 			}
 			tree.content = append(tree.content, astLiteral(lxs.Current().Value))
 		case lexerLiteral, lexerHeader:
+			s := lxs.Current().Value
+			// replace line break by space
+			if n > 0 {
+				s = " " + s
+			}
 			n = 0
-			tree.content = append(tree.content, astLiteral(lxs.Current().Value))
+			tree.content = append(tree.content, astLiteral(s))
 		case lexerModifier:
 			n = 0
 			mod, err := modifier(lxs)
