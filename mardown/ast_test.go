@@ -16,6 +16,7 @@ en *italique* et les **_deux en même temps_** !
 > Je suis une magnifique citation
 > sur plusieurs lignes
 avec une source
+> qui recommence après !
 `
 
 var parsed = `
@@ -23,6 +24,7 @@ var parsed = `
 <p>Avec une description classique, sur plusieurs lignes !</p>
 <p>Et je peux mettre du texte en <b>gras</b>, en <em>italique</em> et les <b><em>deux en même temps</em></b> !</p>
 <div class="quote"><blockquote>Je suis une magnifique citation sur plusieurs lignes</blockquote><p>avec une source</p></div>
+<div class="quote"><blockquote>qui recommence après !</blockquote></div>
 `
 
 func TestAst(t *testing.T) {

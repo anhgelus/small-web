@@ -30,7 +30,10 @@ func (a *astQuote) Eval() (template.HTML, error) {
 		source += ct
 	}
 	source = template.HTML(strings.TrimSpace(string(source)))
-	return template.HTML(fmt.Sprintf(`<div class="quote">%s<p>%s</p></div>`, quote, source)), nil
+	if len(source) > 0 {
+		return template.HTML(fmt.Sprintf(`<div class="quote">%s<p>%s</p></div>`, quote, source)), nil
+	}
+	return template.HTML(fmt.Sprintf(`<div class="quote">%s</div>`, quote)), nil
 }
 
 func quote(lxs *lexers) (*astQuote, error) {
