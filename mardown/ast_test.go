@@ -35,7 +35,9 @@ func TestAst(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(res) != strings.ReplaceAll(parsed, "\n", "") {
+	wanted := strings.ReplaceAll(parsed, "\n", "")
+	if string(res) != wanted {
 		t.Errorf("invalid string, got %s", res)
+		t.Logf("wanted %s", wanted)
 	}
 }

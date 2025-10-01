@@ -45,6 +45,11 @@ func (l *lexers) Finished() bool {
 	return l.current >= len(l.lexers)
 }
 
+func (l *lexers) Before() bool {
+	l.current--
+	return l.current >= 0 && !l.Finished()
+}
+
 func (l *lexers) String() string {
 	s := "Lexers["
 	for _, l := range l.lexers {

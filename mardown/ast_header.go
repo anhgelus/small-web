@@ -27,6 +27,9 @@ func (a *astHeader) Eval() (template.HTML, error) {
 
 func header(lxs *lexers) (*astHeader, error) {
 	b := &astHeader{level: uint(len(lxs.Current().Value))}
+	if !lxs.Next() {
+		return nil, ErrInvalidHeader
+	}
 	var err error
 	b.content, err = paragraph(lxs, true)
 	if err != nil {

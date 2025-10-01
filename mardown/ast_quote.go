@@ -48,7 +48,7 @@ func quote(lxs *lexers) (*astQuote, error) {
 			n = 0
 			if source {
 				// because the code did not use it
-				lxs.current--
+				lxs.Before()
 				return tree, nil
 			}
 			quoteContinue = true
@@ -58,7 +58,6 @@ func quote(lxs *lexers) (*astQuote, error) {
 				source = true
 			}
 			p, err := paragraph(lxs, true)
-			lxs.current-- // because we call the next twice here
 			if err != nil {
 				return nil, err
 			}
@@ -72,7 +71,7 @@ func quote(lxs *lexers) (*astQuote, error) {
 			quoteContinue = false
 		default:
 			// because the code did not use it
-			lxs.current--
+			lxs.Before()
 			return tree, nil
 		}
 	}
