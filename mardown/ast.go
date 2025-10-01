@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"strings"
 )
 
 var ErrUnkownLexType = errors.New("unkown lex type")
@@ -90,4 +91,8 @@ func getBlock(lxs *lexers, newLine bool) (block, error) {
 		err = errors.Join(ErrUnkownLexType, fmt.Errorf("type received: %s", lxs.Current().Type))
 	}
 	return b, err
+}
+
+func trimSpace(s template.HTML) template.HTML {
+	return template.HTML(strings.TrimSpace(string(s)))
 }

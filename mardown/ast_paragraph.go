@@ -27,7 +27,7 @@ func (a *astParagraph) Eval() (template.HTML, error) {
 	if a.oneLine {
 		return content, nil
 	}
-	return template.HTML(fmt.Sprintf("<p>%s</p>", content)), nil
+	return template.HTML(fmt.Sprintf("<p>%s</p>", trimSpace(content))), nil
 }
 
 func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {

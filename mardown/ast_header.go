@@ -22,7 +22,7 @@ func (a *astHeader) Eval() (template.HTML, error) {
 	if err != nil {
 		return "", err
 	}
-	return template.HTML(fmt.Sprintf("<h%d>%s</h%d>", a.level, content, a.level)), nil
+	return template.HTML(fmt.Sprintf("<h%d>%s</h%d>", a.level, trimSpace(content), a.level)), nil
 }
 
 func header(lxs *lexers) (*astHeader, error) {

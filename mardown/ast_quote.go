@@ -20,8 +20,7 @@ func (a *astQuote) Eval() (template.HTML, error) {
 		}
 		quote += ct
 	}
-	quote = template.HTML(strings.TrimSpace(string(quote)))
-	quote = template.HTML(fmt.Sprintf("<blockquote>%s</blockquote>", quote))
+	quote = template.HTML(fmt.Sprintf("<blockquote>%s</blockquote>", trimSpace(quote)))
 	var source template.HTML
 	for _, c := range a.source {
 		ct, err := c.Eval()
