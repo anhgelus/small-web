@@ -68,8 +68,13 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 			n = 0
 			if lxs.Current().Value == "!" {
 				tree.content = append(tree.content, astLiteral(lxs.Current().Value))
+			} else {
+				ext, err := external(lxs)
+				if err != nil {
+					return nil, err
+				}
+				tree.content = append(tree.content, ext)
 			}
-			//TODO: handle
 		case lexerCode:
 			n = 0
 			b, err := code(lxs)

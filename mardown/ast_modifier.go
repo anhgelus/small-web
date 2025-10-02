@@ -117,6 +117,12 @@ func modifier(lxs *lexers) (*astModifier, error) {
 		case lexerExternal:
 			if lxs.Current().Value == "!" {
 				s += lxs.Current().Value
+			} else {
+				ext, err := external(lxs)
+				if err != nil {
+					return nil, err
+				}
+				mod.content = append(mod.content, ext)
 			}
 		default:
 			return nil, ErrInvalidTypeInModifier

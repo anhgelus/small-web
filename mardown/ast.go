@@ -37,7 +37,7 @@ func (t *tree) String() string {
 
 func ast(lxs *lexers) (*tree, error) {
 	tr := new(tree)
-	newLine := false
+	newLine := true
 	for lxs.Next() {
 		b, err := getBlock(lxs, newLine)
 		if err != nil {
@@ -64,8 +64,8 @@ func getBlock(lxs *lexers, newLine bool) (block, error) {
 			b, err = header(lxs)
 		}
 	case lexerExternal:
-		if newLine && lxs.Current().Value == "!" {
-			//TODO: handle
+		if newLine && lxs.Current().Value == "![" {
+			b, err = external(lxs)
 		} else {
 			b, err = paragraph(lxs, false)
 		}
