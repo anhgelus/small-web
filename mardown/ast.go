@@ -11,14 +11,14 @@ import (
 var ErrUnkownLexType = errors.New("unkown lex type")
 
 type block interface {
-	Eval() (template.HTML, error)
+	Eval() (template.HTML, *ParseError)
 }
 
 type tree struct {
 	blocks []block
 }
 
-func (t *tree) Eval() (template.HTML, error) {
+func (t *tree) Eval() (template.HTML, *ParseError) {
 	var content template.HTML
 	for _, c := range t.blocks {
 		ct, err := c.Eval()
@@ -35,7 +35,7 @@ func (t *tree) String() string {
 	return string(b)
 }
 
-func ast(lxs *lexers) (*tree, error) {
+func ast(lxs *lexers) (*tree, *ParseError) {
 	tr := new(tree)
 	newLine := true
 	for lxs.Next() {
@@ -53,9 +53,9 @@ func ast(lxs *lexers) (*tree, error) {
 	return tr, nil
 }
 
-func getBlock(lxs *lexers, newLine bool) (block, error) {
+func getBlock(lxs *lexers, newLine bool) (block, *ParseError) {
 	var b block
-	var err error
+	var err *ParseError
 	switch lxs.Current().Type {
 	case lexerHeader:
 		if !newLine {
@@ -83,7 +83,7 @@ func getBlock(lxs *lexers, newLine bool) (block, error) {
 		}
 	case lexerCode:
 		if !newLine && len(lxs.Current().Value) == 3 {
-			return nil, ErrInvalidCodeBlockPosition
+			return nil, &ParseError{lxs: *lxs, internal: ErrInvalidCodeBlockPosition}
 		}
 		if len(lxs.Current().Value) == 1 {
 			b, err = paragraph(lxs, false)
@@ -94,7 +94,10 @@ func getBlock(lxs *lexers, newLine bool) (block, error) {
 		b, err = paragraph(lxs, false)
 	case lexerBreak: // do nothing
 	default:
-		err = errors.Join(ErrUnkownLexType, fmt.Errorf("type received: %s", lxs.Current().Type))
+		err = &ParseError{
+			lxs:      *lxs,
+			internal: errors.Join(ErrUnkownLexType, fmt.Errorf("type received: %s", lxs.Current().Type)),
+		}
 	}
 	return b, err
 }

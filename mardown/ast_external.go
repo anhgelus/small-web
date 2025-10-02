@@ -10,7 +10,7 @@ type astLink struct {
 	href    block
 }
 
-func (a *astLink) Eval() (template.HTML, error) {
+func (a *astLink) Eval() (template.HTML, *ParseError) {
 	content, err := a.content.Eval()
 	if err != nil {
 		return "", err
@@ -28,7 +28,7 @@ type astImage struct {
 	source []*astParagraph
 }
 
-func (a *astImage) Eval() (template.HTML, error) {
+func (a *astImage) Eval() (template.HTML, *ParseError) {
 	alt, err := a.alt.Eval()
 	if err != nil {
 		return "", err
@@ -52,14 +52,14 @@ func (a *astImage) Eval() (template.HTML, error) {
 	return template.HTML(fmt.Sprintf(`<figure><img alt="%s" src="%s"><figcaption>%s</figcaption></figure>`, alt, src, s)), nil
 }
 
-func external(lxs *lexers) (block, error) {
+func external(lxs *lexers) (block, *ParseError) {
 	tp := lxs.Current().Value
 	if !lxs.Next() {
 		return astLiteral(tp), nil
 	}
 	lxs.Before() // because we call Next
 	var b block
-	var err error
+	var err *ParseError
 	switch tp {
 	case "![":
 		b, err = image(lxs)
@@ -71,7 +71,7 @@ func external(lxs *lexers) (block, error) {
 	return b, err
 }
 
-func link(lxs *lexers) (block, error) {
+func link(lxs *lexers) (block, *ParseError) {
 	lk := new(astLink)
 	start := lxs.current
 	content, href, _, ok := parseExternal(lxs, false)
@@ -83,7 +83,7 @@ func link(lxs *lexers) (block, error) {
 	return lk, nil
 }
 
-func image(lxs *lexers) (block, error) {
+func image(lxs *lexers) (block, *ParseError) {
 	img := new(astImage)
 	start := lxs.current
 	alt, src, source, ok := parseExternal(lxs, true)

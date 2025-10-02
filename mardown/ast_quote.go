@@ -11,7 +11,7 @@ type astQuote struct {
 	source []*astParagraph
 }
 
-func (a *astQuote) Eval() (template.HTML, error) {
+func (a *astQuote) Eval() (template.HTML, *ParseError) {
 	var quote template.HTML
 	for _, c := range a.quote {
 		ct, err := c.Eval()
@@ -36,7 +36,7 @@ func (a *astQuote) Eval() (template.HTML, error) {
 	return template.HTML(fmt.Sprintf(`<div class="quote">%s</div>`, quote)), nil
 }
 
-func quote(lxs *lexers) (*astQuote, error) {
+func quote(lxs *lexers) (*astQuote, *ParseError) {
 	tree := new(astQuote)
 	n := 0
 	quoteContinue := true

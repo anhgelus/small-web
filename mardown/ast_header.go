@@ -13,9 +13,9 @@ type astHeader struct {
 	content *astParagraph
 }
 
-func (a *astHeader) Eval() (template.HTML, error) {
+func (a *astHeader) Eval() (template.HTML, *ParseError) {
 	if a.level > 6 {
-		return "", ErrInvalidHeader
+		return "", &ParseError{lxs: lexers{}, internal: ErrInvalidCodeFormat}
 	}
 	var content template.HTML
 	content, err := a.content.Eval()
@@ -25,12 +25,12 @@ func (a *astHeader) Eval() (template.HTML, error) {
 	return template.HTML(fmt.Sprintf("<h%d>%s</h%d>", a.level, trimSpace(content), a.level)), nil
 }
 
-func header(lxs *lexers) (*astHeader, error) {
+func header(lxs *lexers) (*astHeader, *ParseError) {
 	b := &astHeader{level: uint(len(lxs.Current().Value))}
 	if !lxs.Next() {
-		return nil, ErrInvalidHeader
+		return nil, &ParseError{lxs: *lxs, internal: ErrInvalidHeader}
 	}
-	var err error
+	var err *ParseError
 	b.content, err = paragraph(lxs, true)
 	if err != nil {
 		return nil, err

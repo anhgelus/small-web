@@ -15,7 +15,7 @@ type astParagraph struct {
 	oneLine bool
 }
 
-func (a *astParagraph) Eval() (template.HTML, error) {
+func (a *astParagraph) Eval() (template.HTML, *ParseError) {
 	var content template.HTML
 	for _, c := range a.content {
 		ct, err := c.Eval()
@@ -30,7 +30,7 @@ func (a *astParagraph) Eval() (template.HTML, error) {
 	return template.HTML(fmt.Sprintf("<p>%s</p>", trimSpace(content))), nil
 }
 
-func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
+func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 	tree := new(astParagraph)
 	tree.oneLine = oneLine
 	maxBreak := 2
@@ -40,7 +40,6 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 	n := 0
 	lxs.current-- // because we do not use it before the next
 	for lxs.Next() && n < maxBreak {
-		//println("p", strings.ReplaceAll(lxs.Current().Value, "\n", "/n"))
 		switch lxs.Current().Type {
 		case lexerBreak:
 			n += len(lxs.Current().Value)
@@ -62,7 +61,7 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 			n = 0
 			mod, err := modifier(lxs)
 			if err != nil {
-				return nil, err
+				return nil, &ParseError{lxs: *lxs, internal: err}
 			}
 			tree.content = append(tree.content, mod)
 		case lexerExternal:
@@ -94,6 +93,6 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 
 type astLiteral string
 
-func (a astLiteral) Eval() (template.HTML, error) {
+func (a astLiteral) Eval() (template.HTML, *ParseError) {
 	return template.HTML(template.HTMLEscapeString(string(a))), nil
 }

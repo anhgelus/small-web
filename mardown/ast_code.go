@@ -25,18 +25,18 @@ type astCode struct {
 	codeType codeType
 }
 
-func (a *astCode) Eval() (template.HTML, error) {
+func (a *astCode) Eval() (template.HTML, *ParseError) {
 	switch a.codeType {
 	case codeOneLine:
 		return template.HTML(fmt.Sprintf("<code>%s</code>", template.HTMLEscapeString(a.content))), nil
 	case codeMultiLine:
 		return template.HTML(fmt.Sprintf("<pre><code>%s</code></pre>", template.HTMLEscapeString(a.content))), nil
 	default:
-		return "", ErrUnknownCodeType
+		return "", &ParseError{lxs: lexers{}, internal: ErrUnknownCodeType}
 	}
 }
 
-func code(lxs *lexers) (*astCode, error) {
+func code(lxs *lexers) (*astCode, *ParseError) {
 	tree := new(astCode)
 	current := lxs.Current().Value
 	if len(current) == 3 {
@@ -44,13 +44,13 @@ func code(lxs *lexers) (*astCode, error) {
 	} else if len(current) == 1 {
 		tree.codeType = codeOneLine
 	} else {
-		return nil, ErrInvalidCodeFormat
+		return nil, &ParseError{lxs: *lxs, internal: ErrInvalidCodeFormat}
 	}
 	started := false
 	for lxs.Next() && lxs.Current().Value != current {
 		if lxs.Current().Type == lexerBreak {
 			if tree.codeType == codeOneLine {
-				return nil, ErrInvalidCodeFormat
+				return nil, &ParseError{lxs: *lxs, internal: ErrInvalidCodeFormat}
 			}
 			if !started {
 				started = true

@@ -8,7 +8,6 @@ import (
 )
 
 var (
-	ErrInternalError         = errors.New("internal error")
 	ErrInvalidModifier       = errors.Join(ErrInvalidParagraph, errors.New("invalid modifier organization"))
 	ErrInvalidTypeInModifier = errors.Join(ErrInvalidParagraph, errors.New("invalid type in modifier"))
 )
@@ -27,12 +26,12 @@ type astModifier struct {
 	super   bool
 }
 
-func (a *astModifier) Eval() (template.HTML, error) {
+func (a *astModifier) Eval() (template.HTML, *ParseError) {
 	var content template.HTML
 	for _, c := range a.content {
 		ct, err := c.Eval()
 		if err != nil {
-			return "", err
+			return "", &ParseError{lxs: lexers{}, internal: err}
 		}
 		content += ct
 	}

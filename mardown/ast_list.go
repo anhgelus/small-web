@@ -20,7 +20,7 @@ type astList struct {
 	content []*astParagraph
 }
 
-func (a *astList) Eval() (template.HTML, error) {
+func (a *astList) Eval() (template.HTML, *ParseError) {
 	var content template.HTML
 	for _, c := range a.content {
 		ct, err := c.Eval()
@@ -32,7 +32,7 @@ func (a *astList) Eval() (template.HTML, error) {
 	return template.HTML(fmt.Sprintf("<%s>%s</%s>", a.tag, content, a.tag)), nil
 }
 
-func list(lxs *lexers) (block, error) {
+func list(lxs *lexers) (block, *ParseError) {
 	tree := new(astList)
 	tree.tag = detectListType(lxs.Current().Value)
 	if len(tree.tag) == 0 {
