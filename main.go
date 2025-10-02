@@ -2,15 +2,28 @@ package main
 
 import (
 	"context"
+	"embed"
 	"errors"
+	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"git.anhgelus.world/anhgelus/small-world/backend"
 	"github.com/joho/godotenv"
+)
+
+//go:embed dist
+var embeds embed.FS
+
+var (
+	configFile = "config.toml"
+	port       = 8000
+	publicDir  = "public"
 )
 
 func init() {
@@ -18,12 +31,36 @@ func init() {
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		slog.Error("loading .env", "error", err)
 	}
+
+	if v := os.Getenv("CONFIG_FILE"); v != "" {
+		configFile = v
+	}
+	flag.StringVar(&configFile, "config", configFile, "config file")
+
+	if v := os.Getenv("PORT"); v != "" {
+		port, err = strconv.Atoi(v)
+		if err != nil {
+			panic(err)
+		}
+	}
+	flag.IntVar(&port, "port", port, "server port")
+
+	if v := os.Getenv("PUBLIC_DIR"); v != "" {
+		publicDir = v
+	}
+	flag.StringVar(&publicDir, "public", publicDir, "public directory")
 }
+
 func main() {
+	flag.Parse()
+
 	r := backend.NewRouter()
 
+	backend.HandleStaticFiles(r, "/assets", backend.UsableEmbedFS("dist", embeds))
+	backend.HandleStaticFiles(r, "/static", os.DirFS(publicDir))
+
 	slog.Info("starting http server")
-	server := &http.Server{Addr: ":8000", Handler: r}
+	server := &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: r}
 
 	errChan := make(chan error)
 	go startServer(server, errChan)
