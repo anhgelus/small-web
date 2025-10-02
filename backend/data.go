@@ -14,15 +14,25 @@ type data struct {
 	URL         string
 	Image       string
 	Description string
+	Name        string
 }
 
 func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string) {
+	cfg := r.Context().Value("config").(*Config)
 	if d.Domain == "" {
-		cfg := r.Context().Value("config").(*Config)
 		d.Domain = cfg.Domain
 	}
+	if d.Name == "" {
+		d.Name = cfg.Name
+	}
+	if d.Description == "" {
+		d.Description = cfg.Description
+	}
 	if d.URL == "" {
-		d.URL = strings.TrimPrefix(r.URL.Path, "/")
+		if !strings.HasPrefix(r.URL.Path, "/") {
+			r.URL.Path = "/" + r.URL.Path
+		}
+		d.URL = r.URL.Path
 	}
 	t, err := template.New("").Funcs(template.FuncMap{
 		"static": func(path string) string {
@@ -42,7 +52,7 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 }
 
 func (d *data) Title() string {
-	title := "anhgelus"
+	title := d.Name
 	if d.Article {
 		title += " - log entry"
 	}

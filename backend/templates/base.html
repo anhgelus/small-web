@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ .Title }}</title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="{{ assets "styles.css" }}">
     <meta property="description" content="{{ .Description }}" />
     <!-- Open Graph -->
     <meta property="og:title" content="{{ .Title }}" />
@@ -13,7 +13,7 @@
     <meta property="og:image" content="https://{{ .Domain }}{{ static .Image }}" />
     <meta property="og:description" content="{{ .Description }}" />
     <meta property="og:local" content="fr_FR" />
-    <meta property="og:site_name" content="{{ .Title }}'s Now page" />
+    <meta property="og:site_name" content="{{ .Name }}" />
     <!-- Twitter  -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:domain" content="{{ .Domain }}" />
