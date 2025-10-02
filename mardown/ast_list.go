@@ -42,7 +42,7 @@ func list(lxs *lexers) (block, error) {
 	for lxs.Next() && n < 2 {
 		switch lxs.Current().Type {
 		case lexerBreak:
-			n++
+			n += len(lxs.Current().Value)
 		case lexerList:
 			n = 0
 			tp := detectListType(lxs.Current().Value)
@@ -56,9 +56,11 @@ func list(lxs *lexers) (block, error) {
 			if err != nil {
 				return nil, err
 			}
+			lxs.Before() // because we must parse the last char
 			tree.content = append(tree.content, c)
 		}
 	}
+	lxs.Before() // because we did not use it
 	return tree, nil
 }
 

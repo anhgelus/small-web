@@ -25,7 +25,7 @@ func (a *astLink) Eval() (template.HTML, error) {
 type astImage struct {
 	alt    block
 	src    block
-	source *astParagraph
+	source []*astParagraph
 }
 
 func (a *astImage) Eval() (template.HTML, error) {
@@ -40,11 +40,16 @@ func (a *astImage) Eval() (template.HTML, error) {
 	if a.source == nil {
 		return template.HTML(fmt.Sprintf(`<figure><img alt="%s" src="%s"></figure>`, alt, src)), nil
 	}
-	source, err := a.source.Eval()
-	if err != nil {
-		return "", err
+	var s template.HTML
+	for _, c := range a.source {
+		ct, err := c.Eval()
+		if err != nil {
+			return "", err
+		}
+		s += ct + " "
 	}
-	return template.HTML(fmt.Sprintf(`<figure><img alt="%s" src="%s"><figcaption>%s</figcaption></figure>`, alt, src, source)), nil
+	s = s[:len(s)-1]
+	return template.HTML(fmt.Sprintf(`<figure><img alt="%s" src="%s"><figcaption>%s</figcaption></figure>`, alt, src, s)), nil
 }
 
 func external(lxs *lexers) (block, error) {
@@ -69,7 +74,7 @@ func external(lxs *lexers) (block, error) {
 func link(lxs *lexers) (block, error) {
 	lk := new(astLink)
 	start := lxs.current
-	content, href, _, ok := parseExternal(lxs, 1)
+	content, href, _, ok := parseExternal(lxs, false)
 	if !ok {
 		return reset(lxs, start), nil
 	}
@@ -81,34 +86,60 @@ func link(lxs *lexers) (block, error) {
 func image(lxs *lexers) (block, error) {
 	img := new(astImage)
 	start := lxs.current
-	alt, src, _, ok := parseExternal(lxs, 2)
+	alt, src, source, ok := parseExternal(lxs, true)
 	if !ok {
 		return reset(lxs, start), nil
 	}
 	img.alt = astLiteral(alt)
 	img.src = astLiteral(src)
-	//img.source = astLiteral(source)
+	img.source = source
 	return img, nil
 }
 
-func parseExternal(lxs *lexers, maxBreak int) (string, string, string, bool) {
+func parseExternal(lxs *lexers, withSource bool) (string, string, []*astParagraph, bool) {
 	next := false
 	var s string
 	var first string
 	var end string
+	var ps []*astParagraph
 	n := 0
-	for lxs.Next() && n < maxBreak {
+	fn := func() bool {
+		p, err := paragraph(lxs, true)
+		if err != nil {
+			return false
+		}
+		ps = append(ps, p)
+		n = 0
+		return true
+	}
+	for lxs.Next() && n < 2 {
 		switch lxs.Current().Type {
 		case lexerBreak:
-			n++
+			if !withSource {
+				return "", "", nil, false
+			}
+			n += len(lxs.Current().Value)
+			if first != "" && end != "" {
+				if !lxs.Next() {
+					return first, end, ps, true
+				}
+				ok := fn()
+				if !ok {
+					return "", "", nil, false
+				}
+				lxs.Before() // because we must parse lexerBreak
+			}
 		case lexerExternal:
+			if first != "" && end != "" {
+				return "", "", nil, false
+			}
 			if n > 0 && (first == "" || end == "") {
-				return "", "", "", false
+				return "", "", nil, false
 			}
 			n = 0
 			if !next {
 				if lxs.Current().Value != "](" || !lxs.Next() {
-					return "", "", "", false
+					return "", "", nil, false
 				}
 				lxs.Before() // because we called Next
 				first = s
@@ -116,23 +147,30 @@ func parseExternal(lxs *lexers, maxBreak int) (string, string, string, bool) {
 				next = true
 			} else {
 				if lxs.Current().Value != ")" {
-					return "", "", "", false
+					return "", "", nil, false
 				}
-				if maxBreak == 1 {
-					return first, s, "", true
+				if !withSource {
+					return first, s, nil, true
 				}
 				end = s
 				s = ""
+				if lxs.Next() && lxs.Current().Type != lexerBreak {
+					return "", "", nil, false
+				}
+				lxs.Before() // because we called Next
 			}
 		default:
+			if ps != nil {
+				return "", "", nil, false
+			}
 			n = 0
 			s += lxs.Current().Value
 		}
 	}
-	if maxBreak == 1 {
-		return "", "", "", false
+	if !withSource {
+		return "", "", nil, false
 	}
-	return first, end, s, true
+	return first, end, ps, true
 }
 
 func reset(lxs *lexers, start int) block {

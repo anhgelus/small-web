@@ -23,6 +23,10 @@ avec une source
 1. et maintenant
 2. elle l'est
 - hehe
+
+![Ceci est ma pfp :3](https://cdn.anhgelus.world/pfp.jpg)
+Ma pfp hehe :D
+Elle est **magnifique**, n'est-ce pas ?
 `
 
 var parsed = `
@@ -34,6 +38,10 @@ var parsed = `
 <ul><li>Ceci est une liste</li><li>pas ordonnée</li></ul>
 <ol><li>et maintenant</li><li>elle l&#39;est</li></ol>
 <ul><li>hehe</li></ul>
+<figure>
+<img alt="Ceci est ma pfp :3" src="https://cdn.anhgelus.world/pfp.jpg">
+<figcaption>Ma pfp hehe :D Elle est <b>magnifique</b>, n&#39;est-ce pas ?</figcaption>
+</figure>
 `
 
 func TestAst(t *testing.T) {

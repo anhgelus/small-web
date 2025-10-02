@@ -40,9 +40,10 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, error) {
 	n := 0
 	lxs.current-- // because we do not use it before the next
 	for lxs.Next() && n < maxBreak {
+		//println("p", strings.ReplaceAll(lxs.Current().Value, "\n", "/n"))
 		switch lxs.Current().Type {
 		case lexerBreak:
-			n = len(lxs.Current().Value)
+			n += len(lxs.Current().Value)
 		case lexerQuote, lexerList:
 			if n > 0 {
 				lxs.Before() // because we did not use it

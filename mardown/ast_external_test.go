@@ -28,4 +28,22 @@ func TestExternal(t *testing.T) {
 	if string(got) != `<figure><img alt="image alt" src="image src"></figure>` {
 		t.Errorf("invalid value, got %s", got)
 	}
+
+	lxs = lex(`
+![image alt](image src)
+source 1
+source 2
+`)
+	tree, err = ast(lxs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err = tree.Eval()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != `<figure><img alt="image alt" src="image src"><figcaption>source 1 source 2</figcaption></figure>` {
+		t.Errorf("invalid value, got %s", got)
+	}
+
 }
