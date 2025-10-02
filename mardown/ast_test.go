@@ -25,7 +25,7 @@ avec une source
 - hehe
 
 ![Ceci est ma pfp :3](https://cdn.anhgelus.world/pfp.jpg)
-Ma pfp hehe :D
+[Ma pfp](https://now.anhgelus.world/) hehe :D
 Elle est **magnifique**, n'est-ce pas ?
 `
 
@@ -40,7 +40,7 @@ var parsed = `
 <ul><li>hehe</li></ul>
 <figure>
 <img alt="Ceci est ma pfp :3" src="https://cdn.anhgelus.world/pfp.jpg">
-<figcaption>Ma pfp hehe :D Elle est <b>magnifique</b>, n&#39;est-ce pas ?</figcaption>
+<figcaption><a href="https://now.anhgelus.world/">Ma pfp</a> hehe :D Elle est <b>magnifique</b>, n&#39;est-ce pas ?</figcaption>
 </figure>
 `
 
