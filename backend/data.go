@@ -64,6 +64,8 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 			}
 			return fmt.Sprintf("/assets/%s", path)
 		},
+		"next":   func(i int) int { return i + 1 },
+		"before": func(i int) int { return i - 1 },
 	}).ParseFS(templates, fmt.Sprintf("templates/%s.html", name), "templates/base.html")
 	if err != nil {
 		panic(err)
