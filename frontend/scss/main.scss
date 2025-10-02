@@ -1,4 +1,7 @@
 @use "../../node_modules/reset-css/reset.css";
+@use "general";
+@use "special";
+@use "home";
 
 :root {
   --color-dark: hsl(202, 25%, 9%);
@@ -18,7 +21,3 @@
 
   font-size: 20px;
 }
-
-@use "general";
-@use "special";
-@use "home";

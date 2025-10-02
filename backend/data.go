@@ -12,6 +12,10 @@ var (
 	regexIsHttp = regexp.MustCompile(`^https?://`)
 )
 
+type dataUsable interface {
+	SetData(*data)
+}
+
 type data struct {
 	title       string
 	Article     bool
@@ -24,7 +28,7 @@ type data struct {
 	Logo        *Logo
 }
 
-func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string) {
+func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string, custom dataUsable) {
 	cfg := r.Context().Value("config").(*Config)
 	if d.Domain == "" {
 		d.Domain = cfg.Domain
@@ -64,7 +68,12 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 	if err != nil {
 		panic(err)
 	}
-	err = t.ExecuteTemplate(w, "base.html", d)
+	if custom == nil {
+		err = t.ExecuteTemplate(w, "base.html", d)
+	} else {
+		custom.SetData(d)
+		err = t.ExecuteTemplate(w, "base.html", custom)
+	}
 	if err != nil {
 		panic(err)
 	}

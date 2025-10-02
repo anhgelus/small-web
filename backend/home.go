@@ -8,6 +8,6 @@ import (
 
 func HandleHome(r *chi.Mux) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		new(data).handleGeneric(w, r, "home")
+		new(data).handleGeneric(w, r, "home", nil)
 	})
 }
