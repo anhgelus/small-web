@@ -12,16 +12,17 @@ import (
 
 	"git.anhgelus.world/anhgelus/small-world/markdown"
 	"github.com/go-chi/chi/v5"
+	"github.com/pelletier/go-toml/v2"
 )
 
 var logs = map[string]string{}
 
 type logData struct {
 	*data
-	LogTitle    string
-	Description string
-	Img         image
-	Content     template.HTML
+	LogTitle    string        `toml:"title"`
+	Description string        `toml:"description"`
+	Img         image         `toml:"image"`
+	Content     template.HTML `toml:"-"`
 }
 
 func (d *logData) SetData(dt *data) {
@@ -29,9 +30,9 @@ func (d *logData) SetData(dt *data) {
 }
 
 type image struct {
-	Src    string
-	Alt    string
-	Legend string
+	Src    string `toml:"src"`
+	Alt    string `toml:"alt"`
+	Legend string `toml:"legend"`
 }
 
 func LoadLogs(cfg *Config) bool {
@@ -100,7 +101,7 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 		http.NotFoundHandler().ServeHTTP(w, r)
 		return
 	}
-	d := new(logData)
+	var d logData
 	d.data = new(data)
 	d.Article = true
 	d.LogTitle = slug
@@ -109,7 +110,20 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	d.Content, err = markdown.ParseBytes(b)
+	var dd string
+	splits := strings.SplitN(string(b), "---", 2)
+	if len(splits) == 2 {
+		dd = splits[1]
+		err = toml.Unmarshal([]byte(splits[0]), &d)
+		if err != nil {
+			panic(err)
+		}
+		d.title = d.LogTitle
+		d.Image = d.Img.Src
+	} else {
+		dd = string(b)
+	}
+	d.Content, err = markdown.Parse(dd)
 	var errMd *markdown.ParseError
 	errors.As(err, &errMd)
 	if errMd != nil {
@@ -117,5 +131,5 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 		slog.Error("parsing markdown")
 		fmt.Println(errMd.Pretty())
 	}
-	d.handleGeneric(w, r, "log", d)
+	d.handleGeneric(w, r, "log", &d)
 }
