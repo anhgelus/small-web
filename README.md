@@ -32,3 +32,6 @@ This project uses a custom markdown parser.
 It is located in `markdown`.
 I made my custom parser because I have extended its specification.
 
+The backend is in `backend`.
+It uses `github.com/go-chi/chi/v5`.
+
