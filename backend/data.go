@@ -89,3 +89,7 @@ func (d *data) Title() string {
 	}
 	return title
 }
+
+func (d *data) PubDate() string {
+	return ""
+}

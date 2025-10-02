@@ -56,6 +56,8 @@ func init() {
 func main() {
 	flag.Parse()
 
+	backend.SetupLogger(dev)
+
 	cfg, ok := backend.LoadConfig(configFile)
 	if !ok {
 		slog.Info("exiting")

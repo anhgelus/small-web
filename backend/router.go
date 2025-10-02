@@ -20,28 +20,38 @@ const Version = "0.1.0"
 //go:embed templates
 var templates embed.FS
 
-func NewRouter(debug bool, cfg *Config) *chi.Mux {
+func SetupLogger(debug bool) {
 	logFormat := httplog.SchemaECS.Concise(!debug)
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		ReplaceAttr: logFormat.ReplaceAttr,
-	})).With(
-		slog.String("app", "anhgelus/small-web"),
-		slog.String("version", Version),
-	)
 
 	logLevel := slog.LevelWarn
 	if debug {
 		logLevel = slog.LevelDebug
 	}
 
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		ReplaceAttr: logFormat.ReplaceAttr,
+		Level:       logLevel,
+	})).With(
+		slog.String("app", "anhgelus/small-web"),
+		slog.String("version", Version),
+	)
+
+	slog.SetDefault(logger)
+}
+
+func NewRouter(debug bool, cfg *Config) *chi.Mux {
 	r := chi.NewRouter()
 
+	logLevel := slog.LevelWarn
+	if debug {
+		logLevel = slog.LevelDebug
+	}
+
 	r.Use(middleware.Timeout(30 * time.Second))
-	r.Use(httplog.RequestLogger(logger, &httplog.Options{
+	r.Use(httplog.RequestLogger(slog.Default(), &httplog.Options{
 		Level: logLevel,
 		// Set log output to Elastic Common Schema (ECS) format.
-		Schema:        logFormat,
+		Schema:        httplog.SchemaECS.Concise(!debug),
 		RecoverPanics: true,
 		Skip: func(req *http.Request, respStatus int) bool {
 			return respStatus == http.StatusNotFound || respStatus == http.StatusMethodNotAllowed

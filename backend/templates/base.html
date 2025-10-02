@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" prefix="og: https://ogp.me/ns/article#">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,6 +15,7 @@
     <meta property="og:description" content="{{ .Description }}" />
     <meta property="og:local" content="fr_FR" />
     <meta property="og:site_name" content="{{ .Name }}" />
+    {{ if ne .PubDate "" }}<meta property="article:published_time" content="{{ .PubDate }}">{{ end }}
     <!-- Twitter  -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="twitter:domain" content="{{ .Domain }}" />
@@ -31,13 +32,9 @@
     </nav>
 </header>
 {{ if .Article }}
-<main>
-    {{ template "body" . }}
-</main>
+<main>{{ template "body" . }}</main>
 {{ else }}
-<article>
-    {{ template "body" . }}
-</article>
+<article>{{ template "body" . }}</article>
 {{ end }}
 <footer>
     <p>&copy; 2025 - Anhgelus Morthuuzh</p>

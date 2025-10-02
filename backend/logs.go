@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"git.anhgelus.world/anhgelus/small-world/markdown"
 	"github.com/go-chi/chi/v5"
@@ -16,20 +17,24 @@ import (
 )
 
 var (
-	logs       = map[string]string{}
-	loadedLogs = map[string]*logData{}
+	logs = map[string]*logData{}
 )
 
 type logData struct {
 	*data
-	LogTitle    string        `toml:"title"`
-	Description string        `toml:"description"`
-	Img         image         `toml:"image"`
-	Content     template.HTML `toml:"-"`
+	LogTitle    string         `toml:"title"`
+	Description string         `toml:"description"`
+	Img         image          `toml:"image"`
+	pubDate     toml.LocalDate `toml:"publication_date"`
+	Content     template.HTML  `toml:"-"`
 }
 
 func (d *logData) SetData(dt *data) {
 	d.data = dt
+}
+
+func (d *logData) PubDate() string {
+	return d.pubDate.String()
 }
 
 type image struct {
@@ -62,6 +67,7 @@ func LoadLogs(cfg *Config) bool {
 }
 
 func readLogDir(path string, dir []os.DirEntry) error {
+	var wg sync.WaitGroup
 	for _, d := range dir {
 		p := filepath.Join(path, d.Name())
 		if d.IsDir() {
@@ -76,18 +82,31 @@ func readLogDir(path string, dir []os.DirEntry) error {
 			if !strings.HasSuffix(d.Name(), ".md") {
 				return fmt.Errorf("file %s is not a markdown file", d.Name())
 			}
-			_, ok := logs[d.Name()]
+			slug := strings.TrimSuffix(p, ".md")
+			_, ok := logs[slug]
 			if ok {
 				return fmt.Errorf("log already exists: %s", d.Name())
 			}
-			logs[strings.TrimSuffix(d.Name(), ".md")] = p
+			dd := new(logData)
+			dd.data = new(data)
+			go func() {
+				wg.Add(1)
+				defer wg.Done()
+				ok = parseLog(dd, slug, strings.TrimSuffix(d.Name(), ".md"))
+				if ok {
+					slog.Debug("log parsed", "path", p)
+				} else {
+					slog.Debug("log skipped", "path", p)
+				}
+			}()
 		}
 	}
+	wg.Wait()
 	return nil
 }
 
 func HandleLogs(r *chi.Mux) {
-	r.Route("/logs", func(r chi.Router) {
+	r.Route("/log", func(r chi.Router) {
 		r.Get("/", handleLogList)
 		r.Get("/{slug:[a-zA-Z0-9-]+}", handleLog)
 	})
@@ -98,32 +117,30 @@ func handleLogList(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleLog(w http.ResponseWriter, r *http.Request) {
+	cfg := r.Context().Value("config").(*Config)
 	slug := chi.URLParam(r, "slug")
-	path, ok := logs[slug]
-	if !ok {
-		http.NotFoundHandler().ServeHTTP(w, r)
-		return
-	}
-	var d *logData
-	d, ok = loadedLogs[slug]
+	path := filepath.Join(cfg.LogFolder, slug)
+	d, ok := logs[path]
 	if !ok {
 		d = new(logData)
 		d.data = new(data)
-		d.Article = true
-		d.LogTitle = slug
-		d.title = slug
-		if ok = parseLog(d, path); !ok {
-			w.WriteHeader(http.StatusInternalServerError)
+		if ok = parseLog(d, path, slug); !ok {
+			http.NotFoundHandler().ServeHTTP(w, r)
 			return
 		}
-		loadedLogs[slug] = d
 	}
 	d.handleGeneric(w, r, "log", d)
 }
 
-func parseLog(d *logData, path string) bool {
-	b, err := os.ReadFile(path)
+func parseLog(d *logData, path, slug string) bool {
+	d.Article = true
+	d.LogTitle = slug
+	d.title = slug
+	b, err := os.ReadFile(path + ".md")
 	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
 		panic(err)
 	}
 	var dd string
@@ -147,5 +164,6 @@ func parseLog(d *logData, path string) bool {
 		fmt.Println(errMd.Pretty())
 		return false
 	}
+	logs[path] = d
 	return true
 }
