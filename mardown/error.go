@@ -24,14 +24,13 @@ func (e *ParseError) Pretty() string {
 	ind := ""
 	for lxs.Next() && lxs.Current().Type != lexerBreak {
 		contxt += lxs.Current().Value
-		if lxs.current < current {
-			if lxs.current == current-2 {
-				ind += "^"
-			} else {
-				for range len(lxs.Current().Value) {
-					ind += "~"
-				}
-			}
+		ln := len(lxs.Current().Value)
+		if lxs.current == current-1 {
+			ln--
+			ind += "^"
+		}
+		for range ln {
+			ind += "~"
 		}
 	}
 	return fmt.Sprintf("%v\n\n%s\n%s", e, contxt, ind)

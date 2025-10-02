@@ -76,6 +76,9 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 				tree.content = append(tree.content, ext)
 			}
 		case lexerCode:
+			if len(lxs.Current().Value) > 1 {
+				return nil, &ParseError{lxs: *lxs, internal: ErrInvalidCodeBlockPosition}
+			}
 			n = 0
 			b, err := code(lxs)
 			if err != nil {
