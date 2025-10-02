@@ -24,14 +24,20 @@ func (e *ParseError) Pretty() string {
 	ind := ""
 	for lxs.Next() && lxs.Current().Type != lexerBreak {
 		contxt += lxs.Current().Value
-		ln := len(lxs.Current().Value)
-		if lxs.current == current-1 {
-			ln--
-			ind += "^"
+		if lxs.current <= current {
+			ch := "~"
+			if lxs.current == current {
+				ch = "^"
+			}
+			for range len(lxs.Current().Value) {
+				ind += ch
+			}
 		}
-		for range ln {
-			ind += "~"
-		}
+	}
+	if lxs.current == current {
+		runes := []rune(ind)
+		runes[len(runes)-1] = '^'
+		ind = string(runes)
 	}
 	return fmt.Sprintf("%v\n\n%s\n%s", e, contxt, ind)
 }

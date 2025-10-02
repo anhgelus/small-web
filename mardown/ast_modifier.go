@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrInvalidModifier       = errors.Join(ErrInvalidParagraph, errors.New("invalid modifier organization"))
+	ErrInvalidUsage          = errors.Join(ErrInvalidParagraph, errors.New("invalid modifier usage"))
 	ErrInvalidTypeInModifier = errors.Join(ErrInvalidParagraph, errors.New("invalid type in modifier"))
 )
 
@@ -110,7 +110,7 @@ func modifier(lxs *lexers) (*astModifier, error) {
 		case lexerBreak:
 			lxs.Before() // because we did not use it
 			if len(s) != 0 {
-				return nil, ErrInvalidModifier
+				return nil, ErrInvalidUsage
 			}
 			return mod, nil
 		case lexerExternal:
@@ -128,7 +128,7 @@ func modifier(lxs *lexers) (*astModifier, error) {
 		}
 	}
 	if len(s) != 0 {
-		return nil, ErrInvalidModifier
+		return nil, ErrInvalidUsage
 	}
 	return mod, nil
 }
@@ -144,7 +144,7 @@ func modifierDetect(val string) (*astModifier, error) {
 	case 3:
 		mod.super = true
 	default:
-		return nil, ErrInvalidModifier
+		return nil, ErrInvalidUsage
 	}
 	return mod, nil
 }
