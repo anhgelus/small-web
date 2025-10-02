@@ -13,11 +13,17 @@ type Link struct {
 	URL  string `toml:"url"`
 }
 
+type Logo struct {
+	Header  string `toml:"header"`
+	Favicon string `toml:"favicon"`
+}
+
 type Config struct {
 	Domain      string `toml:"domain"`
 	Name        string `toml:"name"`
 	Description string `toml:"description"`
 	Links       []Link `toml:"links"`
+	Logo        Logo   `toml:"logo"`
 }
 
 func (c *Config) DefaultValues() {
@@ -33,6 +39,10 @@ func (c *Config) DefaultValues() {
 			Name: "Logs",
 			URL:  "/log/",
 		},
+	}
+	c.Logo = Logo{
+		Header:  "logo.jpg",
+		Favicon: "favicon.jpg",
 	}
 }
 

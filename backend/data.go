@@ -4,7 +4,12 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"regexp"
 	"strings"
+)
+
+var (
+	regexIsHttp = regexp.MustCompile(`^https?://`)
 )
 
 type data struct {
@@ -16,6 +21,7 @@ type data struct {
 	Description string
 	Name        string
 	Links       []Link
+	Logo        *Logo
 }
 
 func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string) {
@@ -32,6 +38,9 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 	if d.Links == nil {
 		d.Links = cfg.Links
 	}
+	if d.Logo == nil {
+		d.Logo = &cfg.Logo
+	}
 	if d.URL == "" {
 		if !strings.HasPrefix(r.URL.Path, "/") {
 			r.URL.Path = "/" + r.URL.Path
@@ -40,9 +49,15 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 	}
 	t, err := template.New("").Funcs(template.FuncMap{
 		"static": func(path string) string {
+			if regexIsHttp.MatchString(path) {
+				return path
+			}
 			return fmt.Sprintf("/static/%s", path)
 		},
 		"assets": func(path string) string {
+			if regexIsHttp.MatchString(path) {
+				return path
+			}
 			return fmt.Sprintf("/assets/%s", path)
 		},
 	}).ParseFS(templates, fmt.Sprintf("templates/%s.html", name), "templates/base.html")
