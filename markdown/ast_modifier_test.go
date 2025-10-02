@@ -1,9 +1,11 @@
-package mardown
+package markdown
 
 import "testing"
 
-func TestParagraph(t *testing.T) {
-	content := "bonsoir"
+func TestModifier(t *testing.T) {
+	content := `
+**bo*n*soir**, ça ***va* bien** ?
+`
 	lxs := lex(content)
 	tree, err := ast(lxs)
 	if err != nil {
@@ -13,7 +15,7 @@ func TestParagraph(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c != "<p>bonsoir</p>" {
+	if c != "<p><b>bo<em>n</em>soir</b>, ça <b><em>va</em> bien</b> ?</p>" {
 		t.Errorf("failed, got %s", c)
 		t.Logf("lxs: %s\ntree: %s", lxs, tree)
 	}

@@ -1,4 +1,4 @@
-package mardown
+package markdown
 
 import "testing"
 
