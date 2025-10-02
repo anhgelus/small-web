@@ -27,6 +27,7 @@ type logData struct {
 	Img         image          `toml:"image"`
 	pubDate     toml.LocalDate `toml:"publication_date"`
 	Content     template.HTML  `toml:"-"`
+	Slug        string         `toml:"-"`
 }
 
 func (d *logData) SetData(dt *data) {
@@ -136,6 +137,7 @@ func parseLog(d *logData, path, slug string) bool {
 	d.Article = true
 	d.LogTitle = slug
 	d.title = slug
+	d.Slug = slug
 	b, err := os.ReadFile(path + ".md")
 	if err != nil {
 		if os.IsNotExist(err) {
