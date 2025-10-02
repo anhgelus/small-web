@@ -1,0 +1,24 @@
+@use "../../node_modules/reset-css/reset.css";
+
+:root {
+  --color-dark: hsl(202, 25%, 9%);
+  --color-light: #EFF7F6;
+  --color-gray: #BCB3BB; /* quote and legend */
+  --color-rose: #F2B5D4; /* link accent */
+  --color-light-rose: hsl(330, 55%, 70%, 0.2); /* link accent hover and highlight */
+
+  --font-size-tiny: 0.85rem; /* quote, legend, code */
+
+  --width-content: 700px; /* main, article */
+  --width-deco: 900px; /* header, footer, large image */
+  --height-header: 8rem; /* header, footer, introduction */
+
+  --margin-base: 1.5rem;
+  --margin-header: calc(var(--height-header) / 2);
+
+  font-size: 20px;
+}
+
+@use "general";
+@use "special";
+@use "home";

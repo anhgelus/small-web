@@ -1,0 +1,50 @@
+header {
+  max-width: var(--width-deco);
+  height: var(--height-header);
+
+  margin: 0 auto var(--margin-header) auto;
+  padding-bottom: 2rem;
+
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+
+  border-bottom: var(--color-light) 2px solid;
+
+  @media only screen and (max-width: 600px) {
+    flex-direction: column;
+    height: auto;
+    min-height: var(--height-header);
+    & img {
+      width: max(33%, 128px);
+      margin: 0 auto;
+    }
+  }
+
+  & nav {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    & a {
+      display: block;
+
+      min-width: 8rem;
+
+      font-family: monospace;
+    }
+  }
+}
+
+footer {
+  max-width: var(--width-deco);
+  height: var(--height-header);
+
+  margin: var(--margin-header) auto 0 auto;
+  padding-top: 2rem;
+
+  border-top: var(--color-light) 2px solid;
+
+  font-size: var(--font-size-tiny);
+}

@@ -35,3 +35,5 @@ I made my custom parser because I have extended its specification.
 The backend is in `backend`.
 It uses `github.com/go-chi/chi/v5`.
 
+The frontend stuff is in `frontend`.
+
