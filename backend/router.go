@@ -61,9 +61,13 @@ func HandleStaticFiles(r *chi.Mux, path string, root fs.FS) {
 	}
 	path += "*"
 
-	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
-		ctx := chi.RouteContext(r.Context())
+	r.Get(path, func(w http.ResponseWriter, req *http.Request) {
+		ctx := chi.RouteContext(req.Context())
 		pathPrefix := strings.TrimSuffix(ctx.RoutePattern(), "/*")
-		http.StripPrefix(pathPrefix, http.FileServerFS(root)).ServeHTTP(w, r)
+		if pathPrefix+"/" == req.URL.Path {
+			r.NotFoundHandler().ServeHTTP(w, req)
+			return
+		}
+		http.StripPrefix(pathPrefix, http.FileServerFS(root)).ServeHTTP(w, req)
 	})
 }
