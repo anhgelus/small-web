@@ -8,16 +8,32 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
+type Link struct {
+	Name string `toml:"name"`
+	URL  string `toml:"url"`
+}
+
 type Config struct {
 	Domain      string `toml:"domain"`
 	Name        string `toml:"name"`
 	Description string `toml:"description"`
+	Links       []Link `toml:"links"`
 }
 
 func (c *Config) DefaultValues() {
 	c.Domain = "example.org"
 	c.Name = "example"
 	c.Description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut."
+	c.Links = []Link{
+		{
+			Name: "Home",
+			URL:  "/",
+		},
+		{
+			Name: "Logs",
+			URL:  "/log/",
+		},
+	}
 }
 
 func LoadConfig(path string) (*Config, bool) {

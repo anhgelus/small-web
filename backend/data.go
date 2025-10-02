@@ -15,6 +15,7 @@ type data struct {
 	Image       string
 	Description string
 	Name        string
+	Links       []Link
 }
 
 func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string) {
@@ -27,6 +28,9 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 	}
 	if d.Description == "" {
 		d.Description = cfg.Description
+	}
+	if d.Links == nil {
+		d.Links = cfg.Links
 	}
 	if d.URL == "" {
 		if !strings.HasPrefix(r.URL.Path, "/") {
