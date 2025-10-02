@@ -90,7 +90,7 @@ func getBlock(lxs *lexers, newLine bool) (block, error) {
 		} else {
 			b, err = code(lxs)
 		}
-	case lexerLiteral, lexerEscape, lexerModifier:
+	case lexerLiteral, lexerModifier:
 		b, err = paragraph(lxs, false)
 	case lexerBreak: // do nothing
 	default:

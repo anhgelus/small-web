@@ -7,8 +7,6 @@ type lexerType string
 const (
 	lexerBreak lexerType = "break"
 
-	lexerEscape lexerType = "escape"
-
 	lexerModifier lexerType = "modifier"
 
 	lexerCode lexerType = "code"
@@ -75,7 +73,17 @@ func lex(s string) *lexers {
 		currentType = t
 		previous += string(c)
 	}
+	literalNext := false
 	for _, c := range []rune(s) {
+		if literalNext {
+			fn(c, lexerLiteral)
+			literalNext = false
+			continue
+		}
+		if c == '\\' {
+			literalNext = true
+			continue
+		}
 		switch c {
 		case '*', '_':
 			if (currentType != lexerModifier && len(previous) > 0) ||
@@ -96,8 +104,6 @@ func lex(s string) *lexers {
 			fn(c, lexerQuote)
 		case '[', ']', '(', ')', '!':
 			fn(c, lexerExternal)
-		case '\\':
-			fn(c, lexerEscape)
 		case '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			fn(c, lexerList)
 		default:
