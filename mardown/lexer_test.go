@@ -16,7 +16,7 @@ func TestLex(t *testing.T) {
 		t.Errorf("invalid lex, got %s", lxs)
 	}
 	lxs = lex("***hey***, what's up?")
-	if lxs.String() != "Lexers[modifier(**) modifier(*) literal(hey) modifier(*) modifier(**) literal(, what's up?) ]" {
+	if lxs.String() != "Lexers[modifier(***) literal(hey) modifier(***) literal(, what's up?) ]" {
 		t.Errorf("invalid lex, got %s", lxs)
 	}
 	lxs = lex(`Xxx\_DarkEmperor\_xxX`)

@@ -88,7 +88,7 @@ func lex(s string) *lexers {
 		case '*', '_':
 			if (currentType != lexerModifier && len(previous) > 0) ||
 				(len(previous) > 0 && []rune(previous)[0] != c) ||
-				len(previous) > 2 {
+				len(previous) >= 3 {
 				lexs = append(lexs, lexer{Type: currentType, Value: previous})
 				previous = ""
 			}
