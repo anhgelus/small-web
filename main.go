@@ -24,6 +24,7 @@ var (
 	configFile = "config.toml"
 	port       = 8000
 	publicDir  = "public"
+	dev        = false
 )
 
 func init() {
@@ -49,12 +50,13 @@ func init() {
 		publicDir = v
 	}
 	flag.StringVar(&publicDir, "public", publicDir, "public directory")
+	flag.BoolVar(&dev, "dev", false, "development mode")
 }
 
 func main() {
 	flag.Parse()
 
-	r := backend.NewRouter()
+	r := backend.NewRouter(dev)
 
 	backend.HandleHome(r)
 

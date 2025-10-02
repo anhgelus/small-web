@@ -25,13 +25,11 @@ func (d *data) handleGeneric(w http.ResponseWriter, name string) {
 		},
 	}).ParseFS(templates, fmt.Sprintf("templates/%s.html", name), "templates/base.html")
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 	err = t.ExecuteTemplate(w, "base.html", d)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		panic(err)
 	}
 }
 

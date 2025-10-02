@@ -3,22 +3,52 @@ package backend
 import (
 	"embed"
 	"io/fs"
+	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httplog/v3"
 )
+
+const Version = "0.1.0"
 
 //go:embed templates
 var templates embed.FS
 
-func NewRouter() *chi.Mux {
+func NewRouter(debug bool) *chi.Mux {
+	logFormat := httplog.SchemaECS.Concise(!debug)
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		ReplaceAttr: logFormat.ReplaceAttr,
+	})).With(
+		slog.String("app", "anhgelus/small-web"),
+		slog.String("version", Version),
+	)
+
+	logLevel := slog.LevelWarn
+	if debug {
+		logLevel = slog.LevelDebug
+	}
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.Timeout(30 * time.Second))
-	r.Use(middleware.Logger)
+	r.Use(httplog.RequestLogger(logger, &httplog.Options{
+		Level: logLevel,
+		// Set log output to Elastic Common Schema (ECS) format.
+		Schema:        logFormat,
+		RecoverPanics: true,
+		Skip: func(req *http.Request, respStatus int) bool {
+			return respStatus == http.StatusNotFound || respStatus == http.StatusMethodNotAllowed
+		},
+		// Optionally, log selected request/response headers explicitly.
+		LogRequestHeaders:  []string{"Origin"},
+		LogResponseHeaders: []string{},
+	}))
 
 	return r
 }
