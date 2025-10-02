@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"git.anhgelus.world/anhgelus/small-world/markdown"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -93,7 +95,7 @@ func handleLogList(w http.ResponseWriter, r *http.Request) {
 
 func handleLog(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
-	_, ok := logs[slug]
+	path, ok := logs[slug]
 	if !ok {
 		http.NotFoundHandler().ServeHTTP(w, r)
 		return
@@ -103,5 +105,17 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 	d.Article = true
 	d.LogTitle = slug
 	d.title = slug
+	b, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	d.Content, err = markdown.ParseBytes(b)
+	var errMd *markdown.ParseError
+	errors.As(err, &errMd)
+	if errMd != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		slog.Error("parsing markdown")
+		fmt.Println(errMd.Pretty())
+	}
 	d.handleGeneric(w, r, "log", d)
 }
