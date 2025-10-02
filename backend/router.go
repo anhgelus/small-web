@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"context"
 	"embed"
 	"io/fs"
 	"log/slog"
@@ -19,7 +20,7 @@ const Version = "0.1.0"
 //go:embed templates
 var templates embed.FS
 
-func NewRouter(debug bool) *chi.Mux {
+func NewRouter(debug bool, cfg *Config) *chi.Mux {
 	logFormat := httplog.SchemaECS.Concise(!debug)
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
@@ -49,6 +50,12 @@ func NewRouter(debug bool) *chi.Mux {
 		LogRequestHeaders:  []string{"Origin"},
 		LogResponseHeaders: []string{},
 	}))
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), "config", cfg)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	})
 
 	return r
 }

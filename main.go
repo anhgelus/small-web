@@ -56,7 +56,13 @@ func init() {
 func main() {
 	flag.Parse()
 
-	r := backend.NewRouter(dev)
+	cfg, ok := backend.LoadConfig(configFile)
+	if !ok {
+		slog.Info("exiting")
+		os.Exit(1)
+	}
+
+	r := backend.NewRouter(dev, cfg)
 
 	backend.HandleHome(r)
 
@@ -72,7 +78,7 @@ func main() {
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
-	ok := true
+	ok = true
 	for ok {
 		select {
 		case err := <-errChan:

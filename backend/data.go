@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 )
 
 type data struct {
@@ -15,7 +16,14 @@ type data struct {
 	Description string
 }
 
-func (d *data) handleGeneric(w http.ResponseWriter, name string) {
+func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string) {
+	if d.Domain == "" {
+		cfg := r.Context().Value("config").(*Config)
+		d.Domain = cfg.Domain
+	}
+	if d.URL == "" {
+		d.URL = strings.TrimPrefix(r.URL.Path, "/")
+	}
 	t, err := template.New("").Funcs(template.FuncMap{
 		"static": func(path string) string {
 			return fmt.Sprintf("/static/%s", path)

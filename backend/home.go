@@ -7,7 +7,7 @@ import (
 )
 
 func HandleHome(r *chi.Mux) {
-	r.Get("/", func(w http.ResponseWriter, _ *http.Request) {
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		d := &data{
 			title:       "",
 			Article:     false,
@@ -16,6 +16,6 @@ func HandleHome(r *chi.Mux) {
 			Image:       "",
 			Description: "",
 		}
-		d.handleGeneric(w, "home")
+		d.handleGeneric(w, r, "home")
 	})
 }

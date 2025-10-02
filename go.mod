@@ -7,4 +7,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 )
 
-require github.com/go-chi/httplog/v3 v3.2.2 // indirect
+require (
+	github.com/go-chi/httplog/v3 v3.2.2 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+)
