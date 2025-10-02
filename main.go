@@ -56,6 +56,8 @@ func main() {
 
 	r := backend.NewRouter()
 
+	backend.HandleHome(r)
+
 	backend.HandleStaticFiles(r, "/assets", backend.UsableEmbedFS("dist", embeds))
 	backend.HandleStaticFiles(r, "/static", os.DirFS(publicDir))
 

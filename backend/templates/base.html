@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .Title }}</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+<header>
+    <img src="https://cdn.anhgelus.world/pfp.jpg" alt="pfp">
+    <nav>
+        <a href="">Home</a>
+        <a href="">Logs</a>
+        <a href="">Work</a>
+        <a href="">Philosophy</a>
+        <a href="">Lien 1</a>
+        <a href="">Lien 2</a>
+        <a href="">Lien 3</a>
+        <a href="">Lien 4</a>
+    </nav>
+</header>
+{{ if .Article }}
+<main>
+    {{ template "body" . }}
+</main>
+{{ else }}
+<article>
+    {{ template "body" . }}
+</article>
+{{ end }}
+<footer>
+    <p>&copy; 2025 - Anhgelus Morthuuzh</p>
+    <p>«&thinsp;Une citation&thinsp;»</p>
+    <p><a href="">Mentions légales</a></p>
+</footer>
+</body>
+</html>
