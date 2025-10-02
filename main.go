@@ -62,6 +62,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if ok = backend.LoadLogs(cfg); !ok {
+		slog.Info("exiting")
+		os.Exit(2)
+	}
+
 	r := backend.NewRouter(dev, cfg)
 
 	backend.HandleHome(r)

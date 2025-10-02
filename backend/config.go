@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"errors"
 	"log/slog"
 	"os"
 
@@ -24,6 +23,7 @@ type Config struct {
 	Description string `toml:"description"`
 	Links       []Link `toml:"links"`
 	Logo        Logo   `toml:"logo"`
+	LogFolder   string `toml:"log_folder"`
 }
 
 func (c *Config) DefaultValues() {
@@ -44,13 +44,14 @@ func (c *Config) DefaultValues() {
 		Header:  "logo.jpg",
 		Favicon: "favicon.jpg",
 	}
+	c.LogFolder = "data/logs"
 }
 
 func LoadConfig(path string) (*Config, bool) {
 	b, err := os.ReadFile(path)
 	var config Config
 	if err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
+		if !os.IsNotExist(err) {
 			slog.Error("reading config file", "error", err)
 			return nil, false
 		}
