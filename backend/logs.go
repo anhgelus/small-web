@@ -15,7 +15,10 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
-var logs = map[string]string{}
+var (
+	logs       = map[string]string{}
+	loadedLogs = map[string]*logData{}
+)
 
 type logData struct {
 	*data
@@ -101,11 +104,24 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 		http.NotFoundHandler().ServeHTTP(w, r)
 		return
 	}
-	var d logData
-	d.data = new(data)
-	d.Article = true
-	d.LogTitle = slug
-	d.title = slug
+	var d *logData
+	d, ok = loadedLogs[slug]
+	if !ok {
+		d = new(logData)
+		d.data = new(data)
+		d.Article = true
+		d.LogTitle = slug
+		d.title = slug
+		if ok = parseLog(d, path); !ok {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		loadedLogs[slug] = d
+	}
+	d.handleGeneric(w, r, "log", d)
+}
+
+func parseLog(d *logData, path string) bool {
 	b, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
@@ -127,9 +143,9 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 	var errMd *markdown.ParseError
 	errors.As(err, &errMd)
 	if errMd != nil {
-		w.WriteHeader(http.StatusInternalServerError)
 		slog.Error("parsing markdown")
 		fmt.Println(errMd.Pretty())
+		return false
 	}
-	d.handleGeneric(w, r, "log", &d)
+	return true
 }
