@@ -73,8 +73,10 @@ func lex(s string) *lexers {
 		currentType = t
 		previous += string(c)
 	}
+	newLine := true
 	literalNext := false
-	for _, c := range []rune(s) {
+	runes := []rune(s)
+	for i, c := range runes {
 		if literalNext {
 			fn(c, lexerLiteral)
 			literalNext = false
@@ -86,27 +88,39 @@ func lex(s string) *lexers {
 		}
 		switch c {
 		case '*', '_':
-			if (currentType != lexerModifier && len(previous) > 0) ||
-				(len(previous) > 0 && []rune(previous)[0] != c) ||
-				len(previous) >= 3 {
-				lexs = append(lexs, lexer{Type: currentType, Value: previous})
-				previous = ""
+			if c == '*' && newLine && i < len(runes)-1 && runes[i+1] == ' ' {
+				fn(c, lexerList)
+			} else {
+				if (currentType != lexerModifier && len(previous) > 0) ||
+					(len(previous) > 0 && []rune(previous)[0] != c) ||
+					len(previous) >= 3 {
+					lexs = append(lexs, lexer{Type: currentType, Value: previous})
+					previous = ""
+				}
+				currentType = lexerModifier
+				previous += string(c)
 			}
-			currentType = lexerModifier
-			previous += string(c)
+			newLine = false
 		case '`':
+			newLine = false
 			fn(c, lexerCode)
 		case '\n':
+			newLine = true
 			fn(c, lexerBreak)
 		case '#':
+			newLine = false
 			fn(c, lexerHeader)
 		case '>':
+			newLine = false
 			fn(c, lexerQuote)
 		case '[', ']', '(', ')', '!':
+			newLine = false
 			fn(c, lexerExternal)
 		case '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
+			newLine = false
 			fn(c, lexerList)
 		default:
+			newLine = false
 			fn(c, lexerLiteral)
 		}
 	}

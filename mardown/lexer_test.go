@@ -23,4 +23,8 @@ func TestLex(t *testing.T) {
 	if lxs.String() != `Lexers[literal(Xxx_DarkEmperor_xxX) ]` {
 		t.Errorf("invalid lex, got %s", lxs)
 	}
+	lxs = lex(`* list`)
+	if lxs.String() != `Lexers[list(*) literal( list) ]` {
+		t.Errorf("invalid lex, got %s", lxs)
+	}
 }

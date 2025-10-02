@@ -34,8 +34,7 @@ func (a *astList) Eval() (template.HTML, error) {
 
 func list(lxs *lexers) (block, error) {
 	tree := new(astList)
-	current := lxs.Current().Value
-	tree.tag = detectListType(current)
+	tree.tag = detectListType(lxs.Current().Value)
 	if len(tree.tag) == 0 {
 		return paragraph(lxs, false)
 	}
@@ -64,7 +63,8 @@ func list(lxs *lexers) (block, error) {
 }
 
 func detectListType(val string) listType {
-	if []rune(val)[0] == '-' {
+	first := []rune(val)[0]
+	if first == '-' || first == '*' {
 		if len(val) > 1 {
 			return ""
 		}
