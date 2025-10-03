@@ -1,16 +1,24 @@
 package backend
 
 import (
+	"fmt"
+	"html/template"
 	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
+	"git.anhgelus.world/anhgelus/small-world/markdown"
 	"github.com/go-chi/chi/v5"
 )
 
 const maxLogsPerPage = 5
 
-var sortedLogs []*logData
+var (
+	sortedLogs  []*logData
+	rootContent = map[string]template.HTML{}
+)
 
 type homeData struct {
 	*data
@@ -31,6 +39,54 @@ func HandleHome(r *chi.Mux) {
 		}
 		d.handleGeneric(w, r, "home", d)
 	})
+}
+
+type rootData struct {
+	*data
+	Content template.HTML
+}
+
+func (l *rootData) SetData(d *data) {
+	l.data = d
+}
+
+func HandleRoot(r *chi.Mux, cfg *Config) {
+	err := os.Mkdir(cfg.RootFolder, 0660)
+	if err != nil && !os.IsExist(err) {
+		panic(err)
+	}
+	r.Get("/{name:[a-zA-Z-]+}", func(w http.ResponseWriter, r *http.Request) {
+		handleGenericRoot(w, r, chi.URLParam(r, "name"))
+	})
+}
+
+func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
+	d := new(rootData)
+	d.data = new(data)
+	if c, ok := rootContent[name]; ok {
+		d.Content = c
+	} else {
+		cfg := r.Context().Value("config").(*Config)
+		path := filepath.Join(cfg.RootFolder, name+".md")
+		b, err := os.ReadFile(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				http.NotFoundHandler().ServeHTTP(w, r)
+				return
+			}
+			panic(err)
+		}
+		var errMd *markdown.ParseError
+		d.Content, errMd = markdown.ParseBytes(b)
+		if errMd != nil {
+			slog.Error("parsing markdown", "path", path)
+			fmt.Println(errMd.Pretty())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		rootContent[name] = d.Content
+	}
+	d.handleGeneric(w, r, "simple", d)
 }
 
 func handleGenericLogsDisplay(w http.ResponseWriter, r *http.Request) *homeData {

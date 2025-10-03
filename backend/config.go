@@ -24,6 +24,7 @@ type Config struct {
 	Links       []Link   `toml:"links"`
 	Logo        Logo     `toml:"logo"`
 	LogFolder   string   `toml:"log_folder"`
+	RootFolder  string   `toml:"root_folder"`
 	Quotes      []string `toml:"quotes"`
 }
 
@@ -46,6 +47,8 @@ func (c *Config) DefaultValues() {
 		Favicon: "favicon.jpg",
 	}
 	c.LogFolder = "data/logs"
+	c.RootFolder = "data"
+	c.Quotes = []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do."}
 }
 
 func LoadConfig(path string) (*Config, bool) {

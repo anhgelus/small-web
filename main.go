@@ -72,6 +72,7 @@ func main() {
 	r := backend.NewRouter(dev, cfg)
 
 	backend.HandleHome(r)
+	backend.HandleRoot(r, cfg)
 	backend.HandleLogs(r)
 
 	backend.HandleStaticFiles(r, "/assets", backend.UsableEmbedFS("dist", embeds))
