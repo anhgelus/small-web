@@ -85,7 +85,6 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 				return nil, err
 			}
 			tree.content = append(tree.content, b)
-			return tree, nil
 		}
 	}
 	if !lxs.Finished() {
