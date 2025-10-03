@@ -18,12 +18,13 @@ type Logo struct {
 }
 
 type Config struct {
-	Domain      string `toml:"domain"`
-	Name        string `toml:"name"`
-	Description string `toml:"description"`
-	Links       []Link `toml:"links"`
-	Logo        Logo   `toml:"logo"`
-	LogFolder   string `toml:"log_folder"`
+	Domain      string   `toml:"domain"`
+	Name        string   `toml:"name"`
+	Description string   `toml:"description"`
+	Links       []Link   `toml:"links"`
+	Logo        Logo     `toml:"logo"`
+	LogFolder   string   `toml:"log_folder"`
+	Quotes      []string `toml:"quotes"`
 }
 
 func (c *Config) DefaultValues() {

@@ -3,6 +3,7 @@ package backend
 import (
 	"fmt"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"regexp"
 	"strings"
@@ -26,6 +27,7 @@ type data struct {
 	Name        string
 	Links       []Link
 	Logo        *Logo
+	Quote       string
 }
 
 func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string, custom dataUsable) {
@@ -44,6 +46,13 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 	}
 	if d.Logo == nil {
 		d.Logo = &cfg.Logo
+	}
+	if d.Quote == "" {
+		if cfg.Quotes == nil {
+			d.Quote = "Une citation"
+		} else {
+			d.Quote = cfg.Quotes[rand.Intn(len(cfg.Quotes))]
+		}
 	}
 	if d.URL == "" {
 		if !strings.HasPrefix(r.URL.Path, "/") {
