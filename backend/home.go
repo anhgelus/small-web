@@ -13,8 +13,6 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const maxLogsPerPage = 5
-
 var (
 	sortedLogs  []*logData
 	rootContent = map[string]template.HTML{}
@@ -33,7 +31,7 @@ func (h *homeData) SetData(d *data) {
 
 func HandleHome(r *chi.Mux) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		d := handleGenericLogsDisplay(w, r)
+		d := handleGenericLogsDisplay(w, r, 3)
 		if d == nil {
 			return
 		}
@@ -100,7 +98,7 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 	d.handleGeneric(w, r, "simple", d)
 }
 
-func handleGenericLogsDisplay(w http.ResponseWriter, r *http.Request) *homeData {
+func handleGenericLogsDisplay(w http.ResponseWriter, r *http.Request, maxLogsPerPage int) *homeData {
 	rawPage := r.URL.Query().Get("page")
 	page := 1
 	if rawPage != "" {

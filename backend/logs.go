@@ -120,7 +120,7 @@ func HandleLogs(r *chi.Mux) {
 }
 
 func handleLogList(w http.ResponseWriter, r *http.Request) {
-	d := handleGenericLogsDisplay(w, r)
+	d := handleGenericLogsDisplay(w, r, 5)
 	if d == nil {
 		return
 	}
