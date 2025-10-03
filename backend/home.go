@@ -118,7 +118,7 @@ func handleGenericLogsDisplay(w http.ResponseWriter, r *http.Request) *homeData 
 		sortLogs()
 	}
 	d.CurrentPage = page
-	d.PagesNumber = len(sortedLogs)/maxLogsPerPage + 1
+	d.PagesNumber = max(1, (len(sortedLogs)-1)/maxLogsPerPage+1)
 	if d.PagesNumber < page {
 		notFound(w, r)
 		return nil

@@ -19,6 +19,12 @@ type tree struct {
 }
 
 func (t *tree) Eval(opt *Option) (template.HTML, *ParseError) {
+	if opt == nil {
+		opt = new(Option)
+	}
+	if opt.ImageSource == nil {
+		opt.ImageSource = func(s string) string { return s }
+	}
 	var content template.HTML
 	for _, c := range t.blocks {
 		ct, err := c.Eval(opt)

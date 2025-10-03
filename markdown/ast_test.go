@@ -17,6 +17,7 @@ en *italique* et les **_deux en même temps_** !
 > sur plusieurs lignes
 avec une source
 > qui recommence après !
+qui a elle aussi une source :D
 
 - Ceci est une liste
 - pas ordonnée
@@ -34,7 +35,7 @@ var parsed = `
 <p>Avec une description classique, sur plusieurs lignes !</p>
 <p>Et je peux mettre du texte en <b>gras</b>, en <em>italique</em> et les <b><em>deux en même temps</em></b> !</p>
 <div class="quote"><blockquote>Je suis une magnifique citation sur plusieurs lignes</blockquote><p>avec une source</p></div>
-<div class="quote"><blockquote>qui recommence après !</blockquote></div>
+<div class="quote"><blockquote>qui recommence après !</blockquote><p>qui a elle aussi une source :D</p></div>
 <ul><li>Ceci est une liste</li><li>pas ordonnée</li></ul>
 <ol><li>et maintenant</li><li>elle l&#39;est</li></ol>
 <ul><li>hehe</li></ul>

@@ -44,7 +44,7 @@ func quote(lxs *lexers) (*astQuote, *ParseError) {
 	for lxs.Next() && n < 2 {
 		switch lxs.Current().Type {
 		case lexerBreak:
-			n += len(lxs.Current().Value)
+			n = len(lxs.Current().Value)
 			quoteContinue = false
 		case lexerQuote:
 			n = 0
@@ -63,6 +63,7 @@ func quote(lxs *lexers) (*astQuote, *ParseError) {
 			if err != nil {
 				return nil, err
 			}
+			lxs.Before() // because we must parse the line break
 
 			if !source {
 				tree.quote = append(tree.quote, p)
@@ -77,5 +78,6 @@ func quote(lxs *lexers) (*astQuote, *ParseError) {
 			return tree, nil
 		}
 	}
+	lxs.Before() // because the code did not use it
 	return tree, nil
 }
