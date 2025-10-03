@@ -74,6 +74,7 @@ func main() {
 	backend.HandleHome(r)
 	backend.HandleRoot(r, cfg)
 	backend.HandleLogs(r)
+	backend.Handle404(r)
 
 	if dev {
 		backend.HandleStaticFiles(r, "/assets", os.DirFS("dist"))

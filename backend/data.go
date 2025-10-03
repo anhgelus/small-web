@@ -30,6 +30,10 @@ type data struct {
 	Quote       string
 }
 
+func (d *data) SetData(data *data) {
+	*d = *data
+}
+
 func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string, custom dataUsable) {
 	cfg := r.Context().Value(configKey).(*Config)
 	if d.Domain == "" {

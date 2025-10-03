@@ -18,9 +18,15 @@ function setupAnchors() {
 // updating history and window title
 document.addEventListener("htmx:afterSettle", e => {
     const title = e.detail.xhr.getResponseHeader("Updated-Title")
-    if (title?.length != 0) document.title = title
+    if (title?.length !== 0) document.title = title
     window.history.pushState({}, "", e.detail.pathInfo.finalRequestPath)
     setupAnchors()
+})
+
+document.body.addEventListener('htmx:beforeSwap', function(e) {
+    if(e.detail.xhr.status !== 404) return
+    e.detail.shouldSwap = true;
+    e.detail.isError = false;
 })
 
 setupAnchors()

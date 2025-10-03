@@ -41,6 +41,17 @@ func HandleHome(r *chi.Mux) {
 	})
 }
 
+func Handle404(r *chi.Mux) {
+	r.NotFound(notFound)
+}
+
+func notFound(w http.ResponseWriter, r *http.Request) {
+	d := new(data)
+	d.title = "404"
+	w.WriteHeader(http.StatusNotFound)
+	d.handleGeneric(w, r, "404", d)
+}
+
 type rootData struct {
 	*data
 	Content template.HTML
@@ -71,7 +82,7 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 		b, err := os.ReadFile(path)
 		if err != nil {
 			if os.IsNotExist(err) {
-				http.NotFoundHandler().ServeHTTP(w, r)
+				notFound(w, r)
 				return
 			}
 			panic(err)
@@ -109,7 +120,7 @@ func handleGenericLogsDisplay(w http.ResponseWriter, r *http.Request) *homeData 
 	d.CurrentPage = page
 	d.PagesNumber = len(sortedLogs)/maxLogsPerPage + 1
 	if d.PagesNumber < page {
-		http.NotFoundHandler().ServeHTTP(w, r)
+		notFound(w, r)
 		return nil
 	}
 	d.Logs = sortedLogs[(page-1)*maxLogsPerPage : min(page*maxLogsPerPage, len(sortedLogs))]

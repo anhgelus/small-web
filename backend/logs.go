@@ -137,7 +137,7 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 		d = new(logData)
 		d.data = new(data)
 		if ok = parseLog(d, path, slug); !ok {
-			http.NotFoundHandler().ServeHTTP(w, r)
+			notFound(w, r)
 			return
 		}
 	}
