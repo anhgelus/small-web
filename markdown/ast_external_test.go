@@ -8,7 +8,7 @@ func TestExternal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := tree.Eval()
+	got, err := tree.Eval(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,7 +21,7 @@ func TestExternal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err = tree.Eval()
+	got, err = tree.Eval(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,7 +40,7 @@ Hors de la source
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err = tree.Eval()
+	got, err = tree.Eval(nil)
 	if err != nil {
 		t.Fatal(err)
 	}

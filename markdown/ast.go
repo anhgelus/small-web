@@ -11,17 +11,17 @@ import (
 var ErrUnkownLexType = errors.New("unkown lex type")
 
 type block interface {
-	Eval() (template.HTML, *ParseError)
+	Eval(*Option) (template.HTML, *ParseError)
 }
 
 type tree struct {
 	blocks []block
 }
 
-func (t *tree) Eval() (template.HTML, *ParseError) {
+func (t *tree) Eval(opt *Option) (template.HTML, *ParseError) {
 	var content template.HTML
 	for _, c := range t.blocks {
-		ct, err := c.Eval()
+		ct, err := c.Eval(opt)
 		if err != nil {
 			return "", err
 		}

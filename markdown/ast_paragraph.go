@@ -15,10 +15,10 @@ type astParagraph struct {
 	oneLine bool
 }
 
-func (a *astParagraph) Eval() (template.HTML, *ParseError) {
+func (a *astParagraph) Eval(opt *Option) (template.HTML, *ParseError) {
 	var content template.HTML
 	for _, c := range a.content {
-		ct, err := c.Eval()
+		ct, err := c.Eval(opt)
 		if err != nil {
 			return "", err
 		}
@@ -95,6 +95,6 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 
 type astLiteral string
 
-func (a astLiteral) Eval() (template.HTML, *ParseError) {
+func (a astLiteral) Eval(_ *Option) (template.HTML, *ParseError) {
 	return template.HTML(template.HTMLEscapeString(string(a))), nil
 }

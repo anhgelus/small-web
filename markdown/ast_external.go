@@ -10,12 +10,12 @@ type astLink struct {
 	href    block
 }
 
-func (a *astLink) Eval() (template.HTML, *ParseError) {
-	content, err := a.content.Eval()
+func (a *astLink) Eval(opt *Option) (template.HTML, *ParseError) {
+	content, err := a.content.Eval(opt)
 	if err != nil {
 		return "", err
 	}
-	href, err := a.href.Eval()
+	href, err := a.href.Eval(opt)
 	if err != nil {
 		return "", err
 	}
@@ -28,21 +28,22 @@ type astImage struct {
 	source []*astParagraph
 }
 
-func (a *astImage) Eval() (template.HTML, *ParseError) {
-	alt, err := a.alt.Eval()
+func (a *astImage) Eval(opt *Option) (template.HTML, *ParseError) {
+	alt, err := a.alt.Eval(opt)
 	if err != nil {
 		return "", err
 	}
-	src, err := a.src.Eval()
+	src, err := a.src.Eval(opt)
 	if err != nil {
 		return "", err
 	}
+	src = template.HTML(opt.ImageSource(string(src)))
 	if a.source == nil {
 		return template.HTML(fmt.Sprintf(`<figure><img alt="%s" src="%s"></figure>`, alt, src)), nil
 	}
 	var s template.HTML
 	for _, c := range a.source {
-		ct, err := c.Eval()
+		ct, err := c.Eval(opt)
 		if err != nil {
 			return "", err
 		}

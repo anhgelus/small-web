@@ -11,7 +11,7 @@ func TestModifier(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c, err := tree.Eval()
+	c, err := tree.Eval(nil)
 	if err != nil {
 		t.Fatal(err)
 	}

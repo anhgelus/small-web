@@ -50,7 +50,7 @@ func TestAst(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := tree.Eval()
+	res, err := tree.Eval(nil)
 	if err != nil {
 		t.Fatal(err)
 	}

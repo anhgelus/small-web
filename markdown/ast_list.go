@@ -20,10 +20,10 @@ type astList struct {
 	content []*astParagraph
 }
 
-func (a *astList) Eval() (template.HTML, *ParseError) {
+func (a *astList) Eval(opt *Option) (template.HTML, *ParseError) {
 	var content template.HTML
 	for _, c := range a.content {
-		ct, err := c.Eval()
+		ct, err := c.Eval(opt)
 		if err != nil {
 			return "", err
 		}

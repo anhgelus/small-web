@@ -13,12 +13,12 @@ type astHeader struct {
 	content *astParagraph
 }
 
-func (a *astHeader) Eval() (template.HTML, *ParseError) {
+func (a *astHeader) Eval(opt *Option) (template.HTML, *ParseError) {
 	if a.level > 6 {
 		return "", &ParseError{lxs: lexers{}, internal: ErrInvalidCodeFormat}
 	}
 	var content template.HTML
-	content, err := a.content.Eval()
+	content, err := a.content.Eval(opt)
 	if err != nil {
 		return "", err
 	}

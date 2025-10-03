@@ -88,7 +88,7 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 			panic(err)
 		}
 		var errMd *markdown.ParseError
-		d.Content, errMd = markdown.ParseBytes(b)
+		d.Content, errMd = markdown.ParseBytes(b, &markdown.Option{ImageSource: getStatic})
 		if errMd != nil {
 			slog.Error("parsing markdown", "path", path)
 			fmt.Println(errMd.Pretty())

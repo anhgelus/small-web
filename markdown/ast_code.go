@@ -25,7 +25,7 @@ type astCode struct {
 	codeType codeType
 }
 
-func (a *astCode) Eval() (template.HTML, *ParseError) {
+func (a *astCode) Eval(_ *Option) (template.HTML, *ParseError) {
 	switch a.codeType {
 	case codeOneLine:
 		return template.HTML(fmt.Sprintf("<code>%s</code>", template.HTMLEscapeString(a.content))), nil

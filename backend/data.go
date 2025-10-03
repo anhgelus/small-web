@@ -68,12 +68,7 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 		d.URL = r.URL.Path
 	}
 	t, err := template.New("").Funcs(template.FuncMap{
-		"static": func(path string) string {
-			if regexIsHttp.MatchString(path) {
-				return path
-			}
-			return fmt.Sprintf("/static/%s", path)
-		},
+		"static": getStatic,
 		"fullStatic": func(path string) string {
 			if regexIsHttp.MatchString(path) {
 				return path
@@ -122,4 +117,11 @@ func (d *data) Title() string {
 
 func (d *data) PubDate() string {
 	return ""
+}
+
+func getStatic(path string) string {
+	if regexIsHttp.MatchString(path) {
+		return path
+	}
+	return fmt.Sprintf("/static/%s", path)
 }

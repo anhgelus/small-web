@@ -26,10 +26,10 @@ type astModifier struct {
 	super   bool
 }
 
-func (a *astModifier) Eval() (template.HTML, *ParseError) {
+func (a *astModifier) Eval(opt *Option) (template.HTML, *ParseError) {
 	var content template.HTML
 	for _, c := range a.content {
-		ct, err := c.Eval()
+		ct, err := c.Eval(opt)
 		if err != nil {
 			return "", &ParseError{lxs: lexers{}, internal: err}
 		}

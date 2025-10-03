@@ -11,10 +11,10 @@ type astQuote struct {
 	source []*astParagraph
 }
 
-func (a *astQuote) Eval() (template.HTML, *ParseError) {
+func (a *astQuote) Eval(opt *Option) (template.HTML, *ParseError) {
 	var quote template.HTML
 	for _, c := range a.quote {
-		ct, err := c.Eval()
+		ct, err := c.Eval(opt)
 		if err != nil {
 			return "", err
 		}
@@ -23,7 +23,7 @@ func (a *astQuote) Eval() (template.HTML, *ParseError) {
 	quote = template.HTML(fmt.Sprintf("<blockquote>%s</blockquote>", trimSpace(quote)))
 	var source template.HTML
 	for _, c := range a.source {
-		ct, err := c.Eval()
+		ct, err := c.Eval(opt)
 		if err != nil {
 			return "", err
 		}

@@ -169,7 +169,7 @@ func parseLog(d *logData, path, slug string) bool {
 	} else {
 		dd = string(b)
 	}
-	d.Content, err = markdown.Parse(dd)
+	d.Content, err = markdown.Parse(dd, &markdown.Option{ImageSource: getStatic})
 	var errMd *markdown.ParseError
 	errors.As(err, &errMd)
 	if errMd != nil {

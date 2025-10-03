@@ -32,7 +32,7 @@ func TestList(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	got, err := tree.Eval()
+	got, err := tree.Eval(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
