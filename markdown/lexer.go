@@ -25,7 +25,7 @@ type lexer struct {
 	Value string
 }
 
-func (l *lexer) String() string {
+func (l lexer) String() string {
 	return fmt.Sprintf("%s(%s)", l.Type, l.Value)
 }
 

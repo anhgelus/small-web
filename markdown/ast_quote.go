@@ -54,7 +54,7 @@ func quote(lxs *lexers) (*astQuote, *ParseError) {
 				return tree, nil
 			}
 			quoteContinue = true
-		case lexerLiteral, lexerModifier, lexerCode:
+		case lexerLiteral, lexerModifier, lexerCode, lexerExternal:
 			n = 0
 			if !quoteContinue {
 				source = true

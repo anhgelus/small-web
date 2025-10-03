@@ -119,7 +119,7 @@ func parseExternal(lxs *lexers, withSource bool) (string, string, []*astParagrap
 				return "", "", nil, false
 			}
 			n += len(lxs.Current().Value)
-			if first != "" && end != "" {
+			if n < 2 && first != "" && end != "" {
 				if !lxs.Next() {
 					return first, end, ps, true
 				}
@@ -127,8 +127,8 @@ func parseExternal(lxs *lexers, withSource bool) (string, string, []*astParagrap
 				if !ok {
 					return "", "", nil, false
 				}
-				lxs.Before() // because we must parse lexerBreak
 			}
+			lxs.Before() // because we must parse lexerBreak and the next call must parse the next value
 		case lexerExternal:
 			if first != "" && end != "" {
 				return "", "", nil, false
