@@ -4,7 +4,7 @@
     <article>
         <h2><a href="/log/{{ .Slug }}">{{ .LogTitle }}</a></h2>
         <figure>
-            <a href="/log/{{ .Slug }}"><img src="{{ .Img.Src }}" alt="{{ .Img.Alt }}"></a>
+            <a href="/log/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}"></a>
             <figcaption>{{ .Img.Legend }}</figcaption>
         </figure>
         <p>

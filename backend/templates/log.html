@@ -5,7 +5,7 @@
         {{ .Description }}
     </p>
     <figure>
-        <img src="{{ .Img.Src }}" alt="{{ .Img.Alt }}" class="large">
+        <img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" class="large">
         <figcaption>{{ .Img.Legend }}</figcaption>
     </figure>
     {{ .Content }}

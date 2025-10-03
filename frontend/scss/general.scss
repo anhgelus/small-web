@@ -8,7 +8,7 @@ body {
 }
 
 body * {
-  line-height: 1.4em;
+  line-height: var(--line-height);
 }
 
 main, article {
@@ -18,8 +18,13 @@ main, article {
 
 h1, h2, h3 {
   font-weight: 500;
+  line-height: var(--line-height-smaller);
 
   margin-bottom: 0.5rem;
+
+  & > a {
+    line-height: var(--line-height-smaller);
+  }
 }
 
 h1 {
@@ -50,6 +55,10 @@ a {
   &:hover {
     background: var(--color-light-rose);
   }
+}
+
+nav > a {
+  line-height: var(--line-height-smaller);
 }
 
 em, cite {
