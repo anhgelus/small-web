@@ -23,7 +23,7 @@ article article {
     align-content: center;
     gap: var(--margin-base);
 
-    @media only screen and (max-width: 350px) {
+    @media only screen and (max-width: 400px) {
       display: flex;
       flex-direction: column-reverse;
     }

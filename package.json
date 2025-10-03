@@ -16,6 +16,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "htmx.org": "2.0.7",
     "reset-css": "^5.0.2",
     "sass": "^1.93.2",
     "scss": "^0.2.4"
