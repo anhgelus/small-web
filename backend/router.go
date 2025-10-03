@@ -15,7 +15,11 @@ import (
 	"github.com/go-chi/httplog/v3"
 )
 
-const Version = "0.1.0"
+const (
+	Version     = "0.1.0"
+	configKey   = "config"
+	isUpdateKey = "is_update"
+)
 
 //go:embed templates
 var templates embed.FS
@@ -62,7 +66,17 @@ func NewRouter(debug bool, cfg *Config) *chi.Mux {
 	}))
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), "config", cfg)
+			ctx := context.WithValue(r.Context(), configKey, cfg)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	})
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			val := false
+			if r.Header.Get("HX-Request") == "true" {
+				val = true
+			}
+			ctx := context.WithValue(r.Context(), isUpdateKey, val)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	})

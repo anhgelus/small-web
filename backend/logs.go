@@ -124,11 +124,12 @@ func handleLogList(w http.ResponseWriter, r *http.Request) {
 	if d == nil {
 		return
 	}
+	d.title = "logs"
 	d.handleGeneric(w, r, "home_log", d)
 }
 
 func handleLog(w http.ResponseWriter, r *http.Request) {
-	cfg := r.Context().Value("config").(*Config)
+	cfg := r.Context().Value(configKey).(*Config)
 	slug := chi.URLParam(r, "slug")
 	path := filepath.Join(cfg.LogFolder, slug)
 	d, ok := logs[path]

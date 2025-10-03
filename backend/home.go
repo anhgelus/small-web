@@ -66,7 +66,7 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 	if c, ok := rootContent[name]; ok {
 		d.Content = c
 	} else {
-		cfg := r.Context().Value("config").(*Config)
+		cfg := r.Context().Value(configKey).(*Config)
 		path := filepath.Join(cfg.RootFolder, name+".md")
 		b, err := os.ReadFile(path)
 		if err != nil {

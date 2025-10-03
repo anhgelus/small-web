@@ -31,7 +31,7 @@ type data struct {
 }
 
 func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string, custom dataUsable) {
-	cfg := r.Context().Value("config").(*Config)
+	cfg := r.Context().Value(configKey).(*Config)
 	if d.Domain == "" {
 		d.Domain = cfg.Domain
 	}
@@ -75,15 +75,20 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 		},
 		"next":   func(i int) int { return i + 1 },
 		"before": func(i int) int { return i - 1 },
-	}).ParseFS(templates, "templates/logs_display.html", fmt.Sprintf("templates/%s.html", name), "templates/base.html")
+	}).ParseFS(templates, "templates/components.html", fmt.Sprintf("templates/%s.html", name), "templates/base.html")
 	if err != nil {
 		panic(err)
 	}
+	exec := "base.html"
+	if r.Context().Value(isUpdateKey).(bool) {
+		exec = "body"
+		w.Header().Set("Updated-Title", d.Title())
+	}
 	if custom == nil {
-		err = t.ExecuteTemplate(w, "base.html", d)
+		err = t.ExecuteTemplate(w, exec, d)
 	} else {
 		custom.SetData(d)
-		err = t.ExecuteTemplate(w, "base.html", custom)
+		err = t.ExecuteTemplate(w, exec, custom)
 	}
 	if err != nil {
 		panic(err)

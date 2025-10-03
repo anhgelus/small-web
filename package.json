@@ -1,12 +1,12 @@
 {
   "name": "small-web",
-  "module": "index.ts",
+  "module": "frontend/index.ts",
   "type": "module",
   "private": true,
   "scripts": {
     "build:sass": "sass --no-source-map --style=compressed frontend/scss/main.scss dist/styles.css",
     "watch:sass": "sass --watch frontend/scss/main.scss dist/styles.css",
-    "build:js": "bun build ./index.ts --outdir ./dist --minify",
+    "build:js": "bun build frontend/index.ts --outdir ./dist --minify",
     "build": "bun run build:sass && bun run build:js"
   },
   "devDependencies": {

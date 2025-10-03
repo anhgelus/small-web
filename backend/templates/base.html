@@ -28,14 +28,14 @@
 <header>
     <img src="{{ static .Logo.Header }}" alt="Logo">
     <nav>
-        {{ range .Links }}<a href="{{ .URL }}">{{ .Name }}</a>{{end}}
+        {{ range .Links }}
+        <a href="{{ .URL }}">
+            {{ .Name }}
+        </a>
+        {{end}}
     </nav>
 </header>
-{{ if .Article }}
-<main>{{ template "body" . }}</main>
-{{ else }}
-<article>{{ template "body" . }}</article>
-{{ end }}
+{{ template "body" . }}
 <footer>
     <p>&copy; 2025 - Anhgelus Morthuuzh</p>
     <p>«&thinsp;{{ .Quote }}&thinsp;»</p>
