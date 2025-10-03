@@ -58,6 +58,9 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 			d.Quote = cfg.Quotes[rand.Intn(len(cfg.Quotes))]
 		}
 	}
+	if d.Image == "" {
+		d.Image = cfg.DefaultImage
+	}
 	if d.URL == "" {
 		if !strings.HasPrefix(r.URL.Path, "/") {
 			r.URL.Path = "/" + r.URL.Path
@@ -70,6 +73,12 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 				return path
 			}
 			return fmt.Sprintf("/static/%s", path)
+		},
+		"fullStatic": func(path string) string {
+			if regexIsHttp.MatchString(path) {
+				return path
+			}
+			return fmt.Sprintf("https://%s/static/%s", cfg.Domain, path)
 		},
 		"assets": func(path string) string {
 			if regexIsHttp.MatchString(path) {

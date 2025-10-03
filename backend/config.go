@@ -18,14 +18,18 @@ type Logo struct {
 }
 
 type Config struct {
-	Domain      string   `toml:"domain"`
-	Name        string   `toml:"name"`
-	Description string   `toml:"description"`
-	Links       []Link   `toml:"links"`
-	Logo        Logo     `toml:"logo"`
-	LogFolder   string   `toml:"log_folder"`
-	RootFolder  string   `toml:"root_folder"`
-	Quotes      []string `toml:"quotes"`
+	Domain       string   `toml:"domain"`
+	Name         string   `toml:"name"`
+	Description  string   `toml:"description"`
+	DefaultImage string   `toml:"default_image"`
+	Quotes       []string `toml:"quotes"`
+
+	LogFolder    string `toml:"log_folder"`
+	RootFolder   string `toml:"root_folder"`
+	PublicFolder string `toml:"public_folder"`
+
+	Links []Link `toml:"links"`
+	Logo  Logo   `toml:"logo"`
 }
 
 func (c *Config) DefaultValues() {
@@ -48,6 +52,7 @@ func (c *Config) DefaultValues() {
 	}
 	c.LogFolder = "data/logs"
 	c.RootFolder = "data"
+	c.PublicFolder = "public"
 	c.Quotes = []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do."}
 }
 

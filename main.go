@@ -23,7 +23,6 @@ var embeds embed.FS
 var (
 	configFile = "config.toml"
 	port       = 8000
-	publicDir  = "public"
 	dev        = false
 )
 
@@ -45,11 +44,6 @@ func init() {
 		}
 	}
 	flag.IntVar(&port, "port", port, "server port")
-
-	if v := os.Getenv("PUBLIC_DIR"); v != "" {
-		publicDir = v
-	}
-	flag.StringVar(&publicDir, "public", publicDir, "public directory")
 	flag.BoolVar(&dev, "dev", false, "development mode")
 }
 
@@ -81,7 +75,7 @@ func main() {
 	} else {
 		backend.HandleStaticFiles(r, "/assets", backend.UsableEmbedFS("dist", embeds))
 	}
-	backend.HandleStaticFiles(r, "/static", os.DirFS(publicDir))
+	backend.HandleStaticFiles(r, "/static", os.DirFS(cfg.PublicFolder))
 
 	slog.Info("starting http server")
 	server := &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: r}
