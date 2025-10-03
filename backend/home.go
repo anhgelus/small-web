@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -57,8 +56,8 @@ func HandleHome(r *chi.Mux) {
 
 func sortLogs() {
 	sortedLogs = slices.SortedFunc(maps.Values(logs), func(l *logData, l2 *logData) int {
-		lt := l.pubDate.AsTime(time.UTC)
-		l2t := l2.pubDate.AsTime(time.UTC)
+		lt := l.ModAt
+		l2t := l2.ModAt
 		// we want it reversed
 		if lt.Before(l2t) {
 			return 1
