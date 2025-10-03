@@ -10,7 +10,7 @@ function setupAnchors() {
         e.setAttribute("hx-get", e.href)
         e.setAttribute("hx-trigger", "click")
         e.setAttribute("hx-target", "#content")
-        e.setAttribute("hx-swap", "outerHTML show:top")
+        e.setAttribute("hx-swap", "outerHTML show:body:top")
         htmx.process(e)
     });
 }

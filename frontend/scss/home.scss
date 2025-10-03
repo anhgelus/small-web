@@ -14,8 +14,7 @@ article article {
   align-items: center;
   justify-content: center;
 
-
-  & > div {
+  & nav {
     display: inline-grid;
     grid-template-columns: 2fr 1fr 2fr;
     justify-content: center;

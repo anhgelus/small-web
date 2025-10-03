@@ -14,11 +14,11 @@
     {{ end }}
     {{ if ne .PagesNumber 1 }}
     <div class="pagination">
-        <div>
+        <nav>
             {{ if ne .CurrentPage 1 }}<a href="?page={{ before .CurrentPage }}">Précédent</a>{{else}}<p></p>{{end}}
             <p>{{ .CurrentPage }}/{{ .PagesNumber }}</p>
             {{ if ne .CurrentPage .PagesNumber }}<a href="?page={{ next .CurrentPage }}">Suivant</a>{{else}}<p></p>{{end}}
-        </div>
+        </nav>
     </div>
     {{ end }}
 </article>
