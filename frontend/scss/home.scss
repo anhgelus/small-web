@@ -11,12 +11,35 @@ article article {
 
 .pagination {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
   align-items: center;
-  gap: var(--margin-base);
+  justify-content: center;
 
-  & p {
-    margin-bottom: 0;
+
+  & > div {
+    display: inline-grid;
+    grid-template-columns: 2fr 1fr 2fr;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    gap: var(--margin-base);
+
+    @media only screen and (max-width: 350px) {
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    & > *:nth-child(1) {
+      text-align: right;
+    }
+    & > *:nth-child(2) {
+      text-align: center;
+    }
+    & > *:nth-child(3) {
+      text-align: left;
+    }
+
+    & p {
+      margin-bottom: 0;
+    }
   }
 }
