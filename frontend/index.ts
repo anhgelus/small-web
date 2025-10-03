@@ -19,6 +19,9 @@ function setupAnchors() {
 document.addEventListener("htmx:afterSettle", e => {
     const title = e.detail.xhr.getResponseHeader("Updated-Title")
     if (title?.length !== 0) document.title = title
+    const quote = e.detail.xhr.getResponseHeader("Updated-Quote")
+    if (quote?.length !== 0)
+        document.querySelector("#quote")!.innerHTML = "«&thinsp;" + quote + "&thinsp;»"
     window.history.pushState({}, "", e.detail.pathInfo.finalRequestPath)
     setupAnchors()
 })

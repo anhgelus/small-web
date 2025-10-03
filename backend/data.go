@@ -87,6 +87,7 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 	if r.Context().Value(isUpdateKey).(bool) {
 		exec = "body"
 		w.Header().Set("Updated-Title", d.Title())
+		w.Header().Set("Updated-Quote", d.Quote)
 	}
 	if custom == nil {
 		err = t.ExecuteTemplate(w, exec, d)
