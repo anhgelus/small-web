@@ -6,9 +6,11 @@ import (
 	"html/template"
 	"io/fs"
 	"log/slog"
+	"maps"
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -112,6 +114,7 @@ func readLogDir(path string, dir []os.DirEntry) error {
 		}
 	}
 	wg.Wait()
+	sortLogs()
 	return nil
 }
 
@@ -123,7 +126,11 @@ func HandleLogs(r *chi.Mux) {
 }
 
 func handleLogList(w http.ResponseWriter, r *http.Request) {
-
+	d := handleGenericLogsDisplay(w, r)
+	if d == nil {
+		return
+	}
+	d.handleGeneric(w, r, "home_log", d)
 }
 
 func handleLog(w http.ResponseWriter, r *http.Request) {
@@ -186,4 +193,18 @@ func parseLog(d *logData, path, slug string, fi fs.FileInfo) bool {
 	}
 	logs[path] = d
 	return true
+}
+
+func sortLogs() {
+	sortedLogs = slices.SortedFunc(maps.Values(logs), func(l *logData, l2 *logData) int {
+		lt := l.ModAt
+		l2t := l2.ModAt
+		// we want it reversed
+		if lt.Before(l2t) {
+			return 1
+		} else if lt.After(l2t) {
+			return -1
+		}
+		return 0
+	})
 }
