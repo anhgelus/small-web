@@ -122,9 +122,9 @@ figure {
     &.large {
       --max-width: var(--width-deco);
       --width: min(calc(100vw - 4rem), var(--max-width));
-      margin-left: max(-15%, calc((100% - var(--width))/2));
-      width: var(--max-width);
-      max-width: var(--width);
+      margin-left: max(calc((100% - var(--max-width))/2), calc((100% - var(--width))/2));
+      width: var(--width);
+      max-width: var(--max-width);
       max-height: none;
     }
   }
