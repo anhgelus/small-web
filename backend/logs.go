@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"io/fs"
 	"log/slog"
 	"maps"
 	"net/http"
@@ -26,13 +25,12 @@ var (
 
 type logData struct {
 	*data
-	LogTitle    string         `toml:"title"`
-	Description string         `toml:"description"`
-	Img         image          `toml:"image"`
-	pubDate     toml.LocalDate `toml:"publication_date"`
-	Content     template.HTML  `toml:"-"`
-	Slug        string         `toml:"-"`
-	ModAt       time.Time      `toml:"-"`
+	LogTitle     string         `toml:"title"`
+	Description  string         `toml:"description"`
+	Img          image          `toml:"image"`
+	PubLocalDate toml.LocalDate `toml:"publication_date"`
+	Content      template.HTML  `toml:"-"`
+	Slug         string         `toml:"-"`
 }
 
 func (d *logData) SetData(dt *data) {
@@ -40,7 +38,7 @@ func (d *logData) SetData(dt *data) {
 }
 
 func (d *logData) PubDate() string {
-	return d.ModAt.Format(time.DateOnly)
+	return d.PubLocalDate.String()
 }
 
 type image struct {
@@ -56,7 +54,8 @@ func LoadLogs(cfg *Config) bool {
 			slog.Error("reading log directory", "error", err)
 			return false
 		}
-		err = os.MkdirAll(cfg.LogFolder, 0660)
+		slog.Info("log directory does not exist, creating...")
+		err = os.MkdirAll(cfg.LogFolder, 0774)
 		if err != nil {
 			slog.Error("creating log directory", "error", err)
 		}
@@ -99,12 +98,7 @@ func readLogDir(path string, dir []os.DirEntry) error {
 			wg.Add(1)
 			go func(p string, d os.DirEntry) {
 				defer wg.Done()
-				fi, err := d.Info()
-				if err != nil {
-					slog.Warn("cannot get file info", "path", p)
-					return
-				}
-				ok = parseLog(dd, slug, strings.TrimSuffix(d.Name(), ".md"), fi)
+				ok = parseLog(dd, slug, strings.TrimSuffix(d.Name(), ".md"))
 				if ok {
 					slog.Debug("log parsed", "path", p)
 				} else {
@@ -141,15 +135,7 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		d = new(logData)
 		d.data = new(data)
-		fi, err := os.Stat(path)
-		if err != nil {
-			if !os.IsNotExist(err) {
-				panic(err)
-			}
-			http.NotFoundHandler().ServeHTTP(w, r)
-			return
-		}
-		if ok = parseLog(d, path, slug, fi); !ok {
+		if ok = parseLog(d, path, slug); !ok {
 			http.NotFoundHandler().ServeHTTP(w, r)
 			return
 		}
@@ -157,12 +143,11 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 	d.handleGeneric(w, r, "log", d)
 }
 
-func parseLog(d *logData, path, slug string, fi fs.FileInfo) bool {
+func parseLog(d *logData, path, slug string) bool {
 	d.Article = true
 	d.LogTitle = slug
 	d.title = slug
 	d.Slug = slug
-	d.ModAt = fi.ModTime()
 	b, err := os.ReadFile(path + ".md")
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -197,8 +182,8 @@ func parseLog(d *logData, path, slug string, fi fs.FileInfo) bool {
 
 func sortLogs() {
 	sortedLogs = slices.SortedFunc(maps.Values(logs), func(l *logData, l2 *logData) int {
-		lt := l.ModAt
-		l2t := l2.ModAt
+		lt := l.PubLocalDate.AsTime(time.UTC)
+		l2t := l2.PubLocalDate.AsTime(time.UTC)
 		// we want it reversed
 		if lt.Before(l2t) {
 			return 1

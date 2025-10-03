@@ -51,7 +51,7 @@ func (l *rootData) SetData(d *data) {
 }
 
 func HandleRoot(r *chi.Mux, cfg *Config) {
-	err := os.Mkdir(cfg.RootFolder, 0660)
+	err := os.Mkdir(cfg.RootFolder, 0774)
 	if err != nil && !os.IsExist(err) {
 		panic(err)
 	}
