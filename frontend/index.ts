@@ -2,7 +2,7 @@ import htmx from "htmx.org";
 
 function setupAnchors() {
     document.querySelectorAll("a").forEach(e => {
-        if (!e.href.startsWith(window.location.origin)) {
+        if (!e.href.startsWith(window.location.origin) && /https?:\/\//.test(e.href)) {
             e.target = "_blank";
             return
         }

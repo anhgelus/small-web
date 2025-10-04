@@ -27,7 +27,7 @@ var templates embed.FS
 func SetupLogger(debug bool) {
 	logFormat := httplog.SchemaECS.Concise(!debug)
 
-	logLevel := slog.LevelWarn
+	logLevel := slog.LevelInfo
 	if debug {
 		logLevel = slog.LevelDebug
 	}
