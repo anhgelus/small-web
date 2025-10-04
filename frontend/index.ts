@@ -1,5 +1,7 @@
 import htmx from "htmx.org";
 
+htmx.config.historyRestoreAsHxRequest = false;
+
 function setupAnchors() {
     document.querySelectorAll("a").forEach(e => {
         if (!e.href.startsWith(window.location.origin) && /https?:\/\//.test(e.href)) {
@@ -17,12 +19,12 @@ function setupAnchors() {
 
 // updating history and window title
 document.addEventListener("htmx:afterSettle", e => {
+    if (e.detail.xhr === undefined) return
     const title = e.detail.xhr.getResponseHeader("Updated-Title")
     if (title?.length !== 0) document.title = title
     const quote = e.detail.xhr.getResponseHeader("Updated-Quote")
     if (quote?.length !== 0)
         document.querySelector("#quote")!.innerHTML = "«&thinsp;" + quote + "&thinsp;»"
-    window.history.pushState({}, "", e.detail.pathInfo.finalRequestPath)
     setupAnchors()
 })
 

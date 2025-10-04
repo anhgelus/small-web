@@ -24,7 +24,7 @@
     <meta name="twitter:description" content="{{ .Description }}" />
     <meta name="twitter:image" content="{{ fullStatic .Image }}" />
 </head>
-<body>
+<body hx-push-url="true">
 <header>
     <img src="{{ static .Logo.Header }}" alt="Logo">
     <nav>
