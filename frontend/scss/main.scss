@@ -10,6 +10,14 @@
   --color-rose: #F2B5D4; /* link accent */
   --color-light-rose: hsl(330, 55%, 70%, 0.2); /* link accent hover and highlight */
 
+  @media (prefers-color-scheme: light) {
+    --color-dark: #dbf6f6;
+    --color-light: hsl(202, 25%, 9%);
+    --color-gray: #433b42; /* quote and legend */
+    --color-rose: #b62f74; /* link accent */
+    --color-light-rose: hsla(330, 86%, 67%, 0.2); /* link accent hover and highlight */
+  }
+
   --font-size-tiny: 0.85rem; /* quote, legend, code */
   --line-height: 1.75em;
   --line-height-smaller: 1.4em; /* titles, nav links */
