@@ -87,9 +87,7 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 			tree.content = append(tree.content, b)
 		}
 	}
-	if !lxs.Finished() {
-		lxs.Before() // because we never handle the last item
-	}
+	lxs.Before() // because we never handle the last item
 	return tree, nil
 }
 
