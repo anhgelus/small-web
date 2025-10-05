@@ -18,7 +18,7 @@ type EntryInfo struct {
 	PubLocalDate toml.LocalDate `toml:"publication_date"`
 }
 
-func parse(b []byte, info *EntryInfo) (template.HTML, bool) {
+func parse(b []byte, info *EntryInfo, d *data) (template.HTML, bool) {
 	var dd string
 	splits := strings.SplitN(string(b), "---", 2)
 	if len(splits) == 2 && info != nil {
@@ -39,5 +39,8 @@ func parse(b []byte, info *EntryInfo) (template.HTML, bool) {
 		fmt.Println(errMd.Pretty())
 		return "", false
 	}
+	d.PageDescription = info.Description
+	d.title = info.Title
+	d.Image = info.Img.Src
 	return content, true
 }

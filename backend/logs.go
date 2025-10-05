@@ -140,7 +140,6 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 
 func parseLog(d *logData, path, slug string) bool {
 	d.Article = true
-	d.EntryInfo.Title = slug
 	d.title = slug
 	d.Slug = slug
 	b, err := os.ReadFile(path + ".md")
@@ -151,12 +150,10 @@ func parseLog(d *logData, path, slug string) bool {
 		panic(err)
 	}
 	var ok bool
-	d.Content, ok = parse(b, &d.EntryInfo)
+	d.Content, ok = parse(b, &d.EntryInfo, d.data)
 	if !ok {
 		return false
 	}
-	d.title = d.EntryInfo.Title
-	d.Image = d.Img.Src
 	logs[path] = d
 	return true
 }

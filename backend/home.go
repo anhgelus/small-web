@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
@@ -9,13 +8,12 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"git.anhgelus.world/anhgelus/small-world/markdown"
 	"github.com/go-chi/chi/v5"
 )
 
 var (
 	sortedLogs  []*logData
-	rootContent = map[string]template.HTML{}
+	rootContent = map[string]*rootData{}
 )
 
 type homeData struct {
@@ -73,7 +71,7 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 	d := new(rootData)
 	d.data = new(data)
 	if c, ok := rootContent[name]; ok {
-		d.Content = c
+		*d = *c
 	} else {
 		cfg := r.Context().Value(configKey).(*Config)
 		path := filepath.Join(cfg.RootFolder, name+".md")
@@ -85,15 +83,12 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 			}
 			panic(err)
 		}
-		var errMd *markdown.ParseError
-		d.Content, errMd = markdown.ParseBytes(b, &markdown.Option{ImageSource: getStatic})
-		if errMd != nil {
-			slog.Error("parsing markdown", "path", path)
-			fmt.Println(errMd.Pretty())
+		d.Content, ok = parse(b, new(EntryInfo), d.data)
+		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		rootContent[name] = d.Content
+		rootContent[name] = d
 	}
 	d.handleGeneric(w, r, "simple", d)
 }
