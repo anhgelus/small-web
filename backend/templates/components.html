@@ -2,14 +2,12 @@
 <article>
     {{ range .Logs }}
     <article>
-        <h2><a href="/log/{{ .Slug }}">{{ .LogTitle }}</a></h2>
+        <h2><a href="/log/{{ .Slug }}">{{ .Title }}</a></h2>
         <figure>
             <a href="/log/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}"></a>
             <figcaption>{{ .Img.Legend }}</figcaption>
         </figure>
-        <p>
-            {{ .Description }}
-        </p>
+        <p>{{ .Description }}</p>
     </article>
     {{ end }}
     {{ if ne .PagesNumber 1 }}

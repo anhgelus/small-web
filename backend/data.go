@@ -24,16 +24,16 @@ type dataUsable interface {
 }
 
 type data struct {
-	title       string
-	Article     bool
-	Domain      string
-	URL         string
-	Image       string
-	Description string
-	Name        string
-	Links       []Link
-	Logo        *Logo
-	Quote       string
+	title           string
+	Article         bool
+	Domain          string
+	URL             string
+	Image           string
+	PageDescription string
+	Name            string
+	Links           []Link
+	Logo            *Logo
+	Quote           string
 }
 
 func (d *data) SetData(data *data) {
@@ -48,8 +48,8 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 	if d.Name == "" {
 		d.Name = cfg.Name
 	}
-	if d.Description == "" {
-		d.Description = cfg.Description
+	if d.PageDescription == "" {
+		d.PageDescription = cfg.Description
 	}
 	if d.Links == nil {
 		d.Links = cfg.Links

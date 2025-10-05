@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"errors"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -14,9 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"git.anhgelus.world/anhgelus/small-world/markdown"
 	"github.com/go-chi/chi/v5"
-	"github.com/pelletier/go-toml/v2"
 )
 
 var (
@@ -25,12 +22,9 @@ var (
 
 type logData struct {
 	*data
-	LogTitle     string         `toml:"title"`
-	Description  string         `toml:"description"`
-	Img          image          `toml:"image"`
-	PubLocalDate toml.LocalDate `toml:"publication_date"`
-	Content      template.HTML  `toml:"-"`
-	Slug         string         `toml:"-"`
+	EntryInfo
+	Content template.HTML `toml:"-"`
+	Slug    string        `toml:"-"`
 }
 
 func (d *logData) SetData(dt *data) {
@@ -146,7 +140,7 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 
 func parseLog(d *logData, path, slug string) bool {
 	d.Article = true
-	d.LogTitle = slug
+	d.EntryInfo.Title = slug
 	d.title = slug
 	d.Slug = slug
 	b, err := os.ReadFile(path + ".md")
@@ -156,27 +150,13 @@ func parseLog(d *logData, path, slug string) bool {
 		}
 		panic(err)
 	}
-	var dd string
-	splits := strings.SplitN(string(b), "---", 2)
-	if len(splits) == 2 {
-		dd = splits[1]
-		err = toml.Unmarshal([]byte(splits[0]), &d)
-		if err != nil {
-			panic(err)
-		}
-		d.title = d.LogTitle
-		d.Image = d.Img.Src
-	} else {
-		dd = string(b)
-	}
-	d.Content, err = markdown.Parse(dd, &markdown.Option{ImageSource: getStatic})
-	var errMd *markdown.ParseError
-	errors.As(err, &errMd)
-	if errMd != nil {
-		slog.Error("parsing markdown")
-		fmt.Println(errMd.Pretty())
+	var ok bool
+	d.Content, ok = parse(b, &d.EntryInfo)
+	if !ok {
 		return false
 	}
+	d.title = d.EntryInfo.Title
+	d.Image = d.Img.Src
 	logs[path] = d
 	return true
 }
