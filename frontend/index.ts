@@ -4,10 +4,8 @@ htmx.config.historyRestoreAsHxRequest = false;
 
 function setupAnchors() {
     document.querySelectorAll("a").forEach(e => {
-        if (!e.href.startsWith(window.location.origin) && /https?:\/\//.test(e.href)) {
-            e.target = "_blank";
-            return
-        }
+        // stuff related to external links are already handled in the backend
+        if (!e.href.startsWith(window.location.origin) && /https?:\/\//.test(e.href)) return
         if (e.hasAttribute("hx-trigger")) return;
         e.setAttribute("hx-get", e.href)
         e.setAttribute("hx-trigger", "click")

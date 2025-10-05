@@ -1,15 +1,21 @@
 package backend
 
 import (
+	"html/template"
 	"log/slog"
 	"os"
 
+	"git.anhgelus.world/anhgelus/small-world/markdown"
 	"github.com/pelletier/go-toml/v2"
 )
 
 type Link struct {
 	Name string `toml:"name"`
 	URL  string `toml:"url"`
+}
+
+func (l *Link) Render() template.HTML {
+	return markdown.RenderLink(l.Name, l.URL)
 }
 
 type Logo struct {

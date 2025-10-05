@@ -3,7 +3,10 @@ package markdown
 import (
 	"fmt"
 	"html/template"
+	"regexp"
 )
+
+var externalLink = regexp.MustCompile(`https?://`)
 
 type astLink struct {
 	content block
@@ -19,7 +22,14 @@ func (a *astLink) Eval(opt *Option) (template.HTML, *ParseError) {
 	if err != nil {
 		return "", err
 	}
-	return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, href, content)), nil
+	return RenderLink(string(content), string(href)), nil
+}
+
+func RenderLink(content, href string) template.HTML {
+	if !externalLink.Match([]byte(href)) {
+		return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, href, content))
+	}
+	return template.HTML(fmt.Sprintf(`<a href="%s" target="_blank" rel="noreferer">%s</a>`, href, content))
 }
 
 type astImage struct {

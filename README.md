@@ -15,7 +15,7 @@ Backend written in modern Go.
 
 Light CSS, light JS, runs everywhere.
 SSR first.
-Maybe HTMX?
+Optional HTMX to fluidify the navigation.
 
 Content written in markdown.
 

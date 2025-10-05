@@ -27,15 +27,13 @@
 <body hx-push-url="true">
 <header>
     <img src="{{ static .Logo.Header }}" alt="Logo">
-    <nav>
-        {{ range .Links }}<a href="{{ .URL }}">{{ .Name }}</a>{{end}}
-    </nav>
+    <nav>{{ range .Links }}{{ .Render }}{{end}}</nav>
 </header>
 {{ template "body" . }}
 <footer>
     <p>&copy; 2025 - Anhgelus Morthuuzh</p>
     <p id="quote">«&thinsp;{{ .Quote }}&thinsp;»</p>
-    <p><a href="/legal">Mentions légales</a>, <a href="https://git.anhgelus.world/anhgelus/small-web">code source</a>.</p>
+    <p><a href="/legal">Mentions légales</a>, <a href="https://git.anhgelus.world/anhgelus/small-web" target="_blank" rel="noreferrer">code source</a>.</p>
 </footer>
 {{ $script := asset "index.js" }}<script src="{{ $script.Src }}" integrity="{{ $script.Checksum }}" defer></script>
 </body>
