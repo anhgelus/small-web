@@ -63,18 +63,19 @@ func main() {
 		os.Exit(2)
 	}
 
-	r := backend.NewRouter(dev, cfg)
+	assetsFS := backend.UsableEmbedFS("dist", embeds)
+	if dev {
+		assetsFS = os.DirFS("dist")
+	}
+
+	r := backend.NewRouter(dev, cfg, assetsFS)
 
 	backend.HandleHome(r)
 	backend.HandleRoot(r, cfg)
 	backend.HandleLogs(r)
 	backend.Handle404(r)
 
-	if dev {
-		backend.HandleStaticFiles(r, "/assets", os.DirFS("dist"))
-	} else {
-		backend.HandleStaticFiles(r, "/assets", backend.UsableEmbedFS("dist", embeds))
-	}
+	backend.HandleStaticFiles(r, "/assets", assetsFS)
 	backend.HandleStaticFiles(r, "/static", os.DirFS(cfg.PublicFolder))
 
 	slog.Info("starting http server")

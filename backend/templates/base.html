@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ .Title }}</title>
-    <link rel="stylesheet" href="{{ assets "styles.css" }}">
+    {{ $styles := asset "styles.css" }}<link rel="stylesheet" href="{{ $styles.Src }}" integrity="{{ $styles.Checksum }}">
     <link rel="shortcut icon" href="{{ static .Logo.Favicon }}">
     <meta property="description" content="{{ .Description }}" />
     <!-- Open Graph -->
@@ -37,6 +37,6 @@
     <p id="quote">«&thinsp;{{ .Quote }}&thinsp;»</p>
     <p><a href="/legal">Mentions légales</a>, <a href="https://git.anhgelus.world/anhgelus/small-web">code source</a>.</p>
 </footer>
-<script src="{{ assets "index.js" }}" defer></script>
+{{ $script := asset "index.js" }}<script src="{{ $script.Src }}" integrity="{{ $script.Checksum }}" defer></script>
 </body>
 </html>

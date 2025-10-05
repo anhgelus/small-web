@@ -1,8 +1,14 @@
 package backend
 
 import (
+	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"html/template"
+	"io"
+	"io/fs"
+	"log/slog"
 	"math/rand"
 	"net/http"
 	"regexp"
@@ -75,11 +81,8 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 			}
 			return fmt.Sprintf("https://%s/static/%s", cfg.Domain, path)
 		},
-		"assets": func(path string) string {
-			if regexIsHttp.MatchString(path) {
-				return path
-			}
-			return fmt.Sprintf("/assets/%s", path)
+		"asset": func(path string) *assetData {
+			return getAsset(r.Context(), path)
 		},
 		"next":   func(i int) int { return i + 1 },
 		"before": func(i int) int { return i - 1 },
@@ -124,4 +127,41 @@ func getStatic(path string) string {
 		return path
 	}
 	return fmt.Sprintf("/static/%s", path)
+}
+
+type assetData struct {
+	Src      string
+	Checksum string
+}
+
+func getAsset(ctx context.Context, path string) *assetData {
+	var asset assetData
+	var b []byte
+	var err error
+	if regexIsHttp.MatchString(path) {
+		asset.Src = path
+		resp, err := http.Get(path)
+		if err != nil {
+			slog.Warn("get remote asset", "error", err)
+			return &asset
+		}
+		defer resp.Body.Close()
+		b, err = io.ReadAll(resp.Body)
+		if err != nil {
+			slog.Warn("read remote asset", "error", err)
+			return &asset
+		}
+	} else {
+		asset.Src = fmt.Sprintf("/assets/%s", path)
+		aFS := ctx.Value(assetsFS).(fs.FS)
+		b, err = fs.ReadFile(aFS, path)
+		if err != nil {
+			slog.Warn("read asset", "error", err)
+			return &asset
+		}
+	}
+	sum := sha256.Sum256(b)
+	checksum := base64.StdEncoding.EncodeToString(sum[:])
+	asset.Checksum = fmt.Sprintf("sha256-%s", checksum)
+	return &asset
 }

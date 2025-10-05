@@ -19,6 +19,7 @@ const (
 	Version     = "0.2.0"
 	configKey   = "config"
 	isUpdateKey = "is_update"
+	assetsFS    = "assets_fs"
 )
 
 //go:embed templates
@@ -43,7 +44,7 @@ func SetupLogger(debug bool) {
 	slog.SetDefault(logger)
 }
 
-func NewRouter(debug bool, cfg *Config) *chi.Mux {
+func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
 	r := chi.NewRouter()
 
 	logLevel := slog.LevelWarn
@@ -67,6 +68,7 @@ func NewRouter(debug bool, cfg *Config) *chi.Mux {
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), configKey, cfg)
+			ctx = context.WithValue(ctx, assetsFS, assets)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	})
