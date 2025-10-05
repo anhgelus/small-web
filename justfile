@@ -1,6 +1,6 @@
 dev:
     bun run build
-    go run . -dev -config config.toml
+    go run . -dev
 
 build:
     bun run build
