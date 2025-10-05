@@ -67,6 +67,7 @@ func LoadLogs(cfg *Config) bool {
 
 func readLogDir(path string, dir []os.DirEntry) error {
 	var wg sync.WaitGroup
+	var mu sync.Mutex
 	for _, d := range dir {
 		p := filepath.Join(path, d.Name())
 		if d.IsDir() {
@@ -92,7 +93,7 @@ func readLogDir(path string, dir []os.DirEntry) error {
 			wg.Add(1)
 			go func(p string, d os.DirEntry) {
 				defer wg.Done()
-				ok = parseLog(dd, slug, strings.TrimSuffix(d.Name(), ".md"))
+				ok = parseLog(dd, &mu, slug, strings.TrimSuffix(d.Name(), ".md"))
 				if ok {
 					slog.Debug("log parsed", "path", p)
 				} else {
@@ -130,7 +131,7 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		d = new(logData)
 		d.data = new(data)
-		if ok = parseLog(d, path, slug); !ok {
+		if ok = parseLog(d, new(sync.Mutex), path, slug); !ok {
 			notFound(w, r)
 			return
 		}
@@ -138,7 +139,7 @@ func handleLog(w http.ResponseWriter, r *http.Request) {
 	d.handleGeneric(w, r, "log", d)
 }
 
-func parseLog(d *logData, path, slug string) bool {
+func parseLog(d *logData, mu *sync.Mutex, path, slug string) bool {
 	d.Article = true
 	d.title = slug
 	d.Slug = slug
@@ -154,7 +155,9 @@ func parseLog(d *logData, path, slug string) bool {
 	if !ok {
 		return false
 	}
+	mu.Lock()
 	logs[path] = d
+	mu.Unlock()
 	return true
 }
 
