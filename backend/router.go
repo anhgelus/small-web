@@ -20,7 +20,8 @@ const (
 	Version     = "0.2.0"
 	configKey   = "config"
 	isUpdateKey = "is_update"
-	assetsFS    = "assets_fs"
+	assetsFSKey = "assets_fs"
+	debugKey    = "debug"
 )
 
 //go:embed templates
@@ -78,7 +79,8 @@ func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), configKey, cfg)
-			ctx = context.WithValue(ctx, assetsFS, assets)
+			ctx = context.WithValue(ctx, assetsFSKey, assets)
+			ctx = context.WithValue(ctx, debugKey, debug)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	})

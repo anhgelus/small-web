@@ -134,34 +134,41 @@ type assetData struct {
 	Checksum string
 }
 
+var assets = map[string]*assetData{}
+
 func getAsset(ctx context.Context, path string) *assetData {
-	var asset assetData
+	asset, ok := assets[path]
+	if ok && !ctx.Value(debugKey).(bool) {
+		return asset
+	}
+	asset = &assetData{}
 	var b []byte
-	var err error
 	if regexIsHttp.MatchString(path) {
 		asset.Src = path
 		resp, err := http.Get(path)
 		if err != nil {
 			slog.Warn("get remote asset", "error", err)
-			return &asset
+			return asset
 		}
 		defer resp.Body.Close()
 		b, err = io.ReadAll(resp.Body)
 		if err != nil {
 			slog.Warn("read remote asset", "error", err)
-			return &asset
+			return asset
 		}
 	} else {
 		asset.Src = fmt.Sprintf("/assets/%s", path)
-		aFS := ctx.Value(assetsFS).(fs.FS)
+		aFS := ctx.Value(assetsFSKey).(fs.FS)
+		var err error
 		b, err = fs.ReadFile(aFS, path)
 		if err != nil {
 			slog.Warn("read asset", "error", err)
-			return &asset
+			return asset
 		}
 	}
 	sum := sha256.Sum256(b)
 	checksum := base64.StdEncoding.EncodeToString(sum[:])
 	asset.Checksum = fmt.Sprintf("sha256-%s", checksum)
-	return &asset
+	assets[path] = asset
+	return asset
 }
