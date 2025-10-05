@@ -14,11 +14,13 @@ func TestExternal(t *testing.T) {
 	}
 	if string(got) != `<p><a href="href">content</a></p>` {
 		t.Errorf("invalid value, got %s", got)
+		t.Logf("lexer %s", lxs.String())
 	}
 
 	lxs = lex("![image alt](image src)")
 	tree, err = ast(lxs)
 	if err != nil {
+		t.Logf("lexer %s", lxs.String())
 		t.Fatal(err)
 	}
 	got, err = tree.Eval(nil)

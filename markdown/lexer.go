@@ -65,8 +65,11 @@ func lex(s string) *lexers {
 	var lexs []lexer
 	var currentType lexerType
 	var previous string
-	fn := func(c rune, t lexerType) {
-		if currentType != t && len(previous) > 0 {
+	fn := func(c rune, t lexerType, validate func(rune) bool) {
+		if validate == nil {
+			validate = func(r rune) bool { return true }
+		}
+		if (currentType != t || !validate(c)) && len(previous) > 0 {
 			lexs = append(lexs, lexer{Type: currentType, Value: previous})
 			previous = ""
 		}
@@ -78,7 +81,7 @@ func lex(s string) *lexers {
 	runes := []rune(s)
 	for i, c := range runes {
 		if literalNext {
-			fn(c, lexerLiteral)
+			fn(c, lexerLiteral, nil)
 			literalNext = false
 			continue
 		}
@@ -89,7 +92,7 @@ func lex(s string) *lexers {
 		switch c {
 		case '*', '_':
 			if c == '*' && newLine && i < len(runes)-1 && runes[i+1] == ' ' {
-				fn(c, lexerList)
+				fn(c, lexerList, nil)
 			} else {
 				if (currentType != lexerModifier && len(previous) > 0) ||
 					(len(previous) > 0 && []rune(previous)[0] != c) ||
@@ -103,25 +106,25 @@ func lex(s string) *lexers {
 			newLine = false
 		case '`':
 			newLine = false
-			fn(c, lexerCode)
+			fn(c, lexerCode, nil)
 		case '\n':
 			newLine = true
-			fn(c, lexerBreak)
+			fn(c, lexerBreak, nil)
 		case '#':
 			newLine = false
-			fn(c, lexerHeader)
+			fn(c, lexerHeader, nil)
 		case '>':
 			newLine = false
-			fn(c, lexerQuote)
+			fn(c, lexerQuote, nil)
 		case '[', ']', '(', ')', '!':
 			newLine = false
-			fn(c, lexerExternal)
+			fn(c, lexerExternal, func(c rune) bool { return validExternal(previous + string(c)) })
 		case '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			newLine = false
-			fn(c, lexerList)
+			fn(c, lexerList, nil)
 		default:
 			newLine = false
-			fn(c, lexerLiteral)
+			fn(c, lexerLiteral, nil)
 		}
 	}
 	if len(previous) > 0 {
@@ -129,4 +132,20 @@ func lex(s string) *lexers {
 	}
 	lxs.lexers = lexs
 	return lxs
+}
+
+func validExternal(s string) bool {
+	switch s {
+	// start
+	case "![", "[":
+		return true
+	// mid
+	case "](":
+		return true
+	// end
+	case ")":
+		return true
+	default:
+		return false
+	}
 }
