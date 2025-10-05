@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 	"embed"
+	"fmt"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -65,6 +66,15 @@ func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
 		LogRequestHeaders:  []string{"Origin"},
 		LogResponseHeaders: []string{},
 	}))
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			r.Header.Add("Access-Control-Allow-Origin", fmt.Sprintf("https://%s", cfg.Domain))
+			if !debug {
+				r.Header.Add("Access-Control-Max-Age", fmt.Sprintf("%d", 24*60*60))
+			}
+			next.ServeHTTP(w, r)
+		})
+	})
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), configKey, cfg)
