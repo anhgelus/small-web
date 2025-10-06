@@ -55,6 +55,9 @@ a {
   &:hover {
     background: var(--color-light-rose);
   }
+  &.target {
+    @extend :hover;
+  }
 }
 
 nav > a {
@@ -73,7 +76,7 @@ b {
 }
 
 ul, ol {
-  margin-top: -0.5rem;
+  margin-top: -1rem;
   margin-bottom: var(--margin-base);
   margin-left: 1rem;
 
@@ -137,7 +140,7 @@ figcaption {
 }
 
 code, pre {
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--color-black);
 }
 
 code {

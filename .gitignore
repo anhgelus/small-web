@@ -160,3 +160,4 @@ public
 config.toml
 data
 small-world
+*.tar.gz
