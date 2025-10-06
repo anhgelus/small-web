@@ -23,8 +23,9 @@ var (
 type logData struct {
 	*data
 	EntryInfo
-	Content template.HTML `toml:"-"`
-	Slug    string        `toml:"-"`
+	LogTitle string
+	Content  template.HTML
+	Slug     string
 }
 
 func (d *logData) SetData(dt *data) {
@@ -33,6 +34,10 @@ func (d *logData) SetData(dt *data) {
 
 func (d *logData) PubDate() string {
 	return d.PubLocalDate.String()
+}
+
+func (d *logData) Title() string {
+	return d.data.Title()
 }
 
 type image struct {
@@ -157,6 +162,7 @@ func parseLog(d *logData, mu *sync.Mutex, path, slug string) bool {
 	if !ok {
 		return false
 	}
+	d.LogTitle = d.EntryInfo.Title
 	mu.Lock()
 	logs[path] = d
 	mu.Unlock()

@@ -2,7 +2,7 @@
 <article>
     {{ range .Logs }}
     <article>
-        <h2><a href="/logs/{{ .Slug }}">{{ .Title }}</a></h2>
+        <h2><a href="/logs/{{ .Slug }}">{{ .LogTitle }}</a></h2>
         <figure>
             <a href="/logs/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}"></a>
             <figcaption>{{ .Img.Legend }}</figcaption>

@@ -21,10 +21,10 @@ function setupAnchors() {
 document.addEventListener("htmx:afterSettle", e => {
     if (e.detail.xhr === undefined) return
     const title = e.detail.xhr.getResponseHeader("Updated-Title")
-    if (title?.length !== 0) document.title = title
+    if (title?.length !== 0) document.title = decodeURIComponent(title).replaceAll("+", " ") 
     const quote = e.detail.xhr.getResponseHeader("Updated-Quote")
     if (quote?.length !== 0)
-        document.querySelector("#quote")!.innerHTML = "«&thinsp;" + quote + "&thinsp;»"
+        document.querySelector("#quote")!.innerHTML = "«&thinsp;" + decodeURIComponent(quote).replaceAll("+", " ") + "&thinsp;»"
     setupAnchors()
 })
 
