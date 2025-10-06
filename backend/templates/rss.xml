@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <atom:link href="https://{{ .Domain }}{{ .URL }}" rel="self" type="application/rss+xml" />
+        <title>{{ .Title }}</title>
+        <link>https://{{ .Domain }}/logs/</link>
+        <description>{{ .PageDescription }}</description>
+        <language>fr-fr</language>
+        {{ $domain := .Domain }}
+        {{ range .Logs }}
+        <item>
+            <title>{{ .LogTitle }}</title>
+            <link>https://{{ $domain }}/logs/{{ .Slug }}</link>
+            <guid>https://{{ $domain }}/logs/{{ .Slug }}</guid>
+            <description>{{ .Description }}</description>
+            <pubDate>{{ .PubDateRSS }}</pubDate>
+        </item>
+        {{ end }}
+    </channel>
+</rss>

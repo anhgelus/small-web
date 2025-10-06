@@ -36,6 +36,10 @@ func (d *logData) PubDate() string {
 	return d.PubLocalDate.String()
 }
 
+func (d *logData) PubDateRSS() string {
+	return d.PubLocalDate.AsTime(time.Local).Format(time.RFC1123Z) // because RFC822 in go isn't RFC822???
+}
+
 func (d *logData) Title() string {
 	return d.data.Title()
 }
@@ -116,6 +120,10 @@ func HandleLogs(r *chi.Mux) {
 	r.Get("/logs", handleLogList)
 	r.Route("/logs", func(r chi.Router) {
 		r.Get("/", handleLogList)
+
+		r.Get("/rss", handleLogRSS)
+		r.Get("/rss/", handleLogRSS)
+
 		r.Get("/{slug:[a-zA-Z0-9-]+}", handleLog)
 		r.Get("/{slug:[a-zA-Z0-9-]+}/", handleLog)
 	})
@@ -128,6 +136,15 @@ func handleLogList(w http.ResponseWriter, r *http.Request) {
 	}
 	d.title = "logs"
 	d.handleGeneric(w, r, "home_log", d)
+}
+
+func handleLogRSS(w http.ResponseWriter, r *http.Request) {
+	d := handleGenericLogsDisplay(w, r, 5)
+	if d == nil {
+		return
+	}
+	d.title = "logs"
+	d.handleRSS(w, r, d)
 }
 
 func handleLog(w http.ResponseWriter, r *http.Request) {

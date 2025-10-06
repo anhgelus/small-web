@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	txt "text/template"
 )
 
 var (
@@ -41,8 +42,7 @@ func (d *data) SetData(data *data) {
 	*d = *data
 }
 
-func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string, custom dataUsable) {
-	cfg := r.Context().Value(configKey).(*Config)
+func (d *data) merge(cfg *Config, r *http.Request) {
 	if d.Domain == "" {
 		d.Domain = cfg.Domain
 	}
@@ -74,6 +74,11 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 		}
 		d.URL = r.URL.Path
 	}
+}
+
+func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string, custom dataUsable) {
+	cfg := r.Context().Value(configKey).(*Config)
+	d.merge(cfg, r)
 	t, err := template.New("").Funcs(template.FuncMap{
 		"static": getStatic,
 		"fullStatic": func(path string) string {
@@ -102,6 +107,25 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 	} else {
 		custom.SetData(d)
 		err = t.ExecuteTemplate(w, exec, custom)
+	}
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (d *data) handleRSS(w http.ResponseWriter, r *http.Request, custom dataUsable) {
+	cfg := r.Context().Value(configKey).(*Config)
+	d.merge(cfg, r)
+	t, err := txt.ParseFS(templates, "templates/rss.xml")
+	if err != nil {
+		panic(err)
+	}
+	r.Header.Set("Content-Type", "application/rss+xml")
+	if custom == nil {
+		err = t.ExecuteTemplate(w, "rss.xml", d)
+	} else {
+		custom.SetData(d)
+		err = t.ExecuteTemplate(w, "rss.xml", custom)
 	}
 	if err != nil {
 		panic(err)
