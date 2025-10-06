@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"git.anhgelus.world/anhgelus/small-world/markdown"
+	"git.anhgelus.world/anhgelus/small-web/markdown"
 	"github.com/pelletier/go-toml/v2"
 )
 

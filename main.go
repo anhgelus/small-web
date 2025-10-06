@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"git.anhgelus.world/anhgelus/small-world/backend"
+	"git.anhgelus.world/anhgelus/small-web/backend"
 	"github.com/joho/godotenv"
 )
 

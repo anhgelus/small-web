@@ -159,5 +159,5 @@ go.work.sum
 public
 config.toml
 data
-small-world
+small-web
 *.tar.gz

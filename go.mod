@@ -1,4 +1,4 @@
-module git.anhgelus.world/anhgelus/small-world
+module git.anhgelus.world/anhgelus/small-web
 
 go 1.25.1
 
