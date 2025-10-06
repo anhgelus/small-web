@@ -108,6 +108,7 @@ func readLogDir(path string, dir []os.DirEntry) error {
 }
 
 func HandleLogs(r *chi.Mux) {
+	r.Get("/logs", handleLogList)
 	r.Route("/logs", func(r chi.Router) {
 		r.Get("/", handleLogList)
 		r.Get("/{slug:[a-zA-Z0-9-]+}", handleLog)

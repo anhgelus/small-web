@@ -160,9 +160,15 @@ pre {
   padding: 0.5rem 1rem;
 
   & code {
+    display: block;
+    max-width: 100%;
+
     padding: 0;
 
     background: none;
     border: none;
+
+    word-break: break-all;
+    white-space: break-spaces;
   }
 }
