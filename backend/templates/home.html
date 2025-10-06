@@ -1,11 +1,9 @@
 {{define "body"}}
 <main id="content">
-<div class="introduction">
+  <div class="introduction">
     <h1>logs</h1>
-    <p>
-        {{ .PageDescription }}
-    </p>
-</div>
-{{ template "logs_display" . }}
+    <p>{{ .PageDescription }}</p>
+  </div>
+  {{ template "logs_display" . }}
 </main>
 {{end}}

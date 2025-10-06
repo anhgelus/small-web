@@ -11,12 +11,15 @@ body * {
   line-height: var(--line-height);
 }
 
-main, article {
+main,
+article {
   max-width: var(--width-content);
   margin: 0 auto;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-weight: 500;
   line-height: var(--line-height-smaller);
 
@@ -64,7 +67,8 @@ nav > a {
   line-height: var(--line-height-smaller);
 }
 
-em, cite {
+em,
+cite {
   font-style: italic;
 }
 
@@ -75,7 +79,8 @@ b {
   padding: 0.05em 0.1em;
 }
 
-ul, ol {
+ul,
+ol {
   margin-top: -1rem;
   margin-bottom: var(--margin-base);
   margin-left: 1rem;
@@ -118,14 +123,15 @@ figure {
 
   margin-bottom: var(--margin-base);
 
-  & a, img {
+  & a,
+  img {
     max-width: 100%;
     display: block;
 
     &.large {
       --max-width: var(--width-deco);
       --width: min(calc(100vw - 4rem), var(--max-width));
-      margin-left: max(calc((100% - var(--max-width))/2), calc((100% - var(--width))/2));
+      margin-left: max(calc((100% - var(--max-width)) / 2), calc((100% - var(--width)) / 2));
       width: var(--width);
       max-width: var(--max-width);
       max-height: none;
@@ -139,7 +145,8 @@ figcaption {
   color: var(--color-gray);
 }
 
-code, pre {
+code,
+pre {
   background: var(--color-black);
 }
 

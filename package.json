@@ -7,10 +7,12 @@
     "build:sass": "sass --no-source-map --style=compressed frontend/scss/main.scss dist/styles.css",
     "watch:sass": "sass --watch frontend/scss/main.scss dist/styles.css",
     "build:js": "bun build frontend/index.ts --outdir ./dist --minify",
-    "build": "bun run build:sass && bun run build:js"
+    "build": "bun run build:sass && bun run build:js",
+    "format": "prettier . --write"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "prettier": "^3.6.2"
   },
   "peerDependencies": {
     "typescript": "^5"

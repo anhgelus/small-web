@@ -1,23 +1,26 @@
 {{define "logs_display"}}
 <article>
-    {{ range .Logs }}
-    <article>
-        <h2><a href="/logs/{{ .Slug }}">{{ .LogTitle }}</a></h2>
-        <figure>
-            <a href="/logs/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}"></a>
-            <figcaption>{{ .Img.Legend }}</figcaption>
-        </figure>
-        <p>{{ .Description }}</p>
-    </article>
-    {{ end }}
-    {{ if ne .PagesNumber 1 }}
-    <div class="pagination">
-        <nav>
-            {{ if ne .CurrentPage 1 }}<a href="?page={{ before .CurrentPage }}">Précédent</a>{{else}}<p></p>{{end}}
-            <p>{{ .CurrentPage }}/{{ .PagesNumber }}</p>
-            {{ if ne .CurrentPage .PagesNumber }}<a href="?page={{ next .CurrentPage }}">Suivant</a>{{else}}<p></p>{{end}}
-        </nav>
-    </div>
-    {{ end }}
+  {{ range .Logs }}
+  <article>
+    <h2><a href="/logs/{{ .Slug }}">{{ .LogTitle }}</a></h2>
+    <figure>
+      <a href="/logs/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
+      <figcaption>{{ .Img.Legend }}</figcaption>
+    </figure>
+    <p>{{ .Description }}</p>
+  </article>
+  {{ end }} {{ if ne .PagesNumber 1 }}
+  <div class="pagination">
+    <nav>
+      {{ if ne .CurrentPage 1 }}<a href="?page={{ before .CurrentPage }}">Précédent</a>{{else}}
+      <p></p>
+      {{end}}
+      <p>{{ .CurrentPage }}/{{ .PagesNumber }}</p>
+      {{ if ne .CurrentPage .PagesNumber }}<a href="?page={{ next .CurrentPage }}">Suivant</a>{{else}}
+      <p></p>
+      {{end}}
+    </nav>
+  </div>
+  {{ end }}
 </article>
 {{end}}

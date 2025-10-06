@@ -1,13 +1,11 @@
 {{define "body"}}
 <article id="content">
-    <h1>{{ .LogTitle }}</h1>
-    <p>
-        {{ .Description }}
-    </p>
-    <figure>
-        <img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" class="large">
-        <figcaption>{{ .Img.Legend }}</figcaption>
-    </figure>
-    {{ .Content }}
+  <h1>{{ .LogTitle }}</h1>
+  <p>{{ .Description }}</p>
+  <figure>
+    <img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" class="large" />
+    <figcaption>{{ .Img.Legend }}</figcaption>
+  </figure>
+  {{ .Content }}
 </article>
 {{end}}
