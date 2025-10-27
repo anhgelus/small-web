@@ -4,12 +4,14 @@
     <h1>{{ .Name }}</h1>
     <p>{{ .PageDescription }}</p>
   </div>
-  {{ range .Sections }}
-  <div>
-    <h2>{{ .Name }}</h2>
-    <p>{{ .Description }}</p>
-    {{ template "section_display" . }}
+  <div class="sections">
+    {{ range .Sections }}
+    <section>
+      <h2>{{ .Name }}</h2>
+      <p>{{ .Description }}</p>
+      {{ template "section_display" . }}
+    </section>
+    {{ end }}
   </div>
-  {{ end }}
 </main>
 {{end}}
