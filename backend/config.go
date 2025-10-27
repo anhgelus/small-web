@@ -29,6 +29,7 @@ type Config struct {
 	Description  string   `toml:"description"`
 	DefaultImage string   `toml:"default_image"`
 	Quotes       []string `toml:"quotes"`
+	Language     string   `toml:"language"`
 
 	Sections []Section `toml:"section"`
 

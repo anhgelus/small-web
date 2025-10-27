@@ -78,7 +78,7 @@ func (s *Section) Load(_ *Config) bool {
 		}
 		return false
 	}
-	logger.Info("checking directory...", "path", s.Folder)
+	logger.Info("checking directory...")
 	err = s.readDir(s.Folder, dir)
 	if err != nil {
 		slog.Error("reading directory", "error", err)
@@ -168,7 +168,7 @@ func (s *Section) handleList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Section) handleRSS(w http.ResponseWriter, r *http.Request) {
-	d := handleGenericSectionDisplay(w, r, 5)
+	d := handleGenericSectionDisplay(w, r, []Section{*s}, 5)
 	if d == nil {
 		return
 	}

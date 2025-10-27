@@ -36,6 +36,7 @@ type data struct {
 	Links           []Link
 	Logo            *Logo
 	Quote           string
+	Language        string
 }
 
 func (d *data) SetData(data *data) {
@@ -73,6 +74,9 @@ func (d *data) merge(cfg *Config, r *http.Request) {
 			r.URL.Path = "/" + r.URL.Path
 		}
 		d.URL = r.URL.Path
+	}
+	if d.Language == "" {
+		d.Language = cfg.Language
 	}
 }
 
@@ -117,7 +121,15 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 func (d *data) handleRSS(w http.ResponseWriter, r *http.Request, custom dataUsable) {
 	cfg := r.Context().Value(configKey).(*Config)
 	d.merge(cfg, r)
-	t, err := txt.New("").Funcs(txt.FuncMap{"first": templateFirst}).ParseFS(templates, "templates/rss.xml")
+	t, err := txt.New("").Funcs(txt.FuncMap{
+		"first": templateFirst,
+		"uri": func(s string) string {
+			if s == "" {
+				return ""
+			}
+			return s + "/"
+		},
+	}).ParseFS(templates, "templates/rss.xml")
 	if err != nil {
 		panic(err)
 	}

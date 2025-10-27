@@ -4,16 +4,16 @@
         <atom:link href="https://{{ .Domain }}{{ .URL }}" rel="self" type="application/rss+xml" />
         <title>{{ .Title }}</title>
         {{ $sec := first .Sections }}
-        {{ $uri := $sec.URI }}
-        <link>https://{{ .Domain }}/{{ $uri }}/</link>
+        {{ $uri := uri $sec.URI }}
+        <link>https://{{ .Domain }}/{{ $uri }}</link>
         <description>{{ .PageDescription }}</description>
-        <language>fr-fr</language>
+        <language>{{ .Language }}</language>
         {{ $domain := .Domain }}
         {{ range $sec.Data }}
         <item>
             <title>{{ .DataTitle }}</title>
-            <link>https://{{ $domain }}/{{ $uri }}/{{ .Slug }}</link>
-            <guid>https://{{ $domain }}/{{ $uri }}/{{ .Slug }}</guid>
+            <link>https://{{ $domain }}/{{ $uri }}{{ .Slug }}</link>
+            <guid>https://{{ $domain }}/{{ $uri }}{{ .Slug }}</guid>
             <description>{{ .Description }}</description>
             <pubDate>{{ .PubDateRSS }}</pubDate>
         </item>
