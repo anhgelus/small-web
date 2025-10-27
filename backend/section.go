@@ -71,7 +71,7 @@ func (s *Section) Load(_ *Config) bool {
 			logger.Error("reading directory", "error", err)
 			return false
 		}
-		logger.Info("log directory does not exist, creating...")
+		logger.Info("directory does not exist, creating...")
 		err = os.MkdirAll(s.Folder, 0774)
 		if err != nil {
 			slog.Error("creating directory", "error", err)
