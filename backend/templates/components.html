@@ -2,7 +2,7 @@
 <article>
   {{ $uri := .URI }} {{ range .Data }}
   <article>
-    <h2><a href="/{{ $uri }}/{{ .Slug }}">{{ .DataTitle }}</a></h2>
+    <h3><a href="/{{ $uri }}/{{ .Slug }}">{{ .DataTitle }}</a></h3>
     <figure>
       <a href="/{{ $uri }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
       <figcaption>{{ .Img.Legend }}</figcaption>

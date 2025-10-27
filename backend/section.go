@@ -163,6 +163,7 @@ func (s *Section) handleList(w http.ResponseWriter, r *http.Request) {
 	sec.CurrentPage = p.Current
 	sec.PagesNumber = p.Max
 	d.Sections = append(d.Sections, &sec)
+	d.PageDescription = sec.Description
 	d.handleGeneric(w, r, "home_section", d)
 }
 
