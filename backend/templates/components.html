@@ -1,16 +1,17 @@
-{{define "logs_display"}}
+{{define "section_display"}}
 <article>
-  {{ range .Logs }}
+  {{ $uri := .URI }} {{ range .Data }}
   <article>
-    <h2><a href="/logs/{{ .Slug }}">{{ .LogTitle }}</a></h2>
+    <h3><a href="/{{ $uri }}/{{ .Slug }}">{{ .DataTitle }}</a></h3>
     <figure>
-      <a href="/logs/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
+      <a href="/{{ $uri }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
       <figcaption>{{ .Img.Legend }}</figcaption>
     </figure>
     <p>{{ .Description }}</p>
   </article>
-  {{ end }} {{ if ne .PagesNumber 1 }}
+  {{ end }}
   <div class="pagination">
+    {{ if .Paginate }}
     <nav>
       {{ if ne .CurrentPage 1 }}<a href="?page={{ before .CurrentPage }}">Précédent</a>{{else}}
       <p></p>
@@ -20,7 +21,9 @@
       <p></p>
       {{end}}
     </nav>
+    {{ else }}
+    <a href="/{{ $uri }}/">Voir plus</a>
+    {{ end }}
   </div>
-  {{ end }}
 </article>
 {{end}}

@@ -58,9 +58,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if ok = backend.LoadLogs(cfg); !ok {
-		slog.Info("exiting")
-		os.Exit(2)
+	for _, sec := range cfg.Sections {
+		if ok = sec.Load(cfg); !ok {
+			slog.Info("exiting")
+			os.Exit(2)
+		}
 	}
 
 	assetsFS := backend.UsableEmbedFS("dist", embeds)
@@ -72,7 +74,9 @@ func main() {
 
 	backend.HandleHome(r)
 	backend.HandleRoot(r, cfg)
-	backend.HandleLogs(r)
+	for _, sec := range cfg.Sections {
+		sec.Handle(r)
+	}
 	backend.Handle404(r)
 
 	backend.HandleStaticFiles(r, "/assets", assetsFS)

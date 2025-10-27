@@ -36,6 +36,7 @@ type data struct {
 	Links           []Link
 	Logo            *Logo
 	Quote           string
+	Language        string
 }
 
 func (d *data) SetData(data *data) {
@@ -74,6 +75,9 @@ func (d *data) merge(cfg *Config, r *http.Request) {
 		}
 		d.URL = r.URL.Path
 	}
+	if d.Language == "" {
+		d.Language = cfg.Language
+	}
 }
 
 func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string, custom dataUsable) {
@@ -92,6 +96,7 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 		},
 		"next":   func(i int) int { return i + 1 },
 		"before": func(i int) int { return i - 1 },
+		"first":  templateFirst,
 	}).ParseFS(templates, "templates/components.html", fmt.Sprintf("templates/%s.html", name), "templates/base.html")
 	if err != nil {
 		panic(err)
@@ -116,7 +121,15 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 func (d *data) handleRSS(w http.ResponseWriter, r *http.Request, custom dataUsable) {
 	cfg := r.Context().Value(configKey).(*Config)
 	d.merge(cfg, r)
-	t, err := txt.ParseFS(templates, "templates/rss.xml")
+	t, err := txt.New("").Funcs(txt.FuncMap{
+		"first": templateFirst,
+		"uri": func(s string) string {
+			if s == "" {
+				return ""
+			}
+			return s + "/"
+		},
+	}).ParseFS(templates, "templates/rss.xml")
 	if err != nil {
 		panic(err)
 	}
@@ -196,4 +209,11 @@ func getAsset(ctx context.Context, path string) *assetData {
 	asset.Checksum = fmt.Sprintf("sha256-%s", checksum)
 	assets[path] = asset
 	return asset
+}
+
+func templateFirst(a []*Section) *Section {
+	if len(a) == 0 {
+		return nil
+	}
+	return a[0]
 }

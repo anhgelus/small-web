@@ -1,9 +1,17 @@
 {{define "body"}}
 <main id="content">
   <div class="introduction">
-    <h1>logs</h1>
+    <h1>{{ .Name }}</h1>
     <p>{{ .PageDescription }}</p>
   </div>
-  {{ template "logs_display" . }}
+  <div class="sections">
+    {{ range .Sections }}
+    <section>
+      <h2>{{ .Name }}</h2>
+      <p>{{ .Description }}</p>
+      {{ template "section_display" . }}
+    </section>
+    {{ end }}
+  </div>
 </main>
 {{end}}

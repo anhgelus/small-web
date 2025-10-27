@@ -2,6 +2,12 @@
   margin: var(--margin-header) 0;
 }
 
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: calc(1.5 * var(--margin-header));
+}
+
 article article {
   margin-bottom: var(--margin-header);
   &:last-child {

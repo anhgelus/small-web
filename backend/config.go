@@ -29,8 +29,10 @@ type Config struct {
 	Description  string   `toml:"description"`
 	DefaultImage string   `toml:"default_image"`
 	Quotes       []string `toml:"quotes"`
+	Language     string   `toml:"language"`
 
-	LogFolder    string `toml:"log_folder"`
+	Sections []Section `toml:"section"`
+
 	RootFolder   string `toml:"root_folder"`
 	PublicFolder string `toml:"public_folder"`
 
@@ -56,7 +58,12 @@ func (c *Config) DefaultValues() {
 		Header:  "logo.jpg",
 		Favicon: "favicon.jpg",
 	}
-	c.LogFolder = "data/logs"
+	c.Sections = []Section{{
+		Name:        "logs",
+		Description: "Aut maxime voluptatibus ut dicta voluptates et ut alias. Sunt et incidunt similique et doloremque nostrum fugit autem. Ut omnis quo nisi. Accusantium voluptas fugit autem maiores numquam doloribus.",
+		Folder:      "data/logs",
+		URI:         "logs",
+	}}
 	c.RootFolder = "data"
 	c.PublicFolder = "public"
 	c.Quotes = []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do."}

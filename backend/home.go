@@ -2,25 +2,22 @@ package backend
 
 import (
 	"html/template"
-	"log/slog"
+	"iter"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
+	"slices"
 
 	"github.com/go-chi/chi/v5"
 )
 
 var (
-	sortedLogs  []*logData
 	rootContent = map[string]*rootData{}
 )
 
 type homeData struct {
 	*data
-	Logs        []*logData
-	PagesNumber int
-	CurrentPage int
+	Sections []*Section
 }
 
 func (h *homeData) SetData(d *data) {
@@ -29,7 +26,8 @@ func (h *homeData) SetData(d *data) {
 
 func HandleHome(r *chi.Mux) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		d := handleGenericLogsDisplay(w, r, 3)
+		cfg := r.Context().Value(configKey).(*Config)
+		d := handleGenericSectionDisplay(w, r, cfg.Sections, 3)
 		if d == nil {
 			return
 		}
@@ -62,6 +60,8 @@ func HandleRoot(r *chi.Mux, cfg *Config) {
 	if err != nil && !os.IsExist(err) {
 		panic(err)
 	}
+	r.Get("/rss", handleGenericRSS)
+	r.Get("/rss/", handleGenericRSS)
 	r.Get("/{name:[a-zA-Z-]+}", func(w http.ResponseWriter, r *http.Request) {
 		handleGenericRoot(w, r, chi.URLParam(r, "name"))
 	})
@@ -93,29 +93,42 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 	d.handleGeneric(w, r, "simple", d)
 }
 
-func handleGenericLogsDisplay(w http.ResponseWriter, r *http.Request, maxLogsPerPage int) *homeData {
-	rawPage := r.URL.Query().Get("page")
-	page := 1
-	if rawPage != "" {
-		var err error
-		page, err = strconv.Atoi(rawPage)
-		if err != nil || page < 1 {
-			slog.Warn("invalid page number", "rawPage", rawPage)
-			w.WriteHeader(http.StatusBadRequest)
-			return nil
+func handleGenericRSS(w http.ResponseWriter, r *http.Request) {
+	cfg := r.Context().Value(configKey).(*Config)
+	var data iter.Seq[*sectionData]
+	for _, sec := range cfg.Sections {
+		if len(sec.Data) == 0 {
+			sec.sort()
+		}
+		var sl []*sectionData
+		for _, d := range sec.Data[:min(3, len(sec.Data))] {
+			dd := *d
+			dd.Slug = sec.URI + "/" + dd.Slug
+			sl = append(sl, &dd)
+		}
+		if data == nil {
+			data = slices.Values(sl)
+		} else {
+			data = slices.Values(slices.AppendSeq(sl, data))
 		}
 	}
+	var s Section
+	s.Data = sort(data)
+	s.Name = cfg.Name
+	s.Description = cfg.Description
+	s.URI = ""
+	s.handleRSS(w, r)
+}
+
+func handleGenericSectionDisplay(_ http.ResponseWriter, _ *http.Request, sections []Section, maxLogsPerPage int) *homeData {
 	d := new(homeData)
 	d.data = new(data)
-	if sortedLogs == nil {
-		sortLogs()
+	for _, sec := range sections {
+		if len(sec.Data) == 0 {
+			sec.sort()
+		}
+		sec.Data = sec.Data[:min(maxLogsPerPage, len(sec.Data))]
+		d.Sections = append(d.Sections, &sec)
 	}
-	d.CurrentPage = page
-	d.PagesNumber = max(1, (len(sortedLogs)-1)/maxLogsPerPage+1)
-	if d.PagesNumber < page {
-		notFound(w, r)
-		return nil
-	}
-	d.Logs = sortedLogs[(page-1)*maxLogsPerPage : min(page*maxLogsPerPage, len(sortedLogs))]
 	return d
 }
