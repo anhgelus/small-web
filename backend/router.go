@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	Version     = "0.3.0"
+	Version     = "0.4.0"
 	configKey   = "config"
 	isUpdateKey = "is_update"
 	assetsFSKey = "assets_fs"
