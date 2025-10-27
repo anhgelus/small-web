@@ -6,9 +6,17 @@ function setupAnchors() {
   document.querySelectorAll("a").forEach((e) => {
     // stuff related to external links are already handled in the backend
     if (!e.href.startsWith(window.location.origin) && /https?:\/\//.test(e.href)) return;
+    // stuff related to RSS must not be processed by HTMX.
+    if (e.href.endsWith("/rss/") || e.href.endsWith("/rss")) {
+      e.target = "_blank";
+      return;
+    }
+
     if (e.href == window.location.href) e.classList.add("target");
     else e.classList.remove("target");
+
     if (e.hasAttribute("hx-trigger")) return;
+
     e.setAttribute("hx-get", e.href);
     e.setAttribute("hx-trigger", "click");
     e.setAttribute("hx-target", "#content");
