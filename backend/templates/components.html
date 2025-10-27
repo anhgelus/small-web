@@ -1,9 +1,8 @@
 {{define "logs_display"}}
 <article>
-  {{ $uri := .URI }}
-  {{ range .Data }}
+  {{ $uri := .URI }} {{ range .Data }}
   <article>
-      <h2><a href="/{{ $uri }}/{{ .Slug }}">{{ .DataTitle }}</a></h2>
+    <h2><a href="/{{ $uri }}/{{ .Slug }}">{{ .DataTitle }}</a></h2>
     <figure>
       <a href="/{{ $uri }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
       <figcaption>{{ .Img.Legend }}</figcaption>
@@ -11,6 +10,8 @@
     <p>{{ .Description }}</p>
   </article>
   {{ end }}
-  <a href="/{{ $uri }}/">Voir plus</a> 
+  <div class="pagination">
+    <a href="/{{ $uri }}/">Voir plus</a>
+  </div>
 </article>
 {{end}}
