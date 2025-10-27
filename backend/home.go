@@ -2,25 +2,21 @@ package backend
 
 import (
 	"html/template"
-	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
 
 var (
-	sortedLogs  []*logData
+	//sortedSections = map[string][]*sectionData{}
 	rootContent = map[string]*rootData{}
 )
 
 type homeData struct {
 	*data
-	Logs        []*logData
-	PagesNumber int
-	CurrentPage int
+	Sections []*Section
 }
 
 func (h *homeData) SetData(d *data) {
@@ -29,7 +25,7 @@ func (h *homeData) SetData(d *data) {
 
 func HandleHome(r *chi.Mux) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		d := handleGenericLogsDisplay(w, r, 3)
+		d := handleGenericSectionDisplay(w, r, 3)
 		if d == nil {
 			return
 		}
@@ -93,29 +89,16 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 	d.handleGeneric(w, r, "simple", d)
 }
 
-func handleGenericLogsDisplay(w http.ResponseWriter, r *http.Request, maxLogsPerPage int) *homeData {
-	rawPage := r.URL.Query().Get("page")
-	page := 1
-	if rawPage != "" {
-		var err error
-		page, err = strconv.Atoi(rawPage)
-		if err != nil || page < 1 {
-			slog.Warn("invalid page number", "rawPage", rawPage)
-			w.WriteHeader(http.StatusBadRequest)
-			return nil
-		}
-	}
+func handleGenericSectionDisplay(_ http.ResponseWriter, r *http.Request, maxLogsPerPage int) *homeData {
 	d := new(homeData)
 	d.data = new(data)
-	if sortedLogs == nil {
-		sortLogs()
+	cfg := r.Context().Value(configKey).(*Config)
+	for _, sec := range cfg.Sections {
+		if len(sec.Data) == 0 {
+			sec.sort()
+		}
+		sec.Data = sec.Data[:min(maxLogsPerPage, len(sec.Data))]
+		d.Sections = append(d.Sections, &sec)
 	}
-	d.CurrentPage = page
-	d.PagesNumber = max(1, (len(sortedLogs)-1)/maxLogsPerPage+1)
-	if d.PagesNumber < page {
-		notFound(w, r)
-		return nil
-	}
-	d.Logs = sortedLogs[(page-1)*maxLogsPerPage : min(page*maxLogsPerPage, len(sortedLogs))]
 	return d
 }

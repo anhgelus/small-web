@@ -4,6 +4,10 @@
     <h1>logs</h1>
     <p>{{ .PageDescription }}</p>
   </div>
+  {{ range .Sections }}
+  <div>
   {{ template "logs_display" . }}
+  </div>
+  {{ end }}
 </main>
 {{end}}

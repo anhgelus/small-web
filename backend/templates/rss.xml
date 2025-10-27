@@ -3,15 +3,15 @@
     <channel>
         <atom:link href="https://{{ .Domain }}{{ .URL }}" rel="self" type="application/rss+xml" />
         <title>{{ .Title }}</title>
-        <link>https://{{ .Domain }}/logs/</link>
+        <link>https://{{ .Domain }}/{{ .URI }}/</link>
         <description>{{ .PageDescription }}</description>
         <language>fr-fr</language>
         {{ $domain := .Domain }}
-        {{ range .Logs }}
+        {{ range .Section.Data }}
         <item>
-            <title>{{ .LogTitle }}</title>
-            <link>https://{{ $domain }}/logs/{{ .Slug }}</link>
-            <guid>https://{{ $domain }}/logs/{{ .Slug }}</guid>
+            <title>{{ .DataTitle }}</title>
+            <link>https://{{ $domain }}/{{ .URI }}/{{ .Slug }}</link>
+            <guid>https://{{ $domain }}/{{ .URI }}/{{ .Slug }}</guid>
             <description>{{ .Description }}</description>
             <pubDate>{{ .PubDateRSS }}</pubDate>
         </item>
