@@ -37,6 +37,7 @@ type data struct {
 	Logo            *Logo
 	Quote           string
 	Language        string
+	section         string
 }
 
 func (d *data) SetData(data *data) {
@@ -148,7 +149,7 @@ func (d *data) handleRSS(w http.ResponseWriter, r *http.Request, custom dataUsab
 func (d *data) Title() string {
 	title := d.Name
 	if d.Article {
-		title += " - log entry"
+		title = fmt.Sprintf("%s - %s entry", title, d.section)
 	}
 	if len(d.title) != 0 {
 		title += " - " + d.title

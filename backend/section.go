@@ -193,6 +193,7 @@ func (s *Section) handleOne(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	d.section = s.Name[:len(s.Name)-1]
 	d.handleGeneric(w, r, "data", d)
 }
 
