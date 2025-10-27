@@ -173,6 +173,7 @@ func (s *Section) handleRSS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	d.title = s.Name
+	d.PageDescription = s.Description
 	d.handleRSS(w, r, d)
 }
 
