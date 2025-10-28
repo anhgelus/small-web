@@ -8,11 +8,11 @@
   gap: calc(1.5 * var(--margin-header));
 }
 
-article article {
-  margin-bottom: var(--margin-header);
-  &:last-child {
-    margin-bottom: 0;
-  }
+section > article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--margin-base);
+  margin-top: var(--margin-header);
 }
 
 .pagination {
