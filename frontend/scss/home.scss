@@ -12,7 +12,7 @@ section > article {
   display: flex;
   flex-direction: column;
   gap: var(--margin-base);
-  margin-top: var(--margin-header);
+  margin-top: calc(2 * var(--margin-base));
 }
 
 .pagination {
