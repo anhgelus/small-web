@@ -67,15 +67,26 @@ func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
 		LogRequestHeaders:  []string{"Origin"},
 		LogResponseHeaders: []string{},
 	}))
+	// security headers
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			r.Header.Add("Access-Control-Allow-Origin", fmt.Sprintf("https://%s", cfg.Domain))
+			// prevent tracking
+			w.Header().Add("Referrer-Policy", "no-referrer")
+			// prevent iframe
+			w.Header().Add("X-Frame-Options", "deny")
+			// prevent bad content being parsed
+			w.Header().Add("X-Content-Type-Options", "nosniff")
+			w.Header().Add("X-Permitted-Cross-Domain-Policies", "none")
+			// content security, cors & co
+			w.Header().Add("Content-Security-Policy", fmt.Sprintf("default-src 'self' *.%s; object-src 'none';", cfg.Domain))
+			w.Header().Add("Access-Control-Allow-Origin", fmt.Sprintf("https://%s", cfg.Domain))
 			if !debug {
-				r.Header.Add("Access-Control-Max-Age", fmt.Sprintf("%d", 24*60*60))
+				w.Header().Add("Access-Control-Max-Age", fmt.Sprintf("%d", 24*60*60))
 			}
 			next.ServeHTTP(w, r)
 		})
 	})
+	// context
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), configKey, cfg)

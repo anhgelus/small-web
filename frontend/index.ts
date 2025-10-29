@@ -1,6 +1,7 @@
 import htmx from "htmx.org";
 
 htmx.config.historyRestoreAsHxRequest = false;
+htmx.config.includeIndicatorStyles = false;
 
 function setupAnchors() {
   document.querySelectorAll("a").forEach((e) => {
