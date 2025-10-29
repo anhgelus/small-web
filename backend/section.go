@@ -20,6 +20,7 @@ import (
 
 var (
 	sections = map[string]map[string]*sectionData{}
+	now      = time.Now()
 )
 
 type Section struct {
@@ -50,7 +51,12 @@ func (d *sectionData) PubDate() string {
 }
 
 func (d *sectionData) PubDateRSS() string {
-	return d.PubLocalDate.AsTime(time.Local).Format(time.RFC1123Z) // because RFC822 in go isn't RFC822???
+	t := d.PubLocalDate.AsTime(time.Local)
+	// if same day, assume that it's published now
+	if t.Year() == now.Year() && t.Month() == now.Month() && t.Day() == now.Day() {
+		t = now
+	}
+	return t.Format(time.RFC1123Z) // because RFC822 in go isn't RFC822???
 }
 
 func (d *sectionData) Title() string {
