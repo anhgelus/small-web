@@ -21,9 +21,9 @@
       <p></p>
       {{end}}
     </nav>
-    {{ else }}
+    {{ else }} {{ if eq (len .Data) .LenMax }}
     <a href="/{{ $uri }}/">Voir plus</a>
-    {{ end }}
+    {{ end }} {{ end }}
   </div>
 </article>
 {{end}}

@@ -29,6 +29,7 @@ type Section struct {
 	Description string         `toml:"description"`
 	URI         string         `toml:"uri"`
 	Data        []*sectionData `toml:"-"`
+	LenMax      int            `toml:"-"`
 	Paginate    bool           `toml:"-"`
 	PagesNumber int            `toml:"-"`
 	CurrentPage int            `toml:"-"`

@@ -127,6 +127,7 @@ func handleGenericSectionDisplay(_ http.ResponseWriter, _ *http.Request, section
 		if len(sec.Data) == 0 {
 			sec.sort()
 		}
+		sec.LenMax = maxLogsPerPage
 		sec.Data = sec.Data[:min(maxLogsPerPage, len(sec.Data))]
 		d.Sections = append(d.Sections, &sec)
 	}
