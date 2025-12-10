@@ -58,6 +58,10 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 			n = 0
 			tree.content = append(tree.content, astLiteral(s))
 		case lexerModifier:
+			// replace line break by space
+			if n > 0 {
+				tree.content = append(tree.content, astLiteral(" "))
+			}
 			n = 0
 			mod, err := modifier(lxs)
 			if err != nil {
