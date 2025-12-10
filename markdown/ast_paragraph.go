@@ -73,9 +73,13 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 				lxs.Before() // because we did not use it
 				return tree, nil
 			}
-			n = 0
-			if lxs.Current().Value == "!" {
-				tree.content = append(tree.content, astLiteral(lxs.Current().Value))
+			if lxs.Current().Value != "[" {
+				//if lxs.Current().Value == "!" {
+				s := lxs.Current().Value
+				if n > 0 {
+					s = " " + s
+				}
+				tree.content = append(tree.content, astLiteral(s))
 			} else {
 				ext, err := external(lxs)
 				if err != nil {
@@ -83,6 +87,7 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 				}
 				tree.content = append(tree.content, ext)
 			}
+			n = 0
 		case lexerCode:
 			if len(lxs.Current().Value) > 1 {
 				return nil, &ParseError{lxs: *lxs, internal: ErrInvalidCodeBlockPosition}
