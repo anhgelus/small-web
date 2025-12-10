@@ -165,7 +165,7 @@ func getStatic(path string) string {
 	if regexIsHttp.MatchString(path) {
 		return path
 	}
-	return fmt.Sprintf("/static/%s", path)
+	return fmt.Sprintf("/static/%s", strings.TrimPrefix(path, "/"))
 }
 
 type assetData struct {

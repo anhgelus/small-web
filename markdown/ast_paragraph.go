@@ -65,6 +65,10 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 			}
 			tree.content = append(tree.content, mod)
 		case lexerExternal:
+			if n > 0 && lxs.Current().Value == "![" {
+				lxs.Before() // because we did not use it
+				return tree, nil
+			}
 			n = 0
 			if lxs.Current().Value == "!" {
 				tree.content = append(tree.content, astLiteral(lxs.Current().Value))

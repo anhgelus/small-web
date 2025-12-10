@@ -32,6 +32,7 @@ func TestExternal(t *testing.T) {
 	}
 
 	lxs = lex(`
+Avant la source
 ![image alt](image src)
 source 1
 source 2
@@ -46,7 +47,7 @@ Hors de la source
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(got) != `<figure><img alt="image alt" src="image src"><figcaption>source 1 source 2</figcaption></figure><p>Hors de la source</p>` {
+	if string(got) != `<p>Avant la source</p><figure><img alt="image alt" src="image src"><figcaption>source 1 source 2</figcaption></figure><p>Hors de la source</p>` {
 		t.Errorf("invalid value, got %s", got)
 	}
 

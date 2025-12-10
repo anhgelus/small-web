@@ -1,6 +1,9 @@
 package markdown
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type lexerType string
 
@@ -26,7 +29,7 @@ type lexer struct {
 }
 
 func (l lexer) String() string {
-	return fmt.Sprintf("%s(%s)", l.Type, l.Value)
+	return fmt.Sprintf("%s(%s)", l.Type, strings.ReplaceAll(l.Value, "\n", `{\n}`))
 }
 
 type lexers struct {

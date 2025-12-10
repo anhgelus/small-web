@@ -12,7 +12,7 @@ func TestLex(t *testing.T) {
 		t.Errorf("invalid lex, got %s", lxs)
 	}
 	lxs = lex("# bonjour les gens\nComment ça va ?")
-	if lxs.String() != "Lexers[header(#) literal( bonjour les gens) break(\n) literal(Comment ça va ?) ]" {
+	if lxs.String() != `Lexers[header(#) literal( bonjour les gens) break({\n}) literal(Comment ça va ?) ]` {
 		t.Errorf("invalid lex, got %s", lxs)
 	}
 	lxs = lex("***hey***, what's up?")
