@@ -110,7 +110,11 @@ func (s *Section) readDir(path string, dir []os.DirEntry) error {
 			}
 		} else {
 			if !strings.HasSuffix(d.Name(), ".md") {
-				return fmt.Errorf("file %s is not a markdown file", d.Name())
+				if strings.HasSuffix(d.Name(), ".bp") {
+					slog.Debug("ignoring backup file", "path", path+"/"+d.Name())
+					continue
+				}
+				return fmt.Errorf("file %s is not a markdown file or a backup file", d.Name())
 			}
 			slug := strings.TrimSuffix(p, ".md")
 			sec, ok := sections[s.Name]
