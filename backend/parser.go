@@ -18,6 +18,23 @@ type EntryInfo struct {
 	PubLocalDate toml.LocalDate `toml:"publication_date"`
 }
 
+func renderLinkFunc(url string) func(string, string) template.HTML {
+	return func(content, href string) template.HTML {
+		b := "<a"
+		if href == url || (href != "/" && url != "/" && strings.HasPrefix(url, href)) {
+			b += ` class="target"`
+		}
+		if markdown.ExternalLink.MatchString(href) {
+			b += ` target="_blank"`
+		}
+		return template.HTML(fmt.Sprintf(`%s href="%s">%s</a>`, b, href, content))
+	}
+}
+
+func renderLink(content, href, url string) template.HTML {
+	return renderLinkFunc(url)(content, href)
+}
+
 func parse(b []byte, info *EntryInfo, d *data) (template.HTML, bool) {
 	var dd string
 	splits := strings.SplitN(string(b), "---", 2)
@@ -31,7 +48,10 @@ func parse(b []byte, info *EntryInfo, d *data) (template.HTML, bool) {
 	} else {
 		dd = string(b)
 	}
-	content, err := markdown.Parse(dd, &markdown.Option{ImageSource: getStatic})
+	opt := new(markdown.Option)
+	opt.ImageSource = getStatic
+	opt.RenderLink = renderLinkFunc(d.URL)
+	content, err := markdown.Parse(dd, opt)
 	var errMd *markdown.ParseError
 	errors.As(err, &errMd)
 	if errMd != nil {

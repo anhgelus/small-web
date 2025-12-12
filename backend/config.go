@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 
-	"git.anhgelus.world/anhgelus/small-web/markdown"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -14,8 +13,8 @@ type Link struct {
 	URL  string `toml:"url"`
 }
 
-func (l *Link) Render() template.HTML {
-	return markdown.RenderLink(l.Name, l.URL)
+func (l *Link) Render(url string) template.HTML {
+	return renderLink(l.Name, l.URL, url)
 }
 
 type Logo struct {

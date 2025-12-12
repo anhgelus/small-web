@@ -6,21 +6,19 @@
   "scripts": {
     "build:sass": "sass --no-source-map --style=compressed frontend/scss/main.scss dist/styles.css",
     "watch:sass": "sass --watch frontend/scss/main.scss dist/styles.css",
-    "build:js": "bun build frontend/index.ts --outdir ./dist --minify",
-    "build": "bun run build:sass && bun run build:js",
+    "build": "bun run build:sass",
     "format": "prettier . --write"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "prettier": "^3.6.2"
+    "prettier": "^3.7.4"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "htmx.org": "2.0.7",
     "reset-css": "^5.0.2",
-    "sass": "^1.93.2",
+    "sass": "^1.95.1",
     "scss": "^0.2.4"
   }
 }

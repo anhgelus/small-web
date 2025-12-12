@@ -11,7 +11,6 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strings"
 	txt "text/template"
@@ -103,11 +102,6 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 		panic(err)
 	}
 	exec := "base.html"
-	if r.Context().Value(isUpdateKey).(bool) {
-		exec = "body"
-		w.Header().Set("Updated-Title", url.QueryEscape(d.Title()))
-		w.Header().Set("Updated-Quote", url.QueryEscape(d.Quote))
-	}
 	if custom == nil {
 		err = t.ExecuteTemplate(w, exec, d)
 	} else {

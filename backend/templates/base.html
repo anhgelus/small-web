@@ -28,10 +28,11 @@
     <meta name="twitter:description" content="{{ .PageDescription }}" />
     <meta name="twitter:image" content="{{ fullStatic .Image }}" />
   </head>
-  <body hx-push-url="true">
+  <body>
     <header>
       <img src="{{ static .Logo.Header }}" alt="Logo" />
-      <nav>{{ range .Links }}{{ .Render }}{{end}}</nav>
+      {{ $url := .URL }}
+      <nav>{{ range .Links }}{{ .Render $url }}{{end}}</nav>
     </header>
     {{ template "body" . }}
     <footer>
@@ -42,7 +43,5 @@
         <a href="https://git.anhgelus.world/anhgelus/small-web" target="_blank" rel="noreferrer">code source</a>.
       </p>
     </footer>
-    {{ $script := asset "index.js" }}
-    <script src="{{ $script.Src }}" integrity="{{ $script.Checksum }}" defer></script>
   </body>
 </html>

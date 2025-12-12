@@ -13,9 +13,8 @@ It aims to be simple, minimalist, brutalist, indie, and personnal.
 
 Backend written in modern Go.
 
-Light CSS, light JS, runs everywhere.
+Light CSS, runs everywhere.
 SSR first.
-Optional HTMX to fluidify the navigation.
 
 Content written in markdown.
 

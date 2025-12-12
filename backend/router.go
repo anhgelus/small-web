@@ -19,7 +19,6 @@ import (
 const (
 	Version     = "0.4.0"
 	configKey   = "config"
-	isUpdateKey = "is_update"
 	assetsFSKey = "assets_fs"
 	debugKey    = "debug"
 )
@@ -92,16 +91,6 @@ func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
 			ctx := context.WithValue(r.Context(), configKey, cfg)
 			ctx = context.WithValue(ctx, assetsFSKey, assets)
 			ctx = context.WithValue(ctx, debugKey, debug)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	})
-	r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			val := false
-			if r.Header.Get("HX-Request") == "true" {
-				val = true
-			}
-			ctx := context.WithValue(r.Context(), isUpdateKey, val)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	})

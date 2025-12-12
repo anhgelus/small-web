@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-var externalLink = regexp.MustCompile(`https?://`)
+var ExternalLink = regexp.MustCompile(`https?://`)
 
 type astLink struct {
 	content  block
@@ -23,7 +23,7 @@ func (a *astLink) Eval(opt *Option) (template.HTML, *ParseError) {
 	if err != nil {
 		return "", err
 	}
-	rr := RenderLink(string(content), string(href))
+	rr := opt.RenderLink(string(content), string(href))
 	if a.addSpace {
 		return " " + rr, nil
 	}
@@ -31,7 +31,7 @@ func (a *astLink) Eval(opt *Option) (template.HTML, *ParseError) {
 }
 
 func RenderLink(content, href string) template.HTML {
-	if !externalLink.Match([]byte(href)) {
+	if !ExternalLink.Match([]byte(href)) {
 		return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, href, content))
 	}
 	return template.HTML(fmt.Sprintf(`<a href="%s" target="_blank" rel="noreferer">%s</a>`, href, content))

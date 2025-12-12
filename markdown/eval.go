@@ -3,7 +3,8 @@ package markdown
 import "html/template"
 
 type Option struct {
-	ImageSource func(string) string
+	ImageSource func(source string) string
+	RenderLink  func(content, href string) template.HTML
 }
 
 func Parse(s string, opt *Option) (template.HTML, *ParseError) {
@@ -17,6 +18,9 @@ func Parse(s string, opt *Option) (template.HTML, *ParseError) {
 	}
 	if opt.ImageSource == nil {
 		opt.ImageSource = func(s string) string { return s }
+	}
+	if opt.RenderLink == nil {
+		opt.RenderLink = RenderLink
 	}
 	return tree.Eval(opt)
 }

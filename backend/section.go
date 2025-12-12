@@ -216,6 +216,7 @@ func (s *Section) parse(d *sectionData, mu *sync.Mutex, path, slug string) bool 
 		panic(err)
 	}
 	var ok bool
+	d.data.URL = fmt.Sprintf("/%s/%s", s.URI, slug)
 	d.Content, ok = parse(b, &d.EntryInfo, d.data)
 	if !ok {
 		return false

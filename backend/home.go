@@ -83,6 +83,7 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 			}
 			panic(err)
 		}
+		d.URL = "/" + name
 		d.Content, ok = parse(b, new(EntryInfo), d.data)
 		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
