@@ -1,3 +1,3 @@
 #!/usr/bin/bash
 
-rsync -rvz ./* vps:~/small-web-data/
+rsync -rvz ./{public,data,config.toml,*.sh} vps:~/small-web-data/
