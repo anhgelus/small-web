@@ -1,9 +1,10 @@
 package markdown
 
 import (
-	"fmt"
 	"html/template"
 	"strings"
+
+	"git.anhgelus.world/anhgelus/small-web/dom"
 )
 
 type astQuote struct {
@@ -12,15 +13,18 @@ type astQuote struct {
 }
 
 func (a *astQuote) Eval(opt *Option) (template.HTML, *ParseError) {
-	var quote template.HTML
+	var quoteContent template.HTML
 	for _, c := range a.quote {
 		ct, err := c.Eval(opt)
 		if err != nil {
 			return "", err
 		}
-		quote += ct
+		quoteContent += ct
 	}
-	quote = template.HTML(fmt.Sprintf("<blockquote>%s</blockquote>", trimSpace(quote)))
+	blockquote := dom.NewLiteralContentElement(
+		"blockquote",
+		template.HTML(strings.TrimSpace(string(quoteContent))),
+	)
 	var source template.HTML
 	for _, c := range a.source {
 		ct, err := c.Eval(opt)
@@ -30,10 +34,13 @@ func (a *astQuote) Eval(opt *Option) (template.HTML, *ParseError) {
 		source += ct
 	}
 	source = template.HTML(strings.TrimSpace(string(source)))
+	quote := dom.NewContentElement("div", make([]dom.Element, 0))
+	quote.ClassList().Add("quote")
+	quote.Contents = append(quote.Contents, blockquote)
 	if len(source) > 0 {
-		return template.HTML(fmt.Sprintf(`<div class="quote">%s<p>%s</p></div>`, quote, source)), nil
+		quote.Contents = append(quote.Contents, dom.NewParagraph(source))
 	}
-	return template.HTML(fmt.Sprintf(`<div class="quote">%s</div>`, quote)), nil
+	return quote.Render(), nil
 }
 
 func quote(lxs *lexers) (*astQuote, *ParseError) {

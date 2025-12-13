@@ -1,9 +1,10 @@
 package markdown
 
 import (
-	"fmt"
 	"html/template"
 	"regexp"
+
+	"git.anhgelus.world/anhgelus/small-web/dom"
 )
 
 var ExternalLink = regexp.MustCompile(`https?://`)
@@ -31,10 +32,12 @@ func (a *astLink) Eval(opt *Option) (template.HTML, *ParseError) {
 }
 
 func RenderLink(content, href string) template.HTML {
-	if !ExternalLink.Match([]byte(href)) {
-		return template.HTML(fmt.Sprintf(`<a href="%s">%s</a>`, href, content))
+	anchor := dom.NewLiteralContentElement("a", template.HTML(content))
+	anchor.SetAttribute("href", href)
+	if ExternalLink.MatchString(href) {
+		anchor.SetAttribute("target", "_blank").SetAttribute("rel", "noreferer")
 	}
-	return template.HTML(fmt.Sprintf(`<a href="%s" target="_blank" rel="noreferer">%s</a>`, href, content))
+	return anchor.Render()
 }
 
 type astImage struct {
@@ -53,8 +56,10 @@ func (a *astImage) Eval(opt *Option) (template.HTML, *ParseError) {
 		return "", err
 	}
 	src = template.HTML(opt.ImageSource(string(src)))
+	img := dom.NewImg(string(src), string(alt))
+	figure := dom.NewContentElement("figure", []dom.Element{img})
 	if a.source == nil {
-		return template.HTML(fmt.Sprintf(`<figure><img alt="%s" src="%s"></figure>`, alt, src)), nil
+		return figure.Render(), nil
 	}
 	var s template.HTML
 	for _, c := range a.source {
@@ -65,7 +70,9 @@ func (a *astImage) Eval(opt *Option) (template.HTML, *ParseError) {
 		s += ct + " "
 	}
 	s = s[:len(s)-1]
-	return template.HTML(fmt.Sprintf(`<figure><img alt="%s" src="%s"><figcaption>%s</figcaption></figure>`, alt, src, s)), nil
+	figcaption := dom.NewLiteralContentElement("figcaption", s)
+	figure.Contents = append(figure.Contents, figcaption)
+	return figure.Render(), nil
 }
 
 func external(lxs *lexers) (block, *ParseError) {

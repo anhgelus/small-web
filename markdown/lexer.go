@@ -14,9 +14,9 @@ const (
 
 	lexerCode lexerType = "code"
 
-	lexerHeader lexerType = "header"
-	lexerQuote  lexerType = "quote"
-	lexerList   lexerType = "list"
+	lexerHeading lexerType = "header"
+	lexerQuote   lexerType = "quote"
+	lexerList    lexerType = "list"
 
 	lexerExternal lexerType = "external"
 
@@ -115,7 +115,7 @@ func lex(s string) *lexers {
 			fn(c, lexerBreak, nil)
 		case '#':
 			newLine = false
-			fn(c, lexerHeader, nil)
+			fn(c, lexerHeading, nil)
 		case '>':
 			newLine = false
 			fn(c, lexerQuote, nil)

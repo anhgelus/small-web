@@ -2,18 +2,20 @@ package markdown
 
 import (
 	"errors"
-	"fmt"
 	"html/template"
+	"strings"
+
+	"git.anhgelus.world/anhgelus/small-web/dom"
 )
 
 var ErrInvalidHeader = errors.New("invalid header")
 
-type astHeader struct {
+type astHeading struct {
 	level   uint
 	content *astParagraph
 }
 
-func (a *astHeader) Eval(opt *Option) (template.HTML, *ParseError) {
+func (a *astHeading) Eval(opt *Option) (template.HTML, *ParseError) {
 	if a.level > 6 {
 		return "", &ParseError{lxs: lexers{}, internal: ErrInvalidCodeFormat}
 	}
@@ -22,11 +24,14 @@ func (a *astHeader) Eval(opt *Option) (template.HTML, *ParseError) {
 	if err != nil {
 		return "", err
 	}
-	return template.HTML(fmt.Sprintf("<h%d>%s</h%d>", a.level, trimSpace(content), a.level)), nil
+	return dom.NewHeading(
+		a.level,
+		template.HTML(strings.TrimSpace(string(content))),
+	).Render(), nil
 }
 
-func header(lxs *lexers) (*astHeader, *ParseError) {
-	b := &astHeader{level: uint(len(lxs.Current().Value))}
+func heading(lxs *lexers) (*astHeading, *ParseError) {
+	b := &astHeading{level: uint(len(lxs.Current().Value))}
 	if !lxs.Next() {
 		return nil, &ParseError{lxs: *lxs, internal: ErrInvalidHeader}
 	}

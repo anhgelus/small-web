@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+
+	"git.anhgelus.world/anhgelus/small-web/dom"
 )
 
 var (
@@ -38,7 +40,7 @@ func (a *astModifier) Eval(opt *Option) (template.HTML, *ParseError) {
 	if a.super {
 		return content, nil
 	}
-	return template.HTML(fmt.Sprintf("<%s>%s</%s>", a.tag, content, a.tag)), nil
+	return dom.NewLiteralContentElement(string(a.tag), content).Render(), nil
 }
 
 func (a *astModifier) String() string {
@@ -66,7 +68,7 @@ func modifier(lxs *lexers) (*astModifier, error) {
 	var s string
 	for lxs.Next() {
 		switch lxs.Current().Type {
-		case lexerLiteral, lexerHeader, lexerList:
+		case lexerLiteral, lexerHeading, lexerList:
 			s += lxs.Current().Value
 		case lexerModifier:
 			if mod.super && []rune(mod.symbols)[0] == []rune(lxs.Current().Value)[0] &&

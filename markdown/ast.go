@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"strings"
 )
 
 var ErrUnkownLexType = errors.New("unkown lex type")
@@ -63,11 +62,11 @@ func getBlock(lxs *lexers, newLine bool) (block, *ParseError) {
 	var b block
 	var err *ParseError
 	switch lxs.Current().Type {
-	case lexerHeader:
+	case lexerHeading:
 		if !newLine {
 			b, err = paragraph(lxs, false)
 		} else {
-			b, err = header(lxs)
+			b, err = heading(lxs)
 		}
 	case lexerExternal:
 		if newLine && lxs.Current().Value == "![" {
@@ -106,8 +105,4 @@ func getBlock(lxs *lexers, newLine bool) (block, *ParseError) {
 		}
 	}
 	return b, err
-}
-
-func trimSpace(s template.HTML) template.HTML {
-	return template.HTML(strings.TrimSpace(string(s)))
 }

@@ -2,8 +2,10 @@ package markdown
 
 import (
 	"errors"
-	"fmt"
+	"html"
 	"html/template"
+
+	"git.anhgelus.world/anhgelus/small-web/dom"
 )
 
 var (
@@ -26,11 +28,15 @@ type astCode struct {
 }
 
 func (a *astCode) Eval(_ *Option) (template.HTML, *ParseError) {
+	content := template.HTML(html.EscapeString(a.content))
 	switch a.codeType {
 	case codeOneLine:
-		return template.HTML(fmt.Sprintf("<code>%s</code>", template.HTMLEscapeString(a.content))), nil
+		return dom.NewLiteralContentElement("code", content).Render(), nil
 	case codeMultiLine:
-		return template.HTML(fmt.Sprintf("<pre><code>%s</code></pre>", template.HTMLEscapeString(a.content))), nil
+		pre := dom.NewContentElement("pre", make([]dom.Element, 1))
+		code := dom.NewContentElement("code", []dom.Element{dom.NewLiteralElement(content)})
+		pre.Contents[0] = code
+		return pre.Render(), nil
 	default:
 		return "", &ParseError{lxs: lexers{}, internal: ErrUnknownCodeType}
 	}
