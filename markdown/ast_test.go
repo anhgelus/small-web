@@ -40,18 +40,13 @@ var parsed = `
 <ol><li>et maintenant</li><li>elle l&#39;est</li></ol>
 <ul><li>hehe</li></ul>
 <figure>
-<img alt="Ceci est ma pfp :3" src="https://cdn.anhgelus.world/pfp.jpg">
+<img alt="Ceci est ma pfp :3" src="https://cdn.anhgelus.world/pfp.jpg" />
 <figcaption> <a href="https://now.anhgelus.world/" target="_blank" rel="noreferer">Ma pfp</a> hehe :D Elle est <b>magnifique</b>, n&#39;est-ce pas ?</figcaption>
 </figure>
 `
 
 func TestAst(t *testing.T) {
-	lxs := lex(raw)
-	tree, err := ast(lxs)
-	if err != nil {
-		t.Fatal(err)
-	}
-	res, err := tree.Eval(nil)
+	res, err := Parse(raw, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

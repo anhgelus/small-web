@@ -1,5 +1,7 @@
 package dom
 
+import "strings"
+
 type ClassList map[string]struct{}
 
 func (cl ClassList) set(e Element) Element {
@@ -10,7 +12,7 @@ func (cl ClassList) set(e Element) Element {
 	for k := range cl {
 		classes += k + " "
 	}
-	classes = classes[:len(cl)-1]
+	classes = strings.TrimSpace(classes)
 	return e.SetAttribute("class", classes)
 }
 

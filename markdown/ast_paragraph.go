@@ -2,8 +2,10 @@ package markdown
 
 import (
 	"errors"
-	"fmt"
 	"html/template"
+	"strings"
+
+	"git.anhgelus.world/anhgelus/small-web/dom"
 )
 
 var (
@@ -27,7 +29,9 @@ func (a *astParagraph) Eval(opt *Option) (template.HTML, *ParseError) {
 	if a.oneLine {
 		return content, nil
 	}
-	return template.HTML(fmt.Sprintf("<p>%s</p>", trimSpace(content))), nil
+	return dom.NewParagraph(
+		template.HTML(strings.TrimSpace(string(content))),
+	).Render(), nil
 }
 
 func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {

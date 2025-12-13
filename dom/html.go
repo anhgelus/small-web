@@ -2,7 +2,6 @@ package dom
 
 import (
 	"fmt"
-	"html"
 	"html/template"
 )
 
@@ -25,12 +24,10 @@ type Element interface {
 	ClassList() ClassList
 }
 
-type LiteralElement struct {
-	Content string
-}
+type LiteralElement template.HTML
 
 func (e LiteralElement) Render() template.HTML {
-	return template.HTML(html.EscapeString(e.Content))
+	return template.HTML(e)
 }
 
 func (LiteralElement) HasAttribute(string) bool {
@@ -49,8 +46,8 @@ func (e LiteralElement) ClassList() ClassList {
 	return nil
 }
 
-func NewLiteralElement(s string) LiteralElement {
-	return LiteralElement{s}
+func NewLiteralElement(s template.HTML) LiteralElement {
+	return LiteralElement(s)
 }
 
 type VoidElement struct {
@@ -60,7 +57,7 @@ type VoidElement struct {
 }
 
 func (e VoidElement) Render() template.HTML {
-	e = e.cl.set(e).(VoidElement)
+	e.cl.set(e)
 	return render(e.Tag, e.attributes, true)
 }
 
@@ -88,7 +85,7 @@ func NewVoidElement(tag string) VoidElement {
 }
 
 func NewImg(src, alt string) Element {
-	return NewVoidElement("img").SetAttribute("src", src).SetAttribute("alt", alt)
+	return NewVoidElement("img").SetAttribute("alt", alt).SetAttribute("src", src)
 }
 
 type ContentElement struct {
@@ -97,7 +94,7 @@ type ContentElement struct {
 }
 
 func (e ContentElement) Render() template.HTML {
-	e = e.cl.set(e).(ContentElement)
+	e.cl.set(e)
 	base := render(e.Tag, e.attributes, false)
 	for _, el := range e.Contents {
 		base += el.Render()
@@ -109,6 +106,14 @@ func NewContentElement(tag string, contents []Element) ContentElement {
 	return ContentElement{NewVoidElement(tag), contents}
 }
 
-func NewParagraph(content string) Element {
-	return NewContentElement("p", []Element{NewLiteralElement(content)})
+func NewLiteralContentElement(tag string, content template.HTML) Element {
+	return NewContentElement(tag, []Element{NewLiteralElement(content)})
+}
+
+func NewParagraph(content template.HTML) Element {
+	return NewLiteralContentElement("p", content)
+}
+
+func NewHeading(level uint, content template.HTML) Element {
+	return NewLiteralContentElement(fmt.Sprintf("h%d", level), content)
 }

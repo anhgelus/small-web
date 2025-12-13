@@ -1,9 +1,11 @@
 package markdown
 
 import (
-	"fmt"
 	"html/template"
 	"regexp"
+	"strings"
+
+	"git.anhgelus.world/anhgelus/small-web/dom"
 )
 
 var regexOrdered = regexp.MustCompile(`\d+\.`)
@@ -21,15 +23,18 @@ type astList struct {
 }
 
 func (a *astList) Eval(opt *Option) (template.HTML, *ParseError) {
-	var content template.HTML
+	list := dom.NewContentElement(string(a.tag), make([]dom.Element, 0))
 	for _, c := range a.content {
 		ct, err := c.Eval(opt)
 		if err != nil {
 			return "", err
 		}
-		content += template.HTML(fmt.Sprintf("<li>%s</li>", trimSpace(ct)))
+		list.Contents = append(list.Contents, dom.NewLiteralContentElement(
+			"li",
+			template.HTML(strings.TrimSpace(string(ct))),
+		))
 	}
-	return template.HTML(fmt.Sprintf("<%s>%s</%s>", a.tag, content, a.tag)), nil
+	return list.Render(), nil
 }
 
 func list(lxs *lexers) (block, *ParseError) {

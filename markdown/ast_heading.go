@@ -2,8 +2,10 @@ package markdown
 
 import (
 	"errors"
-	"fmt"
 	"html/template"
+	"strings"
+
+	"git.anhgelus.world/anhgelus/small-web/dom"
 )
 
 var ErrInvalidHeader = errors.New("invalid header")
@@ -22,7 +24,10 @@ func (a *astHeader) Eval(opt *Option) (template.HTML, *ParseError) {
 	if err != nil {
 		return "", err
 	}
-	return template.HTML(fmt.Sprintf("<h%d>%s</h%d>", a.level, trimSpace(content), a.level)), nil
+	return dom.NewHeading(
+		a.level,
+		template.HTML(strings.TrimSpace(string(content))),
+	).Render(), nil
 }
 
 func header(lxs *lexers) (*astHeader, *ParseError) {
