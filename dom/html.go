@@ -22,6 +22,7 @@ type Element interface {
 	HasAttribute(string) bool
 	SetAttribute(string, string) Element
 	RemoveAttribute(string) Element
+	ClassList() ClassList
 }
 
 type LiteralElement struct {
@@ -44,6 +45,10 @@ func (e LiteralElement) RemoveAttribute(string) Element {
 	return e
 }
 
+func (e LiteralElement) ClassList() ClassList {
+	return nil
+}
+
 func NewLiteralElement(s string) LiteralElement {
 	return LiteralElement{s}
 }
@@ -51,9 +56,11 @@ func NewLiteralElement(s string) LiteralElement {
 type VoidElement struct {
 	Tag        string
 	attributes map[string]string
+	cl         ClassList
 }
 
 func (e VoidElement) Render() template.HTML {
+	e = e.cl.set(e).(VoidElement)
 	return render(e.Tag, e.attributes, true)
 }
 
@@ -72,8 +79,12 @@ func (e VoidElement) RemoveAttribute(k string) Element {
 	return e
 }
 
+func (e VoidElement) ClassList() ClassList {
+	return e.cl
+}
+
 func NewVoidElement(tag string) VoidElement {
-	return VoidElement{tag, make(map[string]string)}
+	return VoidElement{tag, make(map[string]string), NewClassList()}
 }
 
 func NewImg(src, alt string) Element {
@@ -82,19 +93,22 @@ func NewImg(src, alt string) Element {
 
 type ContentElement struct {
 	VoidElement
-	Content Element
+	Contents []Element
 }
 
 func (e ContentElement) Render() template.HTML {
+	e = e.cl.set(e).(ContentElement)
 	base := render(e.Tag, e.attributes, false)
-	base += e.Content.Render()
+	for _, el := range e.Contents {
+		base += el.Render()
+	}
 	return base + template.HTML(fmt.Sprintf(`</%s>`, e.VoidElement.Tag))
 }
 
-func NewContentElement(tag string, content Element) ContentElement {
-	return ContentElement{NewVoidElement(tag), content}
+func NewContentElement(tag string, contents []Element) ContentElement {
+	return ContentElement{NewVoidElement(tag), contents}
 }
 
 func NewParagraph(content string) Element {
-	return NewContentElement("p", NewLiteralElement(content))
+	return NewContentElement("p", []Element{NewLiteralElement(content)})
 }
