@@ -33,10 +33,8 @@ func (a *astCode) Eval(_ *Option) (template.HTML, *ParseError) {
 	case codeOneLine:
 		return dom.NewLiteralContentElement("code", content).Render(), nil
 	case codeMultiLine:
-		pre := dom.NewContentElement("pre", make([]dom.Element, 1))
 		code := dom.NewContentElement("code", []dom.Element{dom.NewLiteralElement(content)})
-		pre.Contents[0] = code
-		return pre.Render(), nil
+		return dom.NewContentElement("pre", []dom.Element{code}).Render(), nil
 	default:
 		return "", &ParseError{lxs: lexers{}, internal: ErrUnknownCodeType}
 	}

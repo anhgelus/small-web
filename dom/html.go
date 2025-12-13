@@ -84,8 +84,8 @@ func NewVoidElement(tag string) VoidElement {
 	return VoidElement{tag, make(map[string]string), NewClassList()}
 }
 
-func NewImg(src, alt string) Element {
-	return NewVoidElement("img").SetAttribute("alt", alt).SetAttribute("src", src)
+func NewImg(src, alt template.HTML) Element {
+	return NewVoidElement("img").SetAttribute("alt", string(alt)).SetAttribute("src", string(src))
 }
 
 type ContentElement struct {

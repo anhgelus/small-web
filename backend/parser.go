@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"strings"
 
+	"git.anhgelus.world/anhgelus/small-web/dom"
 	"git.anhgelus.world/anhgelus/small-web/markdown"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -20,14 +21,15 @@ type EntryInfo struct {
 
 func renderLinkFunc(url string) func(string, string) template.HTML {
 	return func(content, href string) template.HTML {
-		b := "<a"
+		anchor := dom.NewLiteralContentElement("a", template.HTML(content))
+		anchor.SetAttribute("href", href)
 		if href == url || (href != "/" && url != "/" && strings.HasPrefix(url, href)) {
-			b += ` class="target"`
+			anchor.ClassList().Add("target")
 		}
 		if markdown.ExternalLink.MatchString(href) {
-			b += ` target="_blank"`
+			anchor.SetAttribute("target", "_blank").SetAttribute("rel", "noreferrer")
 		}
-		return template.HTML(fmt.Sprintf(`%s href="%s">%s</a>`, b, href, content))
+		return anchor.Render()
 	}
 }
 

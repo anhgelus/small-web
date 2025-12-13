@@ -56,7 +56,7 @@ func (a *astImage) Eval(opt *Option) (template.HTML, *ParseError) {
 		return "", err
 	}
 	src = template.HTML(opt.ImageSource(string(src)))
-	img := dom.NewImg(string(src), string(alt))
+	img := dom.NewImg(src, alt)
 	figure := dom.NewContentElement("figure", []dom.Element{img})
 	if a.source == nil {
 		return figure.Render(), nil
