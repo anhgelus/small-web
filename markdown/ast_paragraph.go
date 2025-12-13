@@ -53,7 +53,7 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 				return tree, nil
 			}
 			tree.content = append(tree.content, astLiteral(lxs.Current().Value))
-		case lexerLiteral, lexerHeader:
+		case lexerLiteral, lexerHeading:
 			s := lxs.Current().Value
 			// replace line break by space
 			if n > 0 && len(tree.content) != 0 {

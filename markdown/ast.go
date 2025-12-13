@@ -62,11 +62,11 @@ func getBlock(lxs *lexers, newLine bool) (block, *ParseError) {
 	var b block
 	var err *ParseError
 	switch lxs.Current().Type {
-	case lexerHeader:
+	case lexerHeading:
 		if !newLine {
 			b, err = paragraph(lxs, false)
 		} else {
-			b, err = header(lxs)
+			b, err = heading(lxs)
 		}
 	case lexerExternal:
 		if newLine && lxs.Current().Value == "![" {
