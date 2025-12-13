@@ -17,7 +17,7 @@ type astHeading struct {
 
 func (a *astHeading) Eval(opt *Option) (template.HTML, *ParseError) {
 	if a.level > 6 {
-		return "", &ParseError{lxs: lexers{}, internal: ErrInvalidCodeFormat}
+		return "", &ParseError{lxs: lexers{}, internal: ErrInvalidHeader}
 	}
 	var content template.HTML
 	content, err := a.content.Eval(opt)
