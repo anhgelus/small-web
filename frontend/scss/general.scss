@@ -114,6 +114,7 @@ blockquote {
 }
 
 figure {
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -127,16 +128,16 @@ figure {
   img {
     max-width: 100%;
     display: block;
-
-    &.large {
-      --max-width: var(--width-deco);
-      --width: min(calc(100vw - 4rem), var(--max-width));
-      margin-left: max(calc((100% - var(--max-width)) / 2), calc((100% - var(--width)) / 2));
-      width: var(--width);
-      max-width: var(--max-width);
-      max-height: none;
-    }
   }
+}
+
+.large {
+  --max-width: var(--width-deco);
+  --width: min(calc(100vw - 4rem), var(--max-width));
+  margin-left: max(calc((100% - var(--max-width)) / 2), calc((100% - var(--width)) / 2));
+  width: var(--width);
+  max-width: var(--max-width);
+  max-height: none;
 }
 
 figcaption {
