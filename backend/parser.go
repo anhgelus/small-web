@@ -50,10 +50,9 @@ func parse(b []byte, info *EntryInfo, d *data) (template.HTML, bool) {
 	} else {
 		dd = string(b)
 	}
-	opt := new(markdown.Option)
-	opt.ImageSource = getStatic
+	opt := defaultMarkdownOption
 	opt.RenderLink = renderLinkFunc(d.URL)
-	content, err := markdown.Parse(dd, opt)
+	content, err := markdown.Parse(dd, &opt)
 	var errMd *markdown.ParseError
 	errors.As(err, &errMd)
 	if errMd != nil {

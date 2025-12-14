@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 
+	"git.anhgelus.world/anhgelus/small-web/markdown"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -22,6 +23,11 @@ type Logo struct {
 	Favicon string `toml:"favicon"`
 }
 
+type Replacer struct {
+	Symbol  string `toml:"symbol"`
+	Replace string `tomle:"replace"`
+}
+
 type Config struct {
 	Domain       string   `toml:"domain"`
 	Name         string   `toml:"name"`
@@ -37,6 +43,8 @@ type Config struct {
 
 	Links []Link `toml:"links"`
 	Logo  Logo   `toml:"logo"`
+
+	Replacers []Replacer `toml:"replacers"`
 }
 
 func (c *Config) DefaultValues() {
@@ -66,7 +74,10 @@ func (c *Config) DefaultValues() {
 	c.RootFolder = "data"
 	c.PublicFolder = "public"
 	c.Quotes = []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do."}
+	c.Replacers = []Replacer{{"~", "&thinsp;"}}
 }
+
+var defaultMarkdownOption markdown.Option
 
 func LoadConfig(path string) (*Config, bool) {
 	b, err := os.ReadFile(path)
@@ -96,6 +107,15 @@ func LoadConfig(path string) (*Config, bool) {
 	if err != nil {
 		slog.Error("unmarshalling config file", "error", err)
 		return nil, false
+	}
+	defaultMarkdownOption.ImageSource = getStatic
+	defaultMarkdownOption.Replaces = make(map[rune]string, len(config.Replacers))
+	for _, r := range config.Replacers {
+		if len(r.Symbol) != 1 {
+			slog.Error("invalid symbol in config", "symbol", r.Symbol)
+			return nil, false
+		}
+		defaultMarkdownOption.Replaces[[]rune(r.Symbol)[0]] = r.Replace
 	}
 	return &config, true
 }
