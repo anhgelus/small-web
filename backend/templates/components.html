@@ -7,7 +7,7 @@
       <a href="/{{ $uri }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
       <figcaption>{{ .Img.Legend }}</figcaption>
     </figure>
-    <p>{{ .Description }}</p>
+    {{ .Description }}
   </article>
   {{ end }}
   <div class="pagination">
