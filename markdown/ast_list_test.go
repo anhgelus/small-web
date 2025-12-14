@@ -27,7 +27,7 @@ var expected = `
 `
 
 func TestList(t *testing.T) {
-	lxs := lex(rw)
+	lxs := lex(rw, new(Option))
 	tree, err := ast(lxs)
 	if err != nil {
 		t.Fatal(err)

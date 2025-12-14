@@ -7,7 +7,7 @@ func TestQuote(t *testing.T) {
 > Bonsoir, je suis un **code**
 avec une source
 `
-	lxs := lex(content)
+	lxs := lex(content, new(Option))
 	tree, err := ast(lxs)
 	if err != nil {
 		t.Fatal(err)
