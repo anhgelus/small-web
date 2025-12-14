@@ -1,18 +1,16 @@
 package markdown
 
-import "html/template"
+import (
+	"html/template"
+)
 
 type Option struct {
 	ImageSource func(source string) string
 	RenderLink  func(content, href string) template.HTML
+	Replaces    map[rune]string
 }
 
 func Parse(s string, opt *Option) (template.HTML, *ParseError) {
-	lxs := lex(s)
-	tree, err := ast(lxs)
-	if err != nil {
-		return "", err
-	}
 	if opt == nil {
 		opt = new(Option)
 	}
@@ -21,6 +19,14 @@ func Parse(s string, opt *Option) (template.HTML, *ParseError) {
 	}
 	if opt.RenderLink == nil {
 		opt.RenderLink = RenderLink
+	}
+	if opt.Replaces == nil {
+		opt.Replaces = make(map[rune]string, 0)
+	}
+	lxs := lex(s, opt)
+	tree, err := ast(lxs)
+	if err != nil {
+		return "", err
 	}
 	return tree.Eval(opt)
 }

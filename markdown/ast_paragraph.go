@@ -42,6 +42,14 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 		maxBreak = 1
 	}
 	n := 0
+	asLiteral := func(conv func(s string) block) {
+		s := lxs.Current().Value
+		// replace line break by space
+		if n > 0 && len(tree.content) != 0 {
+			s = " " + s
+		}
+		tree.content = append(tree.content, conv(s))
+	}
 	lxs.current-- // because we do not use it before the next
 	for lxs.Next() && n < maxBreak {
 		switch lxs.Current().Type {
@@ -52,21 +60,16 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 				lxs.Before() // because we did not use it
 				return tree, nil
 			}
-			tree.content = append(tree.content, astLiteral(lxs.Current().Value))
+			asLiteral(toAstLiteral)
 		case lexerLiteral, lexerHeading:
-			s := lxs.Current().Value
-			// replace line break by space
-			if n > 0 && len(tree.content) != 0 {
-				s = " " + s
-			}
-			n = 0
-			tree.content = append(tree.content, astLiteral(s))
+			asLiteral(toAstLiteral)
+		case lexerReplace:
+			asLiteral(toAstReplacer)
 		case lexerModifier:
 			// replace line break by space
 			if n > 0 {
 				tree.content = append(tree.content, astLiteral(" "))
 			}
-			n = 0
 			mod, err := modifier(lxs)
 			if err != nil {
 				return nil, &ParseError{lxs: *lxs, internal: err}
@@ -78,12 +81,7 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 				return tree, nil
 			}
 			if lxs.Current().Value != "[" {
-				//if lxs.Current().Value == "!" {
-				s := lxs.Current().Value
-				if n > 0 {
-					s = " " + s
-				}
-				tree.content = append(tree.content, astLiteral(s))
+				asLiteral(toAstLiteral)
 			} else {
 				ext, err := external(lxs)
 				if err != nil {
@@ -91,17 +89,18 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 				}
 				tree.content = append(tree.content, ext)
 			}
-			n = 0
 		case lexerCode:
 			if len(lxs.Current().Value) > 1 {
 				return nil, &ParseError{lxs: *lxs, internal: ErrInvalidCodeBlockPosition}
 			}
-			n = 0
 			b, err := code(lxs)
 			if err != nil {
 				return nil, err
 			}
 			tree.content = append(tree.content, b)
+		}
+		if lxs.Current().Type != lexerBreak {
+			n = 0
 		}
 	}
 	lxs.Before() // because we never handle the last item
@@ -112,4 +111,18 @@ type astLiteral string
 
 func (a astLiteral) Eval(_ *Option) (template.HTML, *ParseError) {
 	return template.HTML(template.HTMLEscapeString(string(a))), nil
+}
+
+func toAstLiteral(s string) block {
+	return astLiteral(s)
+}
+
+type astReplacer string
+
+func (a astReplacer) Eval(opt *Option) (template.HTML, *ParseError) {
+	return template.HTML(opt.Replaces[[]rune(a)[0]]), nil
+}
+
+func toAstReplacer(s string) block {
+	return astReplacer(s)
 }

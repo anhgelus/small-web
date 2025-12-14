@@ -6,7 +6,7 @@ func TestModifier(t *testing.T) {
 	content := `
 **bo*n*soir**, ça ***va* bien** ?
 `
-	lxs := lex(content)
+	lxs := lex(content, new(Option))
 	tree, err := ast(lxs)
 	if err != nil {
 		t.Fatal(err)

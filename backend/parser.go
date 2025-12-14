@@ -3,6 +3,7 @@ package backend
 import (
 	"errors"
 	"fmt"
+	"html"
 	"html/template"
 	"log/slog"
 	"strings"
@@ -14,7 +15,7 @@ import (
 
 type EntryInfo struct {
 	Title        string         `toml:"title"`
-	Description  string         `toml:"description"`
+	Description  template.HTML  `toml:"description"`
 	Img          image          `toml:"image"`
 	PubLocalDate toml.LocalDate `toml:"publication_date"`
 }
@@ -38,30 +39,37 @@ func renderLink(content, href, url string) template.HTML {
 }
 
 func parse(b []byte, info *EntryInfo, d *data) (template.HTML, bool) {
+	opt := defaultMarkdownOption
+	opt.RenderLink = renderLinkFunc(d.URL)
+
 	var dd string
+	var err error
 	splits := strings.SplitN(string(b), "---", 2)
 	if len(splits) == 2 && info != nil {
-		err := toml.Unmarshal([]byte(splits[0]), info)
+		err = toml.Unmarshal([]byte(splits[0]), info)
 		if err != nil {
 			slog.Warn("parsing entry info", "error", err)
 		} else {
+			info.Description, err = markdown.Parse(string(info.Description), &opt)
 			dd = splits[1]
 		}
 	} else {
 		dd = string(b)
 	}
-	opt := new(markdown.Option)
-	opt.ImageSource = getStatic
-	opt.RenderLink = renderLinkFunc(d.URL)
-	content, err := markdown.Parse(dd, opt)
+
 	var errMd *markdown.ParseError
 	errors.As(err, &errMd)
+	var content template.HTML
+	if errMd == nil {
+		content, err = markdown.Parse(dd, &opt)
+		errors.As(err, &errMd)
+	}
 	if errMd != nil {
 		slog.Error("parsing markdown")
 		fmt.Println(errMd.Pretty())
 		return "", false
 	}
-	d.PageDescription = info.Description
+	d.PageDescription = html.UnescapeString(string(info.Description))
 	d.title = info.Title
 	d.Image = info.Img.Src
 	return content, true

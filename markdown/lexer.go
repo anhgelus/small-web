@@ -21,6 +21,7 @@ const (
 	lexerExternal lexerType = "external"
 
 	lexerLiteral lexerType = "literal"
+	lexerReplace lexerType = "replace"
 )
 
 type lexer struct {
@@ -63,7 +64,7 @@ func (l *lexers) String() string {
 	return s + "]"
 }
 
-func lex(s string) *lexers {
+func lex(s string, opt *Option) *lexers {
 	lxs := &lexers{current: -1}
 	var lexs []lexer
 	var currentType lexerType
@@ -127,7 +128,11 @@ func lex(s string) *lexers {
 			fn(c, lexerList, nil)
 		default:
 			newLine = false
-			fn(c, lexerLiteral, nil)
+			if _, ok := opt.Replaces[c]; ok {
+				fn(c, lexerReplace, func(c rune) bool { return false })
+			} else {
+				fn(c, lexerLiteral, nil)
+			}
 		}
 	}
 	if len(previous) > 0 {
