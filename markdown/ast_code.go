@@ -42,28 +42,26 @@ func (a *astCode) Eval(_ *Option) (template.HTML, *ParseError) {
 
 func code(lxs *lexers) (*astCode, *ParseError) {
 	tree := new(astCode)
-	current := lxs.Current().Value
-	if len(current) == 3 {
+	codeTag := lxs.Current().Value
+	if len(codeTag) == 3 {
 		tree.codeType = codeMultiLine
-	} else if len(current) == 1 {
+	} else if len(codeTag) == 1 {
 		tree.codeType = codeOneLine
 	} else {
 		return nil, &ParseError{lxs: *lxs, internal: ErrInvalidCodeFormat}
 	}
 	started := false
-	for lxs.Next() && lxs.Current().Value != current {
-		if lxs.Current().Type == lexerBreak {
+	for lxs.Next() && lxs.Current().Value != codeTag {
+		isBreak := lxs.Current().Type == lexerBreak
+		if started || (tree.codeType == codeOneLine && !isBreak) {
+			tree.content += lxs.Current().Value
+		} else if !isBreak {
+			tree.before += lxs.Current().Value
+		} else {
 			if tree.codeType == codeOneLine {
 				return nil, &ParseError{lxs: *lxs, internal: ErrInvalidCodeFormat}
 			}
-			if !started {
-				started = true
-			}
-		}
-		if started || tree.codeType == codeOneLine {
-			tree.content += lxs.Current().Value
-		} else {
-			tree.before += lxs.Current().Value
+			started = true
 		}
 	}
 	return tree, nil
