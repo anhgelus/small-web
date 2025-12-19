@@ -1,7 +1,7 @@
 {{define "body"}}
 <article id="content">
   <h1>{{ .DataTitle }}</h1>
-  {{ .Description }}
+  <p>{{ .Description }}</p>
   <figure>
     <img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" class="large" />
     <figcaption>{{ .Img.Legend }}</figcaption>
