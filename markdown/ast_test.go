@@ -45,14 +45,25 @@ var parsed = `
 </figure>
 `
 
+func test(input, expected string) func(*testing.T) {
+	return testWithOptions(nil, input, expected)
+}
+
+func testWithOptions(opt *Option, input, expected string) func(*testing.T) {
+	return func(t *testing.T) {
+		t.Parallel()
+		got, err := Parse(input, opt)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(got) != expected {
+			t.Errorf("invalid value, got %s", got)
+		}
+	}
+}
+
 func TestAst(t *testing.T) {
-	res, err := Parse(raw, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	wanted := strings.ReplaceAll(parsed, "\n", "")
-	if string(res) != wanted {
-		t.Errorf("invalid string, got\n%s", res)
-		t.Logf("wanted\n%s", wanted)
-	}
+	t.Run("ast", func(t *testing.T) {
+		t.Run("complete", test(raw, strings.ReplaceAll(parsed, "\n", "")))
+	})
 }

@@ -27,18 +27,7 @@ var expected = `
 `
 
 func TestList(t *testing.T) {
-	lxs := lex(rw, new(Option))
-	tree, err := ast(lxs)
-	if err != nil {
-		t.Fatal(err)
-	}
-	got, err := tree.Eval(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	exp := strings.ReplaceAll(expected, "\n", "")
-	if string(got) != exp {
-		t.Errorf("invalid value, got %s", got)
-		t.Logf("expected %s", exp)
-	}
+	t.Run("lists", func(t *testing.T) {
+		t.Run("combo", test(rw, strings.ReplaceAll(expected, "\n", "")))
+	})
 }
