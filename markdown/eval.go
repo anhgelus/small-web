@@ -8,6 +8,7 @@ type Option struct {
 	ImageSource func(source string) string
 	RenderLink  func(content, href string) template.HTML
 	Replaces    map[rune]string
+	Poem        bool
 }
 
 func Parse(s string, opt *Option) (template.HTML, *ParseError) {

@@ -34,6 +34,15 @@ func (a *astParagraph) Eval(opt *Option) (template.HTML, *ParseError) {
 	).Render(), nil
 }
 
+type astBreak struct{}
+
+func (a astBreak) Eval(opt *Option) (template.HTML, *ParseError) {
+	if opt.Poem {
+		return dom.NewVoidElement("br").Render(), nil
+	}
+	return " ", nil
+}
+
 func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 	tree := new(astParagraph)
 	tree.oneLine = oneLine
@@ -46,11 +55,11 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 		s := lxs.Current().Value
 		// replace line break by space
 		if n > 0 && len(tree.content) != 0 {
-			s = " " + s
+			tree.content = append(tree.content, astBreak{})
 		}
 		tree.content = append(tree.content, conv(s))
 	}
-	lxs.current-- // because we do not use it before the next
+	lxs.Before() // because we do not use it before the next
 	for lxs.Next() && n < maxBreak {
 		switch lxs.Current().Type {
 		case lexerBreak:

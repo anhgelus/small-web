@@ -26,7 +26,11 @@ func (a *astLink) Eval(opt *Option) (template.HTML, *ParseError) {
 	}
 	rr := opt.RenderLink(string(content), string(href))
 	if a.addSpace {
-		return " " + rr, nil
+		s, err := astBreak{}.Eval(opt)
+		if err != nil {
+			return "", err
+		}
+		return s + rr, nil
 	}
 	return rr, nil
 }
