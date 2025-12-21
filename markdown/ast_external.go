@@ -10,9 +10,8 @@ import (
 var ExternalLink = regexp.MustCompile(`https?://`)
 
 type astLink struct {
-	content  block
-	href     block
-	addSpace bool
+	content block
+	href    block
 }
 
 func (a *astLink) Eval(opt *Option) (template.HTML, *ParseError) {
@@ -24,15 +23,7 @@ func (a *astLink) Eval(opt *Option) (template.HTML, *ParseError) {
 	if err != nil {
 		return "", err
 	}
-	rr := opt.RenderLink(string(content), string(href))
-	if a.addSpace {
-		s, err := astBreak{}.Eval(opt)
-		if err != nil {
-			return "", err
-		}
-		return s + rr, nil
-	}
-	return rr, nil
+	return opt.RenderLink(string(content), string(href)), nil
 }
 
 func RenderLink(content, href string) template.HTML {
@@ -85,24 +76,21 @@ func external(lxs *lexers) (block, *ParseError) {
 		return astLiteral(tp), nil
 	}
 	lxs.Before() // because we called Next
-	addSpace := lxs.Before() && lxs.Current().Type == lexerBreak
-	lxs.Next() // because we called Before
 	var b block
 	var err *ParseError
 	switch tp {
 	case "![":
 		b, err = image(lxs)
 	case "[":
-		b, err = link(lxs, addSpace)
+		b, err = link(lxs)
 	default:
 		b = astLiteral(tp)
 	}
 	return b, err
 }
 
-func link(lxs *lexers, addSpace bool) (block, *ParseError) {
+func link(lxs *lexers) (block, *ParseError) {
 	lk := new(astLink)
-	lk.addSpace = addSpace
 	start := lxs.current
 	content, href, _, ok := parseExternal(lxs, false)
 	if !ok {
