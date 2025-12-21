@@ -80,7 +80,7 @@ func main() {
 		assetsFS = os.DirFS("dist")
 	}
 
-	r := backend.NewRouter(dev, cfg, assetsFS)
+	r := backend.NewRouter(dev, cfg, db, assetsFS)
 
 	backend.HandleHome(r)
 	backend.HandleRoot(r, cfg)

@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -45,7 +46,7 @@ func SetupLogger(debug bool) {
 	slog.SetDefault(logger)
 }
 
-func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
+func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	r := chi.NewRouter()
 
 	logLevel := slog.LevelWarn
@@ -70,7 +71,7 @@ func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// prevent tracking
-			w.Header().Add("Referrer-Policy", "no-referrer")
+			w.Header().Add("Referrer-Policy", "same-origin")
 			// prevent iframe
 			w.Header().Add("X-Frame-Options", "deny")
 			// prevent bad content being parsed
@@ -92,6 +93,15 @@ func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
 			ctx = context.WithValue(ctx, assetsFSKey, assets)
 			ctx = context.WithValue(ctx, debugKey, debug)
 			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	})
+	// stats
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := UpdateStats(r.Context(), db, r); err != nil {
+				slog.Error("updating stats", "error", err)
+			}
+			next.ServeHTTP(w, r)
 		})
 	})
 

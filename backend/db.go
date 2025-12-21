@@ -23,7 +23,6 @@ func ConnectDatabase(cfg *Config) *sql.DB {
 	if err != nil {
 		panic(err)
 	}
-	db.SetMaxOpenConns(1)
 	return db
 }
 
@@ -31,10 +30,6 @@ func RunMigration(ctx context.Context, db *sql.DB) error {
 	entries, err := migrations.ReadDir("migrations")
 	if err != nil {
 		return err
-	}
-	type dbConfig struct {
-		Id        int
-		Migration int
 	}
 	type runMig struct {
 		val string
