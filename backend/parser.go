@@ -17,6 +17,7 @@ type EntryInfo struct {
 	Description  string         `toml:"description"`
 	Img          image          `toml:"image"`
 	PubLocalDate toml.LocalDate `toml:"publication_date"`
+	Poem         bool           `toml:"poem"`
 }
 
 func renderLinkFunc(url string) func(string, string) template.HTML {
@@ -52,6 +53,7 @@ func parse(b []byte, info *EntryInfo, d *data) (template.HTML, bool) {
 	}
 	opt := defaultMarkdownOption
 	opt.RenderLink = renderLinkFunc(d.URL)
+	opt.Poem = info.Poem
 	content, err := markdown.Parse(dd, &opt)
 	var errMd *markdown.ParseError
 	errors.As(err, &errMd)
