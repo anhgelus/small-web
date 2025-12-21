@@ -35,6 +35,7 @@ type Config struct {
 	DefaultImage string   `toml:"default_image"`
 	Quotes       []string `toml:"quotes"`
 	Language     string   `toml:"language"`
+	Database     string   `toml:"database"`
 
 	Sections []Section `toml:"section"`
 
@@ -73,6 +74,7 @@ func (c *Config) DefaultValues() {
 	}}
 	c.RootFolder = "data"
 	c.PublicFolder = "public"
+	c.Database = "database.sqlite"
 	c.Quotes = []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do."}
 	c.Replacers = []Replacer{{"~", "&thinsp;"}}
 }

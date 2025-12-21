@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"git.anhgelus.world/anhgelus/small-web/backend"
 	"github.com/joho/godotenv"
@@ -56,6 +57,15 @@ func main() {
 	if !ok {
 		slog.Info("exiting")
 		os.Exit(1)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	db := backend.ConnectDatabase(cfg)
+	defer db.Close()
+	err := backend.RunMigration(ctx, db)
+	if err != nil {
+		panic(err)
 	}
 
 	for _, sec := range cfg.Sections {
