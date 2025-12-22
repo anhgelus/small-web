@@ -7,13 +7,49 @@ import (
 	"log/slog"
 	"net/http"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
 
+type loaded struct {
+	data map[string]struct{}
+	mu   *sync.RWMutex
+}
+
+func (l *loaded) Has(k string) bool {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	_, ok := l.data[k]
+	return ok
+}
+
+func (l *loaded) Add(k string) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.data[k] = struct{}{}
+}
+
+func (l *loaded) Remove(k string) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	delete(l.data, k)
+}
+
+func newLoaded() *loaded {
+	return &loaded{
+		data: make(map[string]struct{}),
+		mu:   new(sync.RWMutex),
+	}
+}
+
 var trimRefererReg = regexp.MustCompile(`https?://([a-z-0-9.]+(:\d+)?)/.*`)
+
+var load = newLoaded()
 
 func getDB(ctx context.Context) *sql.DB {
 	return ctx.Value(dbKey).(*sql.DB)
@@ -21,9 +57,7 @@ func getDB(ctx context.Context) *sql.DB {
 
 func UpdateStats(ctx context.Context, r *http.Request) error {
 	target := r.URL.Path
-	if strings.HasPrefix(target, "/assets") ||
-		strings.HasPrefix(target, "/static") ||
-		strings.HasPrefix(target, "/admin") {
+	if strings.HasPrefix(target, "/static") || strings.HasPrefix(target, "/admin") {
 		return nil
 	}
 	ref := r.Header.Get("Referer")
@@ -41,6 +75,14 @@ func UpdateStats(ctx context.Context, r *http.Request) error {
 			return nil
 		}
 	}
+	// using /assets/styles.css to detect if a page is loaded → majority of bots will not load this
+	if target == "/assets/styles.css" {
+		target = ref
+		ref = "?"
+	}
+	if load.Has(target) {
+		return nil
+	}
 	db := getDB(ctx)
 	rows, err := db.QueryContext(ctx, "SELECT id, visit FROM stats WHERE origin = ? AND target = ?", ref, target)
 	if err != nil {
@@ -49,6 +91,11 @@ func UpdateStats(ctx context.Context, r *http.Request) error {
 	defer func() {
 		if err == nil {
 			slog.Debug("stats updated")
+			load.Add(target)
+			go func(target string) {
+				time.Sleep(5 * time.Second)
+				load.Remove(target)
+			}(target)
 		}
 	}()
 	if !rows.Next() {
@@ -103,8 +150,41 @@ func GetStatRows(ctx context.Context, page uint) ([]statRow, error) {
 	return statRows[:i], nil
 }
 
+func GetUnionStatRows(ctx context.Context) ([]statRow, error) {
+	rows, err := getDB(ctx).QueryContext(ctx, "SELECT target, visit FROM stats ORDER BY visit DESC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	data := make(map[string]uint)
+	for rows.Next() {
+		var stat statRow
+		err = rows.Scan(&stat.Target, &stat.Visit)
+		if err != nil {
+			return nil, err
+		}
+		if _, ok := data[stat.Target]; !ok {
+			data[stat.Target] = stat.Visit
+		} else {
+			data[stat.Target] += stat.Visit
+		}
+	}
+	var statRows []statRow
+	for k, v := range data {
+		statRows = append(statRows, statRow{
+			Target: k,
+			Visit:  v,
+		})
+	}
+	slices.SortFunc(statRows, func(a, b statRow) int {
+		return int(b.Visit) - int(a.Visit)
+	})
+	return statRows, nil
+}
+
 type adminData struct {
 	*data
+	Visits      []statRow
 	Rows        []statRow
 	PagesNumber int
 	CurrentPage int
@@ -132,6 +212,10 @@ func HandleAdmin(r *chi.Mux) {
 			}
 		}
 		d.Rows, err = GetStatRows(ctx, uint(page))
+		if err != nil {
+			panic(err)
+		}
+		d.Visits, err = GetUnionStatRows(ctx)
 		if err != nil {
 			panic(err)
 		}
