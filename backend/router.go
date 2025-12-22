@@ -2,6 +2,8 @@ package backend
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
 	"database/sql"
 	"embed"
 	"fmt"
@@ -23,6 +25,7 @@ const (
 	assetsFSKey = "assets_fs"
 	debugKey    = "debug"
 	dbKey       = "db"
+	loginKey    = "login"
 )
 
 //go:embed templates
@@ -110,6 +113,21 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 				}
 			}(r)
 			next.ServeHTTP(w, r)
+		})
+	})
+	// login
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, pass, ok := r.BasicAuth()
+			ctx := r.Context()
+			if ok {
+				cfg := ctx.Value(configKey).(*Config)
+				passHash := sha256.Sum256([]byte(pass))
+				rightPassHash := sha256.Sum256([]byte(cfg.AdminPassword))
+				ok = subtle.ConstantTimeCompare(passHash[:], rightPassHash[:]) == 1
+			}
+			ctx = context.WithValue(ctx, loginKey, ok)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	})
 

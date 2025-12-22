@@ -89,6 +89,8 @@ func main() {
 	}
 	backend.Handle404(r)
 
+	backend.HandleAdmin(r)
+
 	backend.HandleStaticFiles(r, "/assets", assetsFS)
 	backend.HandleStaticFiles(r, "/static", os.DirFS(cfg.PublicFolder))
 

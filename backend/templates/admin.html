@@ -1,0 +1,33 @@
+{{define "body"}}
+<main id="content">
+  <div class="introduction">
+    <h1>Administration</h1>
+    <p>
+      Panel d'administration très simple. Il affiche les stats et possiblement les webmentions et autre contenu à
+      modérer.
+    </p>
+  </div>
+  <article>
+    <h2>Stats</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Origin</th>
+          <th>Target</th>
+          <th>Visits</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Rows }}
+        <tr>
+          <td>{{ .Origin }}</td>
+          <td>{{ .Target }}</td>
+          <td>{{ .Visit }}</td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+    <div class="pagination">{{ template "pagination" . }}</div>
+  </article>
+</main>
+{{end}}

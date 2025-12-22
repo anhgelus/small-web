@@ -180,3 +180,38 @@ pre {
     white-space: break-spaces;
   }
 }
+
+table {
+  width: calc(100% + 4rem);
+
+  margin: 2rem -2rem;
+  padding: 0 1rem;
+
+  line-height: var(--line-height-smaller);
+}
+
+thead {
+  font-weight: bold;
+  font-size: 1rem;
+
+  background: var(--color-rose);
+  color: var(--color-dark);
+
+  & th {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+}
+
+tbody {
+  background: var(--color-light-rose);
+
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+td,
+th {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}

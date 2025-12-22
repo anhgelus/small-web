@@ -29,13 +29,14 @@ type Replacer struct {
 }
 
 type Config struct {
-	Domain       string   `toml:"domain"`
-	Name         string   `toml:"name"`
-	Description  string   `toml:"description"`
-	DefaultImage string   `toml:"default_image"`
-	Quotes       []string `toml:"quotes"`
-	Language     string   `toml:"language"`
-	Database     string   `toml:"database"`
+	Domain        string   `toml:"domain"`
+	Name          string   `toml:"name"`
+	Description   string   `toml:"description"`
+	DefaultImage  string   `toml:"default_image"`
+	Quotes        []string `toml:"quotes"`
+	Language      string   `toml:"language"`
+	Database      string   `toml:"database"`
+	AdminPassword string   `toml:"admin_password"`
 
 	Sections []Section `toml:"section"`
 
@@ -75,6 +76,7 @@ func (c *Config) DefaultValues() {
 	c.RootFolder = "data"
 	c.PublicFolder = "public"
 	c.Database = "database.sqlite"
+	c.AdminPassword = "Ch@ngeM€Please!"
 	c.Quotes = []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do."}
 	c.Replacers = []Replacer{{"~", "&thinsp;"}}
 }
