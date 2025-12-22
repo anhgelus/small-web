@@ -22,6 +22,7 @@ const (
 	configKey   = "config"
 	assetsFSKey = "assets_fs"
 	debugKey    = "debug"
+	dbKey       = "db"
 )
 
 //go:embed templates
@@ -87,20 +88,27 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 		})
 	})
 	// context
+	setContext := func(ctx context.Context) context.Context {
+		ctx = context.WithValue(ctx, configKey, cfg)
+		ctx = context.WithValue(ctx, assetsFSKey, assets)
+		ctx = context.WithValue(ctx, debugKey, debug)
+		return context.WithValue(ctx, dbKey, db)
+	}
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), configKey, cfg)
-			ctx = context.WithValue(ctx, assetsFSKey, assets)
-			ctx = context.WithValue(ctx, debugKey, debug)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			next.ServeHTTP(w, r.WithContext(setContext(r.Context())))
 		})
 	})
 	// stats
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if err := UpdateStats(r.Context(), db, r); err != nil {
-				slog.Error("updating stats", "error", err)
-			}
+			go func(r *http.Request) {
+				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+				if err := UpdateStats(setContext(ctx), r); err != nil {
+					slog.Error("updating stats", "error", err)
+				}
+			}(r)
 			next.ServeHTTP(w, r)
 		})
 	})
