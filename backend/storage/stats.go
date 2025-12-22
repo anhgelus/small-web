@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -12,8 +11,6 @@ import (
 	"sync"
 	"time"
 )
-
-const DBKey = "db"
 
 type loaded struct {
 	data map[string]struct{}
@@ -49,10 +46,6 @@ func newLoaded() *loaded {
 var trimRefererReg = regexp.MustCompile(`https?://([a-z-0-9.]+(:\d+)?)/.*`)
 
 var load = newLoaded()
-
-func getDB(ctx context.Context) *sql.DB {
-	return ctx.Value(DBKey).(*sql.DB)
-}
 
 func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	target := r.URL.Path

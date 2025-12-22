@@ -111,6 +111,11 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 	if err != nil {
 		panic(err)
 	}
+	if name == "404" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	UpdateStats(r)
 }
 
 func (d *data) handleRSS(w http.ResponseWriter, r *http.Request, custom dataUsable) {
