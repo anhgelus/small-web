@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"regexp"
+	"net/url"
 	"slices"
 	"strings"
 	"sync"
@@ -43,8 +43,6 @@ func newLoaded() *loaded {
 	}
 }
 
-var trimRefererReg = regexp.MustCompile(`https?://([a-z-0-9.]+(:\d+)?)/.*`)
-
 var load = newLoaded()
 
 func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
@@ -56,13 +54,13 @@ func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	if ref == "" {
 		return nil
 	}
-	subs := trimRefererReg.FindStringSubmatch(ref)
-	if len(subs) < 2 {
+	refUrl, err := url.Parse(ref)
+	if err != nil {
 		return nil
 	}
-	ref = subs[1]
+	ref = refUrl.Host
 	if ref == domain || ref == fmt.Sprintf("localhost:%d", 8000) {
-		ref = subs[0][strings.Index(subs[0], ref)+len(ref):]
+		ref = refUrl.Path
 		if ref == target || strings.HasPrefix(ref, "/admin") || ref == "/favicon.ico" {
 			return nil
 		}
