@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"git.anhgelus.world/anhgelus/small-web/backend"
+	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 	"github.com/joho/godotenv"
 )
 
@@ -61,9 +62,9 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	db := backend.ConnectDatabase(cfg)
+	db := storage.ConnectDatabase(cfg.Database)
 	defer db.Close()
-	err := backend.RunMigration(ctx, db)
+	err := storage.RunMigration(ctx, db)
 	if err != nil {
 		panic(err)
 	}

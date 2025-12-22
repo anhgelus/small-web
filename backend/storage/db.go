@@ -1,4 +1,4 @@
-package backend
+package storage
 
 import (
 	"context"
@@ -18,8 +18,8 @@ var migrations embed.FS
 
 var nameReg = regexp.MustCompile(`(\d{3})_[a-zA-Z_-]+.sql`)
 
-func ConnectDatabase(cfg *Config) *sql.DB {
-	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared", cfg.Database))
+func ConnectDatabase(file string) *sql.DB {
+	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared", file))
 	if err != nil {
 		panic(err)
 	}

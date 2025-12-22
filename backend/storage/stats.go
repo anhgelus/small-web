@@ -1,4 +1,4 @@
-package backend
+package storage
 
 import (
 	"context"
@@ -8,13 +8,12 @@ import (
 	"net/http"
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/go-chi/chi/v5"
 )
+
+const DBKey = "db"
 
 type loaded struct {
 	data map[string]struct{}
@@ -52,10 +51,10 @@ var trimRefererReg = regexp.MustCompile(`https?://([a-z-0-9.]+(:\d+)?)/.*`)
 var load = newLoaded()
 
 func getDB(ctx context.Context) *sql.DB {
-	return ctx.Value(dbKey).(*sql.DB)
+	return ctx.Value(DBKey).(*sql.DB)
 }
 
-func UpdateStats(ctx context.Context, r *http.Request) error {
+func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	target := r.URL.Path
 	if strings.HasPrefix(target, "/static") || strings.HasPrefix(target, "/admin") {
 		return nil
@@ -69,7 +68,7 @@ func UpdateStats(ctx context.Context, r *http.Request) error {
 		return nil
 	}
 	ref = subs[1]
-	if ref == ctx.Value(configKey).(*Config).Domain || ref == fmt.Sprintf("localhost:%d", 8000) {
+	if ref == domain || ref == fmt.Sprintf("localhost:%d", 8000) {
 		ref = subs[0][strings.Index(subs[0], ref)+len(ref):]
 		if ref == target || strings.HasPrefix(ref, "/admin") || ref == "/favicon.ico" {
 			return nil
@@ -116,28 +115,28 @@ func UpdateStats(ctx context.Context, r *http.Request) error {
 	return err
 }
 
-type statRow struct {
+type StatsRow struct {
 	Origin string
 	Target string
 	Visit  uint
 }
 
-const statPerPage = 25
+const StatsPerPage = 25
 
-func GetStatRows(ctx context.Context, page uint) ([]statRow, error) {
+func GetStatsRows(ctx context.Context, page uint) ([]StatsRow, error) {
 	rows, err := getDB(ctx).QueryContext(
 		ctx,
 		"SELECT origin, target, visit FROM stats ORDER BY visit DESC LIMIT ? OFFSET ?",
-		statPerPage, (page-1)*statPerPage,
+		StatsPerPage, (page-1)*StatsPerPage,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	statRows := make([]statRow, statPerPage)
+	statRows := make([]StatsRow, StatsPerPage)
 	var i uint8
 	for i = 0; rows.Next(); i++ {
-		var stat statRow
+		var stat StatsRow
 		err = rows.Scan(&stat.Origin, &stat.Target, &stat.Visit)
 		if err != nil {
 			return nil, err
@@ -150,7 +149,7 @@ func GetStatRows(ctx context.Context, page uint) ([]statRow, error) {
 	return statRows[:i], nil
 }
 
-func GetUnionStatRows(ctx context.Context) ([]statRow, error) {
+func GetUnionStatsRows(ctx context.Context) ([]StatsRow, error) {
 	rows, err := getDB(ctx).QueryContext(ctx, "SELECT target, visit FROM stats ORDER BY visit DESC")
 	if err != nil {
 		return nil, err
@@ -158,7 +157,7 @@ func GetUnionStatRows(ctx context.Context) ([]statRow, error) {
 	defer rows.Close()
 	data := make(map[string]uint)
 	for rows.Next() {
-		var stat statRow
+		var stat StatsRow
 		err = rows.Scan(&stat.Target, &stat.Visit)
 		if err != nil {
 			return nil, err
@@ -169,58 +168,15 @@ func GetUnionStatRows(ctx context.Context) ([]statRow, error) {
 			data[stat.Target] += stat.Visit
 		}
 	}
-	var statRows []statRow
+	var statRows []StatsRow
 	for k, v := range data {
-		statRows = append(statRows, statRow{
+		statRows = append(statRows, StatsRow{
 			Target: k,
 			Visit:  v,
 		})
 	}
-	slices.SortFunc(statRows, func(a, b statRow) int {
+	slices.SortFunc(statRows, func(a, b StatsRow) int {
 		return int(b.Visit) - int(a.Visit)
 	})
 	return statRows, nil
-}
-
-type adminData struct {
-	*data
-	Visits      []statRow
-	Rows        []statRow
-	PagesNumber int
-	CurrentPage int
-}
-
-func HandleAdmin(r *chi.Mux) {
-	r.Get("/admin", func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		if !ctx.Value(loginKey).(bool) {
-			w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-		d := new(adminData)
-		d.data = new(data)
-		rawPage := r.URL.Query().Get("page")
-		page := 1
-		var err error
-		if rawPage != "" {
-			page, err = strconv.Atoi(rawPage)
-			if err != nil || page < 1 {
-				slog.Warn("invalid page number", "rawPage", rawPage)
-				http.Error(w, "Bad request", http.StatusBadRequest)
-				return
-			}
-		}
-		d.Rows, err = GetStatRows(ctx, uint(page))
-		if err != nil {
-			panic(err)
-		}
-		d.Visits, err = GetUnionStatRows(ctx)
-		if err != nil {
-			panic(err)
-		}
-		d.PagesNumber = page + max(len(d.Rows)-statPerPage+1, 0)
-		d.CurrentPage = page
-		d.handleGeneric(w, r, "admin", d)
-	})
 }

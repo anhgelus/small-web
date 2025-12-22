@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"
@@ -24,7 +25,6 @@ const (
 	configKey   = "config"
 	assetsFSKey = "assets_fs"
 	debugKey    = "debug"
-	dbKey       = "db"
 	loginKey    = "login"
 )
 
@@ -95,7 +95,7 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 		ctx = context.WithValue(ctx, configKey, cfg)
 		ctx = context.WithValue(ctx, assetsFSKey, assets)
 		ctx = context.WithValue(ctx, debugKey, debug)
-		return context.WithValue(ctx, dbKey, db)
+		return context.WithValue(ctx, storage.DBKey, db)
 	}
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +108,7 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 			go func(r *http.Request) {
 				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 				defer cancel()
-				if err := UpdateStats(setContext(ctx), r); err != nil {
+				if err := storage.UpdateStats(setContext(ctx), r, cfg.Domain); err != nil {
 					slog.Error("updating stats", "error", err)
 				}
 			}(r)
