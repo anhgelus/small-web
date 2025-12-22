@@ -161,3 +161,4 @@ config.toml
 data
 small-web
 *.tar.gz
+*.sqlite

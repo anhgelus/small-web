@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS stats(
+    id INTEGER PRIMARY KEY,
+    visit INTEGER NOT NULL,
+    origin TEXT NOT NULL,
+    target TEXT NOT NULL
+);

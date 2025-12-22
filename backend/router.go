@@ -2,6 +2,9 @@ package backend
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
+	"database/sql"
 	"embed"
 	"fmt"
 	"io/fs"
@@ -11,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"
@@ -21,6 +25,7 @@ const (
 	configKey   = "config"
 	assetsFSKey = "assets_fs"
 	debugKey    = "debug"
+	loginKey    = "login"
 )
 
 //go:embed templates
@@ -45,7 +50,7 @@ func SetupLogger(debug bool) {
 	slog.SetDefault(logger)
 }
 
-func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
+func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	r := chi.NewRouter()
 
 	logLevel := slog.LevelWarn
@@ -70,7 +75,7 @@ func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// prevent tracking
-			w.Header().Add("Referrer-Policy", "no-referrer")
+			w.Header().Add("Referrer-Policy", "same-origin")
 			// prevent iframe
 			w.Header().Add("X-Frame-Options", "deny")
 			// prevent bad content being parsed
@@ -88,9 +93,23 @@ func NewRouter(debug bool, cfg *Config, assets fs.FS) *chi.Mux {
 	// context
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), configKey, cfg)
-			ctx = context.WithValue(ctx, assetsFSKey, assets)
-			ctx = context.WithValue(ctx, debugKey, debug)
+			next.ServeHTTP(w, r.WithContext(
+				setContext(r.Context(), cfg, debug, db, assets),
+			))
+		})
+	})
+	// login
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, pass, ok := r.BasicAuth()
+			ctx := r.Context()
+			if ok {
+				cfg := ctx.Value(configKey).(*Config)
+				passHash := sha256.Sum256([]byte(pass))
+				rightPassHash := sha256.Sum256([]byte(cfg.AdminPassword))
+				ok = subtle.ConstantTimeCompare(passHash[:], rightPassHash[:]) == 1
+			}
+			ctx = context.WithValue(ctx, loginKey, ok)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	})
@@ -142,4 +161,24 @@ func HandleStaticFiles(r *chi.Mux, path string, root fs.FS) {
 		}
 		http.StripPrefix(pathPrefix, http.FileServerFS(root)).ServeHTTP(w, req)
 	})
+}
+
+func UpdateStats(r *http.Request) {
+	ctx := r.Context()
+	cfg := ctx.Value(configKey).(*Config)
+	debug := ctx.Value(debugKey).(bool)
+	db := ctx.Value(storage.DBKey).(*sql.DB)
+	assets := ctx.Value(assetsFSKey).(fs.FS)
+
+	ctx2, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	if err := storage.UpdateStats(setContext(ctx2, cfg, debug, db, assets), r, cfg.Domain); err != nil {
+		slog.Error("updating stats", "error", err)
+	}
+}
+func setContext(ctx context.Context, cfg *Config, debug bool, db *sql.DB, assets fs.FS) context.Context {
+	ctx = context.WithValue(ctx, configKey, cfg)
+	ctx = context.WithValue(ctx, assetsFSKey, assets)
+	ctx = context.WithValue(ctx, debugKey, debug)
+	return context.WithValue(ctx, storage.DBKey, db)
 }

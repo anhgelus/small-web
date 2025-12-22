@@ -12,8 +12,10 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"git.anhgelus.world/anhgelus/small-web/backend"
+	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 	"github.com/joho/godotenv"
 )
 
@@ -58,6 +60,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	db := storage.ConnectDatabase(cfg.Database)
+	defer db.Close()
+	err := storage.RunMigration(ctx, db)
+	if err != nil {
+		panic(err)
+	}
+
 	for _, sec := range cfg.Sections {
 		if ok = sec.Load(cfg); !ok {
 			slog.Info("exiting")
@@ -70,7 +81,7 @@ func main() {
 		assetsFS = os.DirFS("dist")
 	}
 
-	r := backend.NewRouter(dev, cfg, assetsFS)
+	r := backend.NewRouter(dev, cfg, db, assetsFS)
 
 	backend.HandleHome(r)
 	backend.HandleRoot(r, cfg)
@@ -78,6 +89,8 @@ func main() {
 		sec.Handle(r)
 	}
 	backend.Handle404(r)
+
+	backend.HandleAdmin(r)
 
 	backend.HandleStaticFiles(r, "/assets", assetsFS)
 	backend.HandleStaticFiles(r, "/static", os.DirFS(cfg.PublicFolder))
