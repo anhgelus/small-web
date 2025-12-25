@@ -69,7 +69,7 @@ func testWithOptions(opt *Option, input, expected string) func(*testing.T) {
 		t.Parallel()
 		got, err := Parse(input, opt)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal(err.Pretty())
 		}
 		if string(got) != expected {
 			t.Errorf("invalid value, got %s", got)

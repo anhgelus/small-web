@@ -51,16 +51,10 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 		maxBreak = 1
 	}
 	n := 0
-	asLiteral := func(conv func(s string) block) {
-		s := lxs.Current().Value
-		// replace line break by space
-		if n > 0 && len(tree.content) != 0 {
-			tree.content = append(tree.content, astBreak{})
-		}
-		tree.content = append(tree.content, conv(s))
-	}
 	lxs.Before() // because we do not use it before the next
 	for lxs.Next() && n < maxBreak {
+		var err *ParseError
+		var b block
 		switch lxs.Current().Type {
 		case lexerBreak:
 			n += len(lxs.Current().Value)
@@ -69,45 +63,46 @@ func paragraph(lxs *lexers, oneLine bool) (*astParagraph, *ParseError) {
 				lxs.Before() // because we did not use it
 				return tree, nil
 			}
-			asLiteral(toAstLiteral)
+			b = astLiteral(lxs.Current().Value)
 		case lexerLiteral, lexerHeading:
-			asLiteral(toAstLiteral)
+			b = astLiteral(lxs.Current().Value)
 		case lexerReplace:
-			asLiteral(toAstReplacer)
+			b = astReplacer(lxs.Current().Value)
 		case lexerModifier:
-			// replace line break by space
-			if n > 0 {
-				tree.content = append(tree.content, astLiteral(" "))
+			var e error
+			b, e = modifier(lxs)
+			if e != nil {
+				err = &ParseError{lxs: *lxs, internal: e}
 			}
-			mod, err := modifier(lxs)
-			if err != nil {
-				return nil, &ParseError{lxs: *lxs, internal: err}
-			}
-			tree.content = append(tree.content, mod)
 		case lexerExternal:
 			if n > 0 && lxs.Current().Value == "![" {
 				lxs.Before() // because we did not use it
 				return tree, nil
 			}
 			if lxs.Current().Value != "[" {
-				asLiteral(toAstLiteral)
+				b = astLiteral(lxs.Current().Value)
 			} else {
-				ext, err := external(lxs)
-				if err != nil {
-					return nil, err
-				}
-				tree.content = append(tree.content, ext)
+				b, err = external(lxs)
 			}
 		case lexerCode:
 			if len(lxs.Current().Value) > 1 {
-				return nil, &ParseError{lxs: *lxs, internal: ErrInvalidCodeBlockPosition}
+				err = &ParseError{lxs: *lxs, internal: ErrInvalidCodeBlockPosition}
+			} else {
+				b, err = code(lxs)
 			}
-			b, err := code(lxs)
-			if err != nil {
-				return nil, err
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		if b != nil {
+			if n > 0 && len(tree.content) != 0 {
+				tree.content = append(tree.content, astBreak{})
 			}
 			tree.content = append(tree.content, b)
 		}
+
 		if lxs.Current().Type != lexerBreak {
 			n = 0
 		}
@@ -122,16 +117,8 @@ func (a astLiteral) Eval(_ *Option) (template.HTML, *ParseError) {
 	return template.HTML(template.HTMLEscapeString(string(a))), nil
 }
 
-func toAstLiteral(s string) block {
-	return astLiteral(s)
-}
-
 type astReplacer string
 
 func (a astReplacer) Eval(opt *Option) (template.HTML, *ParseError) {
 	return template.HTML(opt.Replaces[[]rune(a)[0]]), nil
-}
-
-func toAstReplacer(s string) block {
-	return astReplacer(s)
 }
