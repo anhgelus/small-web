@@ -1,8 +1,13 @@
 package backend
 
 import (
+	"context"
+	"math"
 	"net/http"
 	"strconv"
+	"strings"
+	"sync"
+	"time"
 
 	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 	"github.com/go-chi/chi/v5"
@@ -14,6 +19,64 @@ type adminData struct {
 	Rows        []storage.StatsRow
 	PagesNumber int
 	CurrentPage int
+}
+
+type to struct {
+	n     int
+	since time.Time
+}
+
+type tos struct {
+	mu  sync.Mutex
+	tos map[string]*to
+}
+
+var timeouts = tos{tos: make(map[string]*to)}
+
+func handleTimeout(ctx context.Context) bool {
+	ip := ctx.Value(ipAdressKey).(string)
+	parsed := strings.Split(ip, ":")
+	ip = parsed[0]
+
+	timeouts.mu.Lock()
+	defer timeouts.mu.Unlock()
+
+	v, ok := timeouts.tos[ip]
+	if !ok {
+		timeouts.tos[ip] = &to{n: 1}
+		return false
+	}
+	dur := func() time.Duration { return time.Duration(math.Pow10(v.n/4)) * time.Second }
+	if time.Since(v.since) <= dur() {
+		return true
+	}
+	v.n++
+	if v.n%4 != 0 {
+		return false
+	}
+	v.since = time.Now()
+	GetLogger(ctx).Warn("rate limiting IP", "ip", ip, "duration", dur().String())
+	go func(v *to) {
+		time.Sleep(3 * time.Hour)
+		v.n = max(v.n-4, 0)
+	}(v)
+	return true
+}
+
+func resetTimeout(ctx context.Context) {
+	ip := ctx.Value(ipAdressKey).(string)
+	parsed := strings.Split(ip, ":")
+	ip = parsed[0]
+
+	timeouts.mu.Lock()
+	defer timeouts.mu.Unlock()
+
+	v, ok := timeouts.tos[ip]
+	if !ok {
+		return
+	}
+	v.n = 0
+	v.since = time.Unix(0, 0)
 }
 
 func HandleAdmin(r *chi.Mux) {

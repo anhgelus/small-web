@@ -24,10 +24,11 @@ type customWriter struct {
 }
 
 func (c *customWriter) WriteHeader(statusCode int) {
-	c.statusCode = statusCode
-	if statusCode != c.statusCode {
-		c.ResponseWriter.WriteHeader(statusCode)
+	if statusCode == c.statusCode {
+		return
 	}
+	c.statusCode = statusCode
+	c.ResponseWriter.WriteHeader(statusCode)
 }
 
 func GetStatusCode(ctx context.Context) func() int {
@@ -58,7 +59,7 @@ func SetLogger(l *slog.Logger) func(http.Handler) http.Handler {
 
 			next.ServeHTTP(ww, r.WithContext(ctx))
 
-			if ww.statusCode == http.StatusNotFound {
+			if ww.statusCode == http.StatusNotFound || ww.statusCode == http.StatusTooManyRequests {
 				return
 			}
 			var lvl slog.Level
