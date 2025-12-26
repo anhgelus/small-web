@@ -115,7 +115,6 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	UpdateStats(r)
 }
 
 func (d *data) handleRSS(w http.ResponseWriter, r *http.Request, custom dataUsable) {

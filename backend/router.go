@@ -50,6 +50,16 @@ func SetupLogger(debug bool) {
 	slog.SetDefault(logger)
 }
 
+type customWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (c *customWriter) WriteHeader(statusCode int) {
+	c.statusCode = statusCode
+	c.ResponseWriter.WriteHeader(statusCode)
+}
+
 func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	r := chi.NewRouter()
 
@@ -90,11 +100,16 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 			next.ServeHTTP(w, r)
 		})
 	})
-	// context
+	setContext := func(ctx context.Context) context.Context {
+		ctx = context.WithValue(ctx, configKey, cfg)
+		ctx = context.WithValue(ctx, assetsFSKey, assets)
+		ctx = context.WithValue(ctx, debugKey, debug)
+		return context.WithValue(ctx, storage.DBKey, db)
+	} // context
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			next.ServeHTTP(w, r.WithContext(
-				setContext(r.Context(), cfg, debug, db, assets),
+				setContext(r.Context()),
 			))
 		})
 	})
@@ -111,6 +126,28 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 			}
 			ctx = context.WithValue(ctx, loginKey, ok)
 			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	})
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ww := &customWriter{ResponseWriter: w}
+			next.ServeHTTP(ww, r)
+			cfg := r.Context().Value(configKey).(*Config)
+			go func(cfg *Config, w *customWriter, r *http.Request) {
+				// because Go automatically adds http.StatusOK when not set
+				if w.statusCode == 0 {
+					w.statusCode = http.StatusOK
+				}
+				if w.statusCode >= 299 {
+					slog.Debug("not updating stats for status code above 299", "code", w.statusCode)
+					return
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+				if err := storage.UpdateStats(setContext(ctx), r, cfg.Domain); err != nil {
+					slog.Error("updating stats", "error", err)
+				}
+			}(cfg, ww, r)
 		})
 	})
 
@@ -161,24 +198,4 @@ func HandleStaticFiles(r *chi.Mux, path string, root fs.FS) {
 		}
 		http.StripPrefix(pathPrefix, http.FileServerFS(root)).ServeHTTP(w, req)
 	})
-}
-
-func UpdateStats(r *http.Request) {
-	ctx := r.Context()
-	cfg := ctx.Value(configKey).(*Config)
-	debug := ctx.Value(debugKey).(bool)
-	db := ctx.Value(storage.DBKey).(*sql.DB)
-	assets := ctx.Value(assetsFSKey).(fs.FS)
-
-	ctx2, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-	if err := storage.UpdateStats(setContext(ctx2, cfg, debug, db, assets), r, cfg.Domain); err != nil {
-		slog.Error("updating stats", "error", err)
-	}
-}
-func setContext(ctx context.Context, cfg *Config, debug bool, db *sql.DB, assets fs.FS) context.Context {
-	ctx = context.WithValue(ctx, configKey, cfg)
-	ctx = context.WithValue(ctx, assetsFSKey, assets)
-	ctx = context.WithValue(ctx, debugKey, debug)
-	return context.WithValue(ctx, storage.DBKey, db)
 }
