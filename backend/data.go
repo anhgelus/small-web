@@ -8,7 +8,6 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
-	"log/slog"
 	"math/rand"
 	"net/http"
 	"regexp"
@@ -179,18 +178,19 @@ func getAsset(ctx context.Context, path string) *assetData {
 		return asset
 	}
 	asset = &assetData{}
+	logger := GetLogger(ctx)
 	var b []byte
 	if regexIsHttp.MatchString(path) {
 		asset.Src = path
 		resp, err := http.Get(path)
 		if err != nil {
-			slog.Warn("get remote asset", "error", err)
+			logger.Warn("get remote asset", "error", err)
 			return asset
 		}
 		defer resp.Body.Close()
 		b, err = io.ReadAll(resp.Body)
 		if err != nil {
-			slog.Warn("read remote asset", "error", err)
+			logger.Warn("read remote asset", "error", err)
 			return asset
 		}
 	} else {
@@ -199,7 +199,7 @@ func getAsset(ctx context.Context, path string) *assetData {
 		var err error
 		b, err = fs.ReadFile(aFS, path)
 		if err != nil {
-			slog.Warn("read asset", "error", err)
+			logger.Warn("read asset", "error", err)
 			return asset
 		}
 	}

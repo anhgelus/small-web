@@ -17,7 +17,6 @@ import (
 	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/httplog/v3"
 )
 
 const (
@@ -32,16 +31,13 @@ const (
 var templates embed.FS
 
 func SetupLogger(debug bool) {
-	logFormat := httplog.SchemaECS.Concise(!debug)
-
 	logLevel := slog.LevelInfo
 	if debug {
 		logLevel = slog.LevelDebug
 	}
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		ReplaceAttr: logFormat.ReplaceAttr,
-		Level:       logLevel,
+		Level: logLevel,
 	})).With(
 		slog.String("app", "anhgelus/small-web"),
 		slog.String("version", Version),
@@ -50,37 +46,11 @@ func SetupLogger(debug bool) {
 	slog.SetDefault(logger)
 }
 
-type customWriter struct {
-	http.ResponseWriter
-	statusCode int
-}
-
-func (c *customWriter) WriteHeader(statusCode int) {
-	c.statusCode = statusCode
-	c.ResponseWriter.WriteHeader(statusCode)
-}
-
 func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	r := chi.NewRouter()
 
-	logLevel := slog.LevelWarn
-	if debug {
-		logLevel = slog.LevelDebug
-	}
-
 	r.Use(middleware.Timeout(30 * time.Second))
-	r.Use(httplog.RequestLogger(slog.Default(), &httplog.Options{
-		Level: logLevel,
-		// Set log output to Elastic Common Schema (ECS) format.
-		Schema:        httplog.SchemaECS.Concise(!debug),
-		RecoverPanics: true,
-		Skip: func(req *http.Request, respStatus int) bool {
-			return respStatus == http.StatusNotFound || respStatus == http.StatusMethodNotAllowed
-		},
-		// Optionally, log selected request/response headers explicitly.
-		LogRequestHeaders:  []string{"Origin"},
-		LogResponseHeaders: []string{},
-	}))
+	r.Use(SetLogger(slog.Default()))
 	// security headers
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,12 +70,13 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 			next.ServeHTTP(w, r)
 		})
 	})
+	// context
 	setContext := func(ctx context.Context) context.Context {
 		ctx = context.WithValue(ctx, configKey, cfg)
 		ctx = context.WithValue(ctx, assetsFSKey, assets)
 		ctx = context.WithValue(ctx, debugKey, debug)
 		return context.WithValue(ctx, storage.DBKey, db)
-	} // context
+	}
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			next.ServeHTTP(w, r.WithContext(
@@ -130,24 +101,20 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	})
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ww := &customWriter{ResponseWriter: w}
-			next.ServeHTTP(ww, r)
-			cfg := r.Context().Value(configKey).(*Config)
-			go func(cfg *Config, w *customWriter, r *http.Request) {
-				// because Go automatically adds http.StatusOK when not set
-				if w.statusCode == 0 {
-					w.statusCode = http.StatusOK
-				}
-				if w.statusCode >= 299 {
-					slog.Debug("not updating stats for status code above 299", "code", w.statusCode)
+			next.ServeHTTP(w, r)
+			go func(ctx context.Context, r *http.Request) {
+				statusCode := GetStatusCode(ctx)()
+				logger := GetLogger(ctx)
+				if statusCode >= 299 {
+					logger.Debug("not updating stats for status code above 299", "status", statusCode)
 					return
 				}
 				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 				defer cancel()
 				if err := storage.UpdateStats(setContext(ctx), r, cfg.Domain); err != nil {
-					slog.Error("updating stats", "error", err)
+					logger.Error("updating stats", "error", err)
 				}
-			}(cfg, ww, r)
+			}(r.Context(), r)
 		})
 	})
 

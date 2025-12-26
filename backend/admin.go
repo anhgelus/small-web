@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -33,7 +32,7 @@ func HandleAdmin(r *chi.Mux) {
 		if rawPage != "" {
 			page, err = strconv.Atoi(rawPage)
 			if err != nil || page < 1 {
-				slog.Warn("invalid page number", "rawPage", rawPage)
+				GetLogger(ctx).Warn("invalid page number", "requested", rawPage)
 				http.Error(w, "Bad request", http.StatusBadRequest)
 				return
 			}

@@ -269,7 +269,7 @@ func (s *Section) handlePagination(w http.ResponseWriter, r *http.Request, maxLo
 		var err error
 		page, err = strconv.Atoi(rawPage)
 		if err != nil || page < 1 {
-			slog.Warn("invalid page number", "rawPage", rawPage)
+			GetLogger(r.Context()).Warn("invalid page number", "requested", rawPage)
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return nil
 		}
