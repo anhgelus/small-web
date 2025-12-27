@@ -56,10 +56,15 @@ func handleTimeout(ctx context.Context) bool {
 	}
 	v.since = time.Now()
 	GetLogger(ctx).Warn("rate limiting IP", "ip", ip, "duration", dur().String())
-	go func(v *to) {
+	go func(v *to, ip string) {
 		time.Sleep(3 * time.Hour)
 		v.n = max(v.n-4, 0)
-	}(v)
+		if v.n == 0 {
+			timeouts.mu.Lock()
+			defer timeouts.mu.Unlock()
+			delete(timeouts.tos, ip)
+		}
+	}(v, ip)
 	return true
 }
 
@@ -70,13 +75,7 @@ func resetTimeout(ctx context.Context) {
 
 	timeouts.mu.Lock()
 	defer timeouts.mu.Unlock()
-
-	v, ok := timeouts.tos[ip]
-	if !ok {
-		return
-	}
-	v.n = 0
-	v.since = time.Unix(0, 0)
+	delete(timeouts.tos, ip)
 }
 
 func HandleAdmin(r *chi.Mux) {
