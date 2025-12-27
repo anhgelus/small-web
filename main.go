@@ -10,13 +10,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
 	"git.anhgelus.world/anhgelus/small-web/backend"
 	"git.anhgelus.world/anhgelus/small-web/backend/storage"
-	"github.com/joho/godotenv"
 )
 
 //go:embed dist
@@ -29,22 +27,7 @@ var (
 )
 
 func init() {
-	err := godotenv.Load(".env")
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		slog.Error("loading .env", "error", err)
-	}
-
-	if v := os.Getenv("CONFIG_FILE"); v != "" {
-		configFile = v
-	}
 	flag.StringVar(&configFile, "config", configFile, "config file")
-
-	if v := os.Getenv("PORT"); v != "" {
-		port, err = strconv.Atoi(v)
-		if err != nil {
-			panic(err)
-		}
-	}
 	flag.IntVar(&port, "port", port, "server port")
 	flag.BoolVar(&dev, "dev", false, "development mode")
 }
