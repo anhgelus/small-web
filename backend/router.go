@@ -25,7 +25,6 @@ const (
 	assetsFSKey = "assets_fs"
 	debugKey    = "debug"
 	loginKey    = "login"
-	ipAdressKey = "ip_adress"
 )
 
 //go:embed templates
@@ -80,7 +79,10 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 		if ip == "" {
 			ip = r.RemoteAddr
 		}
-		ctx = context.WithValue(ctx, ipAdressKey, ip)
+		if strings.Contains(ip, ":") {
+			ip = strings.Split(ip, ":")[0]
+		}
+		ctx = context.WithValue(ctx, storage.IPAddressKey, ip)
 		ctx = context.WithValue(ctx, configKey, cfg)
 		ctx = context.WithValue(ctx, assetsFSKey, assets)
 		ctx = context.WithValue(ctx, debugKey, debug)
@@ -119,9 +121,12 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			next.ServeHTTP(w, r)
 			go func(ctx context.Context, r *http.Request) {
+				if strings.HasPrefix(r.RequestURI, "/static") {
+					return
+				}
 				statusCode := GetStatusCode(ctx)()
 				logger := GetLogger(ctx)
-				if statusCode >= 299 {
+				if statusCode >= 299 && r.RequestURI != storage.HumanPageLoad {
 					logger.Debug("not updating stats for status code above 299", "status", statusCode)
 					return
 				}

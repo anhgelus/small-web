@@ -12,42 +12,52 @@ import (
 	"time"
 )
 
+const IPAddressKey = "ip_address"
+
 type loaded struct {
-	data map[string]struct{}
+	data map[string]string
 	mu   *sync.RWMutex
 }
 
-func (l *loaded) Has(k string) bool {
+func (l *loaded) Has(k string, v string) bool {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
-	_, ok := l.data[k]
-	return ok
+	val, ok := l.data[k]
+	if !ok {
+		return false
+	}
+	return val == v
 }
 
-func (l *loaded) Add(k string) {
+func (l *loaded) Add(k string, v string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	l.data[k] = struct{}{}
+	l.data[k] = v
 }
 
-func (l *loaded) Remove(k string) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	delete(l.data, k)
+func (l *loaded) Remove(k string, v string) {
+	if l.Has(k, v) {
+		l.mu.Lock()
+		defer l.mu.Unlock()
+		delete(l.data, k)
+	}
 }
 
 func newLoaded() *loaded {
 	return &loaded{
-		data: make(map[string]struct{}),
+		data: make(map[string]string),
 		mu:   new(sync.RWMutex),
 	}
 }
 
 var load = newLoaded()
 
+// using /assets/styles.css to detect if a page is loaded → majority of bots will not load this
+const HumanPageLoad = "/assets/styles.css"
+
 func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	target := r.URL.Path
-	if strings.HasPrefix(target, "/static") || strings.HasPrefix(target, "/admin") {
+	if strings.HasPrefix(target, "/admin") {
 		return nil
 	}
 	ref := r.Header.Get("Referer")
@@ -65,12 +75,12 @@ func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 			return nil
 		}
 	}
-	// using /assets/styles.css to detect if a page is loaded → majority of bots will not load this
-	if target == "/assets/styles.css" {
+	if target == HumanPageLoad {
 		target = ref
 		ref = "?"
 	}
-	if load.Has(target) {
+	ip := ctx.Value(IPAddressKey).(string)
+	if load.Has(ip, target) {
 		return nil
 	}
 	db := getDB(ctx)
@@ -81,11 +91,11 @@ func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	defer func() {
 		if err == nil {
 			slog.Debug("stats updated")
-			load.Add(target)
-			go func(target string) {
+			load.Add(ip, target)
+			go func(ip, target string) {
 				time.Sleep(5 * time.Second)
-				load.Remove(target)
-			}(target)
+				load.Remove(ip, target)
+			}(ip, target)
 		}
 	}()
 	if !rows.Next() {

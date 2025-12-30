@@ -5,7 +5,6 @@ import (
 	"math"
 	"net/http"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -34,9 +33,7 @@ type tos struct {
 var timeouts = tos{tos: make(map[string]*to)}
 
 func handleTimeout(ctx context.Context) bool {
-	ip := ctx.Value(ipAdressKey).(string)
-	parsed := strings.Split(ip, ":")
-	ip = parsed[0]
+	ip := ctx.Value(storage.IPAddressKey).(string)
 
 	timeouts.mu.Lock()
 	defer timeouts.mu.Unlock()
@@ -69,12 +66,11 @@ func handleTimeout(ctx context.Context) bool {
 }
 
 func resetTimeout(ctx context.Context) {
-	ip := ctx.Value(ipAdressKey).(string)
-	parsed := strings.Split(ip, ":")
-	ip = parsed[0]
+	ip := ctx.Value(storage.IPAddressKey).(string)
 
 	timeouts.mu.Lock()
 	defer timeouts.mu.Unlock()
+
 	delete(timeouts.tos, ip)
 }
 
