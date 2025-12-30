@@ -57,6 +57,9 @@ const HumanPageLoad = "/assets/styles.css"
 
 func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	target := r.URL.Path
+	if !strings.HasPrefix(target, "/") {
+		target = "/" + target
+	}
 	if strings.HasPrefix(target, "/admin") {
 		return nil
 	}
@@ -71,6 +74,9 @@ func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	ref = refUrl.Host
 	if ref == domain || ref == fmt.Sprintf("localhost:%d", 8000) {
 		ref = refUrl.Path
+		if !strings.HasPrefix(ref, "/") {
+			ref = "/" + ref
+		}
 		if ref == target || strings.HasPrefix(ref, "/admin") || ref == "/favicon.ico" {
 			return nil
 		}
