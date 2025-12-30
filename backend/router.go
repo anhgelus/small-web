@@ -124,8 +124,12 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 				if strings.HasPrefix(r.RequestURI, "/static") {
 					return
 				}
-				statusCode := GetStatusCode(ctx)()
 				logger := GetLogger(ctx)
+				if ctx.Value(loginKey).(bool) {
+					logger.Debug("not updating stats because user is admin logged")
+					return
+				}
+				statusCode := GetStatusCode(ctx)()
 				if statusCode >= 299 && r.RequestURI != storage.HumanPageLoad {
 					logger.Debug("not updating stats for status code above 299", "status", statusCode)
 					return
