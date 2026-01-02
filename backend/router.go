@@ -147,12 +147,12 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 		})
 	})
 
-	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/{file:[a-z]+}.txt", func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		cfg := ctx.Value(configKey).(*Config)
 		logger := GetLogger(ctx)
-		logger.Info("bot requesting robots.txt", "User-Agent", r.Header.Get("User-Agent"))
-		b, err := os.ReadFile(path.Join(cfg.PublicFolder, "robots.txt"))
+		logger.Info("requesting txt file", "User-Agent", r.Header.Get("User-Agent"))
+		b, err := os.ReadFile(path.Join(cfg.PublicFolder, chi.URLParam(r, "file")+".txt"))
 		if os.IsNotExist(err) {
 			notFound(w, r)
 			return
