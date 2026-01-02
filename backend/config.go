@@ -112,6 +112,9 @@ func LoadConfig(path string) (*Config, bool) {
 		slog.Error("unmarshalling config file", "error", err)
 		return nil, false
 	}
+	if len(config.AdminPassword) == 0 {
+		config.AdminPassword = os.Getenv("SW_ADMIN_PASSWORD")
+	}
 	defaultMarkdownOption.ImageSource = getStatic
 	defaultMarkdownOption.Replaces = make(map[rune]string, len(config.Replacers))
 	for _, r := range config.Replacers {
