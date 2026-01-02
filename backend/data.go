@@ -69,9 +69,6 @@ func (d *data) merge(cfg *Config, r *http.Request) {
 		d.Image = cfg.DefaultImage
 	}
 	if d.URL == "" {
-		if !strings.HasPrefix(r.URL.Path, "/") {
-			r.URL.Path = "/" + r.URL.Path
-		}
 		d.URL = r.URL.Path
 	}
 	if d.Language == "" {

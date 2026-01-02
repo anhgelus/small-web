@@ -57,14 +57,11 @@ const HumanPageLoad = "/assets/styles.css"
 
 func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	target := r.URL.Path
-	if !strings.HasPrefix(target, "/") {
-		target = "/" + target
-	}
 	if strings.HasPrefix(target, "/admin") {
 		return nil
 	}
 	ref := r.Header.Get("Referer")
-	if ref == "" {
+	if len(ref) == 0 {
 		return nil
 	}
 	refUrl, err := url.Parse(ref)
@@ -72,6 +69,9 @@ func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 		return nil
 	}
 	ref = refUrl.Host
+	if len(ref) == 0 {
+		return nil
+	}
 	if ref == domain || ref == fmt.Sprintf("localhost:%d", 8000) {
 		ref = refUrl.Path
 		if !strings.HasPrefix(ref, "/") {

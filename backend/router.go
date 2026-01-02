@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -89,6 +90,12 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	}
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !strings.HasPrefix(r.RequestURI, "/") {
+				r.RequestURI = "/" + r.RequestURI
+			}
+			if !strings.HasPrefix(r.URL.Path, "/") {
+				r.URL.Path = "/" + r.URL.Path
+			}
 			next.ServeHTTP(w, r.WithContext(
 				setContext(r.Context(), r),
 			))
@@ -146,8 +153,21 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 			}(r.Context(), r)
 		})
 	})
+	// anti dumb attackers bot
+	phpUri := regexp.MustCompile(`/.+\.php(/.*)?`)
+	dotUri := regexp.MustCompile(`/(.*/)*\..*`)
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if phpUri.MatchString(r.RequestURI) || dotUri.MatchString(r.RequestURI) {
+				handleSus(w, r)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	})
 
-	r.HandleFunc("/{file:[a-z]+}.txt", func(w http.ResponseWriter, r *http.Request) {
+	// txt files
+	r.Get("/{file:[a-z]+}.txt", func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		cfg := ctx.Value(configKey).(*Config)
 		logger := GetLogger(ctx)
@@ -166,6 +186,17 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	})
 
 	return r
+}
+
+func handleSus(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := GetLogger(ctx)
+	logger.Warn("sus request", "User-Agent", r.Header.Get("User-Agent"))
+	if rateLimit(ctx) {
+		http.Error(w, "Too many requests", http.StatusTooManyRequests)
+		return
+	}
+	notFound(w, r)
 }
 
 // httpEmbedFS is an implementation of fs.FS, fs.ReadDirFS and fs.ReadFileFS helping to manage embed.FS for http server
