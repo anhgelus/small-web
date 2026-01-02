@@ -135,7 +135,8 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 					return
 				}
 				logger := GetLogger(ctx)
-				if ctx.Value(loginKey).(bool) {
+				debug := ctx.Value(debugKey).(bool)
+				if ctx.Value(loginKey).(bool) && !debug {
 					logger.Debug("not updating stats because user is admin logged")
 					return
 				}

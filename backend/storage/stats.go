@@ -14,98 +14,118 @@ import (
 
 const IPAddressKey = "ip_address"
 
+type loadRequest struct {
+	target  string
+	referer string
+}
+
 type loaded struct {
-	data map[string]string
+	data map[string]loadRequest
 	mu   *sync.RWMutex
 }
 
-func (l *loaded) Has(k string, v string) bool {
+func (l *loaded) Get(ip, target string) (loadRequest, bool) {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
-	val, ok := l.data[k]
+	val, ok := l.data[ip]
 	if !ok {
-		return false
+		return loadRequest{}, false
 	}
-	return val == v
+	return val, val.target == target
 }
 
-func (l *loaded) Add(k string, v string) {
+func (l *loaded) Add(ip, referer, target string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	l.data[k] = v
+	l.data[ip] = loadRequest{referer: referer, target: target}
 }
 
-func (l *loaded) Remove(k string, v string) {
-	if l.Has(k, v) {
+func (l *loaded) Remove(ip, target string) {
+	if _, ok := l.Get(ip, target); ok {
 		l.mu.Lock()
 		defer l.mu.Unlock()
-		delete(l.data, k)
+		delete(l.data, ip)
 	}
 }
 
-func newLoaded() *loaded {
-	return &loaded{
-		data: make(map[string]string),
-		mu:   new(sync.RWMutex),
-	}
+var load = loaded{
+	data: make(map[string]loadRequest),
+	mu:   new(sync.RWMutex),
 }
-
-var load = newLoaded()
 
 // using /assets/styles.css to detect if a page is loaded → majority of bots will not load this
 const HumanPageLoad = "/assets/styles.css"
 
-func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
-	target := r.URL.Path
-	if strings.HasPrefix(target, "/admin") {
-		return nil
-	}
+func getReferer(r *http.Request, domain string) (string, bool) {
 	ref := r.Header.Get("Referer")
 	if len(ref) == 0 {
-		return nil
+		return "", false
 	}
 	refUrl, err := url.Parse(ref)
 	if err != nil {
-		return nil
+		return "", false
 	}
 	ref = refUrl.Host
 	if len(ref) == 0 {
-		return nil
+		return "", false
 	}
 	if ref == domain || ref == fmt.Sprintf("localhost:%d", 8000) {
 		ref = refUrl.Path
 		if !strings.HasPrefix(ref, "/") {
 			ref = "/" + ref
 		}
-		if ref == target || strings.HasPrefix(ref, "/admin") || ref == "/favicon.ico" {
-			return nil
+		if ref == r.URL.Path || strings.HasPrefix(ref, "/admin") || ref == "/favicon.ico" {
+			return ref, false
 		}
 	}
+	return ref, true
+}
+
+func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
+	target := r.URL.Path
 	if target == HumanPageLoad {
-		target = ref
-		ref = "?"
+		return humanLoad(ctx, r, domain)
 	}
-	ip := ctx.Value(IPAddressKey).(string)
-	if load.Has(ip, target) {
+	if strings.HasPrefix(target, "/admin") {
 		return nil
 	}
+	ref, ok := getReferer(r, domain)
+	if !ok {
+		return nil
+	}
+	ip := ctx.Value(IPAddressKey).(string)
+	load.Add(ip, ref, target)
+	go func(ip, target string) {
+		time.Sleep(5 * time.Second)
+		load.Remove(ip, target)
+	}(ip, target)
+	return nil
+}
+
+func humanLoad(ctx context.Context, r *http.Request, domain string) error {
+	ip := ctx.Value(IPAddressKey).(string)
+	ref, ok := getReferer(r, domain)
+	if !ok {
+		return nil
+	}
+	lr, ok := load.Get(ip, ref)
+	if !ok {
+		lr.referer = "?"
+		lr.target = ref
+	}
 	db := getDB(ctx)
-	rows, err := db.QueryContext(ctx, "SELECT id, visit FROM stats WHERE origin = ? AND target = ?", ref, target)
+	rows, err := db.QueryContext(ctx, "SELECT id, visit FROM stats WHERE origin = ? AND target = ?", lr.referer, lr.target)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err == nil {
 			slog.Debug("stats updated")
-			load.Add(ip, target)
-			go func(ip, target string) {
-				time.Sleep(5 * time.Second)
-				load.Remove(ip, target)
-			}(ip, target)
+			load.Remove(ip, lr.target)
 		}
 	}()
 	if !rows.Next() {
-		_, err = db.ExecContext(ctx, "INSERT INTO stats (origin, target, visit) VALUES (?, ?, 1)", ref, target)
+		_, err = db.ExecContext(ctx, "INSERT INTO stats (origin, target, visit) VALUES (?, ?, 1)", lr.referer, lr.target)
 		return err
 	}
 	var id uint
