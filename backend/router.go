@@ -98,25 +98,29 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	// login
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			_, pass, ok := r.BasicAuth()
 			ctx := r.Context()
+			if isRateLimited(ctx) {
+				http.Error(w, "Too many requests", http.StatusTooManyRequests)
+				return
+			}
+			_, pass, ok := r.BasicAuth()
 			if ok {
-				if handleTimeout(ctx) {
-					http.Error(w, "Too many requests", http.StatusTooManyRequests)
-					return
-				}
 				cfg := ctx.Value(configKey).(*Config)
 				passHash := sha256.Sum256([]byte(pass))
 				rightPassHash := sha256.Sum256([]byte(cfg.AdminPassword))
 				ok = subtle.ConstantTimeCompare(passHash[:], rightPassHash[:]) == 1
 				if ok {
-					resetTimeout(ctx)
+					resetRateLimit(ctx)
+				} else if rateLimit(ctx) {
+					http.Error(w, "Too many requests", http.StatusTooManyRequests)
+					return
 				}
 			}
 			ctx = context.WithValue(ctx, loginKey, ok)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	})
+	// stats
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			next.ServeHTTP(w, r)

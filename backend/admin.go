@@ -32,7 +32,24 @@ type tos struct {
 
 var timeouts = tos{tos: make(map[string]*to)}
 
-func handleTimeout(ctx context.Context) bool {
+func rateLimitDuration(n int) time.Duration {
+	return time.Duration(math.Pow10(n/4)) * time.Second
+}
+
+func isRateLimited(ctx context.Context) bool {
+	ip := ctx.Value(storage.IPAddressKey).(string)
+
+	timeouts.mu.Lock()
+	defer timeouts.mu.Unlock()
+
+	v, ok := timeouts.tos[ip]
+	if !ok {
+		return false
+	}
+	return time.Since(v.since) <= rateLimitDuration(v.n)
+}
+
+func rateLimit(ctx context.Context) bool {
 	ip := ctx.Value(storage.IPAddressKey).(string)
 
 	timeouts.mu.Lock()
@@ -43,8 +60,7 @@ func handleTimeout(ctx context.Context) bool {
 		timeouts.tos[ip] = &to{n: 1}
 		return false
 	}
-	dur := func() time.Duration { return time.Duration(math.Pow10(v.n/4)) * time.Second }
-	if time.Since(v.since) <= dur() {
+	if time.Since(v.since) <= rateLimitDuration(v.n) {
 		return true
 	}
 	v.n++
@@ -52,7 +68,7 @@ func handleTimeout(ctx context.Context) bool {
 		return false
 	}
 	v.since = time.Now()
-	GetLogger(ctx).Warn("rate limiting IP", "ip", ip, "duration", dur().String())
+	GetLogger(ctx).Warn("rate limiting IP", "ip", ip, "duration", rateLimitDuration(v.n).String())
 	go func(v *to, ip string) {
 		time.Sleep(3 * time.Hour)
 		v.n = max(v.n-4, 0)
@@ -65,7 +81,7 @@ func handleTimeout(ctx context.Context) bool {
 	return true
 }
 
-func resetTimeout(ctx context.Context) {
+func resetRateLimit(ctx context.Context) {
 	ip := ctx.Value(storage.IPAddressKey).(string)
 
 	timeouts.mu.Lock()
