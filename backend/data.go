@@ -13,6 +13,8 @@ import (
 	"regexp"
 	"strings"
 	txt "text/template"
+
+	"git.anhgelus.world/anhgelus/small-web/backend/log"
 )
 
 var (
@@ -175,7 +177,7 @@ func getAsset(ctx context.Context, path string) *assetData {
 		return asset
 	}
 	asset = &assetData{}
-	logger := GetLogger(ctx)
+	logger := log.GetLogger(ctx)
 	var b []byte
 	if regexIsHttp.MatchString(path) {
 		asset.Src = path

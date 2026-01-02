@@ -3,13 +3,14 @@ package storage
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"slices"
 	"strings"
 	"sync"
 	"time"
+
+	"git.anhgelus.world/anhgelus/small-web/backend/log"
 )
 
 const IPAddressKey = "ip_address"
@@ -120,7 +121,7 @@ func humanLoad(ctx context.Context, r *http.Request, domain string) error {
 	}
 	defer func() {
 		if err == nil {
-			slog.Debug("stats updated")
+			log.GetLogger(ctx).Debug("stats updated")
 			load.Remove(ip, lr.target)
 		}
 	}()

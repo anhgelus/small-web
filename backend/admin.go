@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"git.anhgelus.world/anhgelus/small-web/backend/log"
 	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 	"github.com/go-chi/chi/v5"
 )
@@ -68,7 +69,7 @@ func rateLimit(ctx context.Context) bool {
 		return false
 	}
 	v.since = time.Now()
-	GetLogger(ctx).Warn("rate limiting IP", "ip", ip, "duration", rateLimitDuration(v.n).String())
+	log.GetLogger(ctx).Warn("rate limiting IP", "ip", ip, "duration", rateLimitDuration(v.n).String())
 	go func(v *to, ip string) {
 		time.Sleep(3 * time.Hour)
 		v.n = max(v.n-4, 0)
@@ -106,7 +107,7 @@ func HandleAdmin(r *chi.Mux) {
 		if rawPage != "" {
 			page, err = strconv.Atoi(rawPage)
 			if err != nil || page < 1 {
-				GetLogger(ctx).Warn("invalid page number", "requested", rawPage)
+				log.GetLogger(ctx).Warn("invalid page number", "requested", rawPage)
 				http.Error(w, "Bad request", http.StatusBadRequest)
 				return
 			}

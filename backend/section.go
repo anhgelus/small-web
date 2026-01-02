@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"git.anhgelus.world/anhgelus/small-web/backend/log"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -270,7 +271,7 @@ func (s *Section) handlePagination(w http.ResponseWriter, r *http.Request, maxLo
 		var err error
 		page, err = strconv.Atoi(rawPage)
 		if err != nil || page < 1 {
-			GetLogger(r.Context()).Warn("invalid page number", "requested", rawPage)
+			log.GetLogger(r.Context()).Warn("invalid page number", "requested", rawPage)
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return nil
 		}

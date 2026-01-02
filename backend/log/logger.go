@@ -1,4 +1,4 @@
-package backend
+package log
 
 import (
 	"context"
@@ -35,10 +35,18 @@ func GetStatusCode(ctx context.Context) func() int {
 	return ctx.Value(statusCode).(func() int)
 }
 
+func newLogger(l *slog.Logger, r *http.Request) *slog.Logger {
+	return l.With("uri", r.RequestURI, "method", r.Method)
+}
+
+func SetContextLogger(ctx context.Context, l *slog.Logger, r *http.Request) context.Context {
+	return context.WithValue(ctx, loggerKey, newLogger(l, r))
+}
+
 func SetLogger(l *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			logger := l.With("uri", r.RequestURI, "method", r.Method)
+			logger := newLogger(l, r)
 			ww := &customWriter{ResponseWriter: w, statusCode: http.StatusOK}
 			ctx := context.WithValue(r.Context(), statusCode, func() int {
 				return ww.statusCode

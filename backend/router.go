@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"git.anhgelus.world/anhgelus/small-web/backend/log"
 	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -50,7 +51,7 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Timeout(30 * time.Second))
-	r.Use(SetLogger(slog.Default()))
+	r.Use(log.SetLogger(slog.Default()))
 	// security headers
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -86,6 +87,7 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 		ctx = context.WithValue(ctx, configKey, cfg)
 		ctx = context.WithValue(ctx, assetsFSKey, assets)
 		ctx = context.WithValue(ctx, debugKey, debug)
+		ctx = log.SetContextLogger(ctx, slog.Default(), r)
 		return context.WithValue(ctx, storage.DBKey, db)
 	}
 	r.Use(func(next http.Handler) http.Handler {
@@ -134,13 +136,13 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 				if strings.HasPrefix(r.RequestURI, "/static") || r.RequestURI == "/robots.txt" {
 					return
 				}
-				logger := GetLogger(ctx)
+				logger := log.GetLogger(ctx)
 				debug := ctx.Value(debugKey).(bool)
 				if ctx.Value(loginKey).(bool) && !debug {
 					logger.Debug("not updating stats because user is admin logged")
 					return
 				}
-				statusCode := GetStatusCode(ctx)()
+				statusCode := log.GetStatusCode(ctx)()
 				if statusCode >= 299 && r.RequestURI != storage.HumanPageLoad {
 					logger.Debug("not updating stats for status code above 299", "status", statusCode)
 					return
@@ -155,9 +157,9 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 		})
 	})
 	// anti dumb attackers bot
-	phpUri := regexp.MustCompile(`/.+\.php(/.*)?`)
-	dotUri := regexp.MustCompile(`/(.*/)*\..*`)
 	r.Use(func(next http.Handler) http.Handler {
+		phpUri := regexp.MustCompile(`/.+\.php(/.*)?`)
+		dotUri := regexp.MustCompile(`/(.*/)*\..*`)
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if phpUri.MatchString(r.RequestURI) || dotUri.MatchString(r.RequestURI) {
 				handleSus(w, r)
@@ -171,7 +173,7 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 	r.Get("/{file:[a-z]+}.txt", func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		cfg := ctx.Value(configKey).(*Config)
-		logger := GetLogger(ctx)
+		logger := log.GetLogger(ctx)
 		logger.Info("requesting txt file", "User-Agent", r.Header.Get("User-Agent"))
 		b, err := os.ReadFile(path.Join(cfg.PublicFolder, chi.URLParam(r, "file")+".txt"))
 		if os.IsNotExist(err) {
@@ -191,7 +193,7 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 
 func handleSus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := GetLogger(ctx)
+	logger := log.GetLogger(ctx)
 	logger.Warn("sus request", "User-Agent", r.Header.Get("User-Agent"))
 	if rateLimit(ctx) {
 		http.Error(w, "Too many requests", http.StatusTooManyRequests)
