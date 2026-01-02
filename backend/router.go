@@ -20,7 +20,6 @@ import (
 )
 
 const (
-	Version     = "0.5.0"
 	configKey   = "config"
 	assetsFSKey = "assets_fs"
 	debugKey    = "debug"
@@ -40,7 +39,6 @@ func SetupLogger(debug bool) {
 		Level: logLevel,
 	})).With(
 		slog.String("app", "anhgelus/small-web"),
-		slog.String("version", Version),
 	)
 
 	slog.SetDefault(logger)
