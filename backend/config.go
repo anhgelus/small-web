@@ -69,6 +69,7 @@ func (c *Config) DefaultValues() {
 	}
 	c.Sections = []Section{{
 		Name:        "logs",
+		TitleName:   "log",
 		Description: "Aut maxime voluptatibus ut dicta voluptates et ut alias. Sunt et incidunt similique et doloremque nostrum fugit autem. Ut omnis quo nisi. Accusantium voluptas fugit autem maiores numquam doloribus.",
 		Folder:      "data/logs",
 		URI:         "logs",

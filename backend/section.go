@@ -25,6 +25,7 @@ var (
 
 type Section struct {
 	Name        string         `toml:"name"`
+	TitleName   string         `toml:"title_name"`
 	Folder      string         `toml:"folder"`
 	Description string         `toml:"description"`
 	URI         string         `toml:"uri"`
@@ -204,7 +205,7 @@ func (s *Section) handleOne(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	d.section = s.Name[:len(s.Name)-1]
+	d.section = s.TitleName
 	d.handleGeneric(w, r, "data", d)
 }
 
