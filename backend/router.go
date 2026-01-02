@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -123,7 +124,7 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			next.ServeHTTP(w, r)
 			go func(ctx context.Context, r *http.Request) {
-				if strings.HasPrefix(r.RequestURI, "/static") {
+				if strings.HasPrefix(r.RequestURI, "/static") || r.RequestURI == "/robots.txt" {
 					return
 				}
 				logger := GetLogger(ctx)
@@ -144,6 +145,24 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 				}
 			}(r.Context(), r)
 		})
+	})
+
+	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		cfg := ctx.Value(configKey).(*Config)
+		logger := GetLogger(ctx)
+		logger.Info("bot requesting robots.txt", "User-Agent", r.Header.Get("User-Agent"))
+		b, err := os.ReadFile(path.Join(cfg.PublicFolder, "robots.txt"))
+		if os.IsNotExist(err) {
+			notFound(w, r)
+			return
+		} else if err != nil {
+			panic(err)
+		}
+		_, err = w.Write(b)
+		if err != nil {
+			panic(err)
+		}
 	})
 
 	return r
