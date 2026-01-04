@@ -194,7 +194,7 @@ func NewRouter(debug bool, cfg *Config, db *sql.DB, assets fs.FS) *chi.Mux {
 func handleSus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := log.GetLogger(ctx)
-	logger.Warn("sus request", "User-Agent", r.Header.Get("User-Agent"))
+	logger.Debug("sus request", "User-Agent", r.Header.Get("User-Agent"))
 	if rateLimit(ctx) {
 		http.Error(w, "Too many requests", http.StatusTooManyRequests)
 		return
