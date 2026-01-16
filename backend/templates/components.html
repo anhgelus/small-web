@@ -1,29 +1,39 @@
 {{ define "pagination" }}
-<nav>
-  {{ if ne .CurrentPage 1 }}<a href="?page={{ before .CurrentPage }}">Précédent</a>{{else}}
-  <p></p>
-  {{end}}
-  <p>{{ .CurrentPage }}/{{ .PagesNumber }}</p>
-  {{ if ne .CurrentPage .PagesNumber }}<a href="?page={{ next .CurrentPage }}">Suivant</a>{{else}}
-  <p></p>
-  {{end}}
-</nav>
-{{ end }} {{define "section_display"}}
-<article>
-  {{ $uri := .URI }} {{ range .Data }}
+  <nav>
+    {{ if ne .CurrentPage 1 }}
+      <a href="?page={{ before .CurrentPage }}">Précédent</a>
+    {{ else }}
+      <p></p>
+    {{ end }}
+    <p>{{ .CurrentPage }}/{{ .PagesNumber }}</p>
+    {{ if ne .CurrentPage .PagesNumber }}
+      <a href="?page={{ next .CurrentPage }}">Suivant</a>
+    {{ else }}
+      <p></p>
+    {{ end }}
+  </nav>
+{{ end }}
+{{ define "section_display" }}
   <article>
-    <h3><a href="/{{ $uri }}/{{ .Slug }}">{{ .DataTitle }}</a></h3>
-    <figure>
-      <a href="/{{ $uri }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
-      <figcaption>{{ .Img.Legend }}</figcaption>
-    </figure>
-    <p>{{ .Description }}</p>
+    {{ $uri := .URI }}
+    {{ range .Data }}
+      <article>
+        <h3><a href="/{{ $uri }}/{{ .Slug }}">{{ .DataTitle }}</a></h3>
+        <figure>
+          <a href="/{{ $uri }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
+          <figcaption>{{ .Img.Legend }}</figcaption>
+        </figure>
+        <p>{{ .Description }}</p>
+      </article>
+    {{ end }}
+    <div class="pagination">
+      {{ if .Paginate }}
+        {{ template "pagination" . }}
+      {{ else }}
+        {{ if eq (len .Data) .LenMax }}
+          <a href="/{{ $uri }}/">Voir plus</a>
+        {{ end }}
+      {{ end }}
+    </div>
   </article>
-  {{ end }}
-  <div class="pagination">
-    {{ if .Paginate }} {{ template "pagination" . }} {{ else }} {{ if eq (len .Data) .LenMax }}
-    <a href="/{{ $uri }}/">Voir plus</a>
-    {{ end }} {{ end }}
-  </div>
-</article>
-{{end}}
+{{ end }}
