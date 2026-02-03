@@ -1,3 +1,3 @@
 #!/usr/bin/bash
 
-rsync -riz "vps:~/small-web-data/*" ./
+rsync -riz "vps:~/anhgelus.world/*" ./
