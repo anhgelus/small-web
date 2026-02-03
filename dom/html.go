@@ -5,15 +5,12 @@ import (
 	"html/template"
 )
 
-func render(tag string, attributes map[string]string, endSlash bool) template.HTML {
+func render(tag string, attributes map[string]string) template.HTML {
 	base := fmt.Sprintf(`<%s`, tag)
 	for k, v := range attributes {
-		base += fmt.Sprintf(` %s="%s"`, k, v)
+		base = fmt.Sprintf(`%s %s="%s"`, base, k, v)
 	}
-	if !endSlash {
-		return template.HTML(base + `>`)
-	}
-	return template.HTML(base + ` />`)
+	return template.HTML(base + `>`)
 }
 
 type Element interface {
@@ -58,7 +55,7 @@ type VoidElement struct {
 
 func (e VoidElement) Render() template.HTML {
 	e.cl.set(e)
-	return render(e.Tag, e.attributes, true)
+	return render(e.Tag, e.attributes)
 }
 
 func (e VoidElement) HasAttribute(k string) bool {
@@ -95,7 +92,7 @@ type ContentElement struct {
 
 func (e ContentElement) Render() template.HTML {
 	e.cl.set(e)
-	base := render(e.Tag, e.attributes, false)
+	base := render(e.Tag, e.attributes)
 	for _, el := range e.Contents {
 		base += el.Render()
 	}

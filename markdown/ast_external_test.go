@@ -8,7 +8,7 @@ func TestExternal(t *testing.T) {
 		t.Run("combo", test("Hey, [link](href)", `<p>Hey, <a href="href">link</a></p>`))
 	})
 	t.Run("image", func(t *testing.T) {
-		t.Run("simple", test("![image alt](image src)", `<figure><img alt="image alt" src="image src" /></figure>`))
+		t.Run("simple", test("![image alt](image src)", `<figure><img alt="image alt" src="image src"></figure>`))
 		t.Run("combo", test(`
 Avant la source
 ![image alt](image src)
@@ -16,6 +16,6 @@ source 1
 source 2
 
 Hors de la source
-`, `<p>Avant la source</p><figure><img alt="image alt" src="image src" /><figcaption>source 1 source 2</figcaption></figure><p>Hors de la source</p>`))
+`, `<p>Avant la source</p><figure><img alt="image alt" src="image src"><figcaption>source 1 source 2</figcaption></figure><p>Hors de la source</p>`))
 	})
 }

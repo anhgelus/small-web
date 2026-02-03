@@ -6,19 +6,18 @@ import (
 )
 
 func TestRender(t *testing.T) {
-	fn := func(tag string, attributes map[string]string, endSlash bool, expected string) func(*testing.T) {
+	fn := func(tag string, attributes map[string]string, expected string) func(*testing.T) {
 		return func(t *testing.T) {
 			t.Parallel()
-			got := string(render(tag, attributes, endSlash))
+			got := string(render(tag, attributes))
 			if got != expected {
 				t.Errorf("invalid value, got %s", got)
 			}
 		}
 	}
 	t.Run("render", func(t *testing.T) {
-		t.Run("simple", fn("p", map[string]string{}, false, "<p>"))
-		t.Run("endslash", fn("img", map[string]string{}, true, "<img />"))
-		t.Run("attributes", fn("a", map[string]string{"href": "link"}, false, `<a href="link">`))
+		t.Run("simple", fn("p", map[string]string{}, "<p>"))
+		t.Run("attributes", fn("a", map[string]string{"href": "link"}, `<a href="link">`))
 	})
 }
 
@@ -55,12 +54,12 @@ func TestVoidElement(t *testing.T) {
 		}
 	}
 	t.Run("no_attributes", func(t *testing.T) {
-		t.Run("simple1", fn("br", nil, "<br />"))
-		t.Run("simple2", fn("img", nil, "<img />"))
+		t.Run("simple1", fn("br", nil, "<br>"))
+		t.Run("simple2", fn("img", nil, "<img>"))
 	})
 	t.Run("attributes", func(t *testing.T) {
-		t.Run("one", fn("img", map[string]string{"src": "link"}, `<img src="link" />`))
-		t.Run("two", fn("img", map[string]string{"src": "link", "alt": "well"}, `<img src="link" alt="well" />`))
+		t.Run("one", fn("img", map[string]string{"src": "link"}, `<img src="link">`))
+		t.Run("two", fn("img", map[string]string{"src": "link", "alt": "well"}, `<img src="link" alt="well">`))
 	})
 }
 
@@ -87,7 +86,7 @@ func TestContentElement(t *testing.T) {
 	t.Run("no_attributes", func(t *testing.T) {
 		t.Run("simple", fnLiteral("p", "", nil, `<p></p>`))
 		t.Run("literal", fnLiteral("p", "content", nil, `<p>content</p>`))
-		t.Run("elements", fn("div", []Element{NewVoidElement("img"), NewVoidElement("br")}, nil, `<div><img /><br /></div>`))
+		t.Run("elements", fn("div", []Element{NewVoidElement("img"), NewVoidElement("br")}, nil, `<div><img><br></div>`))
 	})
 	t.Run("attributes", func(t *testing.T) {
 		t.Run("simple_one", fnLiteral("script", "", map[string]string{"src": "link"}, `<script src="link"></script>`))
@@ -113,8 +112,8 @@ func TestElement_ClassList(t *testing.T) {
 		}
 	}
 	t.Run("add", func(t *testing.T) {
-		t.Run("empty", fn(NewVoidElement("img"), `<img />`))
-		t.Run("one", fn(NewVoidElement("img"), `<img class="bg" />`, "bg"))
-		t.Run("two", fn(NewVoidElement("img"), `<img class="bg large" />`, "bg", "large"))
+		t.Run("empty", fn(NewVoidElement("img"), `<img>`))
+		t.Run("one", fn(NewVoidElement("img"), `<img class="bg">`, "bg"))
+		t.Run("two", fn(NewVoidElement("img"), `<img class="bg large">`, "bg", "large"))
 	})
 }

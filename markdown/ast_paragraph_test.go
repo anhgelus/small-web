@@ -15,10 +15,10 @@ func TestParagraph(t *testing.T) {
 		opt := &Option{Poem: true}
 		t.Run("simple", testWithOptions(opt, "bonsoir", `<p>bonsoir</p>`))
 		t.Run("one_break", testWithOptions(opt, `bonsoir
-world`, `<p>bonsoir<br />world</p>`))
+world`, `<p>bonsoir<br>world</p>`))
 		t.Run("mult_break", testWithOptions(opt, `bonsoir
 world
 
-new line`, `<p>bonsoir<br />world</p><p>new line</p>`))
+new line`, `<p>bonsoir<br>world</p><p>new line</p>`))
 	})
 }
