@@ -57,11 +57,27 @@ func (l *lexers) Before() bool {
 }
 
 func (l *lexers) String() string {
-	s := "Lexers["
-	for _, l := range l.lexers {
-		s += l.String() + " "
+	var sb strings.Builder
+	// 8 for "Lexers[" and "]"
+	sb.Grow(8 + len(l.lexers)*4)
+	_, err := sb.WriteString("Lexers[")
+	if err != nil {
+		panic(err)
 	}
-	return s + "]"
+	for _, l := range l.lexers {
+		_, err = sb.WriteString(l.String())
+		if err == nil {
+			_, err = sb.WriteString(" ")
+		}
+		if err != nil {
+			panic(err)
+		}
+	}
+	_, err = sb.WriteString("]")
+	if err != nil {
+		panic(err)
+	}
+	return sb.String()
 }
 
 func lex(s string, opt *Option) *lexers {
