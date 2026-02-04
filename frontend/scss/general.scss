@@ -215,3 +215,36 @@ th {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
+
+.article__list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--margin-base));
+}
+
+article.large {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 2rem;
+
+  @media only screen and (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+
+  & h3 {
+    margin-top: 0;
+  }
+
+  & p {
+    margin-bottom: 0;
+  }
+
+  & figure {
+    margin-bottom: 0;
+  }
+
+  & > div {
+    margin-bottom: 2rem;
+  }
+}

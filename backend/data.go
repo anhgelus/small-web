@@ -92,9 +92,11 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 		"asset": func(path string) *assetData {
 			return getAsset(r.Context(), path)
 		},
-		"next":   func(i int) int { return i + 1 },
-		"before": func(i int) int { return i - 1 },
-		"first":  templateFirst,
+		"next":      func(i int) int { return i + 1 },
+		"before":    func(i int) int { return i - 1 },
+		"first":     templateFirst,
+		"firstData": templateFirstData,
+		"restData":  templateRestData,
 	}).ParseFS(templates, "templates/components.html", fmt.Sprintf("templates/%s.html", name), "templates/base.html")
 	if err != nil {
 		panic(err)
@@ -214,4 +216,18 @@ func templateFirst(a []*Section) *Section {
 		return nil
 	}
 	return a[0]
+}
+
+func templateFirstData(a []*sectionData) *sectionData {
+	if len(a) == 0 {
+		return nil
+	}
+	return a[0]
+}
+
+func templateRestData(a []*sectionData) []*sectionData {
+	if len(a) < 2 {
+		return nil
+	}
+	return a[1:]
 }

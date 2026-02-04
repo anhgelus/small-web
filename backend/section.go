@@ -43,6 +43,7 @@ type sectionData struct {
 	DataTitle string
 	Content   template.HTML
 	Slug      string
+	URI       string
 }
 
 func (d *sectionData) SetData(dt *data) {
@@ -163,7 +164,7 @@ func (s *Section) Handle(r *chi.Mux) {
 }
 
 func (s *Section) handleList(w http.ResponseWriter, r *http.Request) {
-	p := s.handlePagination(w, r, 5)
+	p := s.handlePagination(w, r, 7)
 	if p == nil {
 		return
 	}
@@ -214,6 +215,7 @@ func (s *Section) parse(d *sectionData, mu *sync.Mutex, path, slug string) bool 
 	d.Article = true
 	d.DataTitle = slug
 	d.Slug = slug
+	d.URI = s.URI
 	b, err := os.ReadFile(path + ".md")
 	if err != nil {
 		if os.IsNotExist(err) {

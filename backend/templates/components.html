@@ -13,27 +13,51 @@
     {{ end }}
   </nav>
 {{ end }}
-{{ define "section_display" }}
-  <article>
-    {{ $uri := .URI }}
-    {{ range .Data }}
-      <article>
-        <h3><a href="/{{ $uri }}/{{ .Slug }}">{{ .DataTitle }}</a></h3>
-        <figure>
-          <a href="/{{ $uri }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
-          <figcaption>{{ .Img.Legend }}</figcaption>
-        </figure>
-        <p>{{ .Description }}</p>
-      </article>
-    {{ end }}
+{{ define "data_display" }}
+  <article class="large">
+    <figure>
+        <a href="/{{ .URI }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
+      <figcaption>{{ .Img.Legend }}</figcaption>
+    </figure>
+    <div>
+      <h3><a href="/{{ .URI }}/{{ .Slug }}">{{ .DataTitle }}</a></h3>
+      <p>{{ .Description }}</p>
+    </div>
+  </article>
+{{ end }}
+{{ define "section_pagination" }}
     <div class="pagination">
       {{ if .Paginate }}
         {{ template "pagination" . }}
       {{ else }}
         {{ if eq (len .Data) .LenMax }}
-          <a href="/{{ $uri }}/">Voir plus</a>
+          <a href="/{{ .URI }}/">Voir plus</a>
         {{ end }}
       {{ end }}
     </div>
+{{ end }}
+{{ define "section_display--no-first" }}
+  <article class="article__list">
+    {{ range .Data }}
+      {{ template "data_display" . }}
+    {{ end }}
+    {{ template "section_pagination" . }}
+  </article>
+{{ end }}
+{{ define "section_display" }}
+  <article class="article__list">
+    {{ $first := firstData .Data }}
+    <article>
+      <h3>{{ $first.DataTitle }}</h3>
+      <figure>
+        <a href="/{{ .URI }}/{{ $first.Slug }}"><img src="{{ static $first.Img.Src }}" alt="{{ $first.Img.Alt }}" /></a>
+        <figcaption>{{ $first.Img.Legend }}</figcaption>
+      </figure>
+      <p>{{ $first.Description }}</p>
+    </article>
+    {{ range restData .Data }}
+      {{ template "data_display" . }}
+    {{ end }}
+    {{ template "section_pagination" . }}
   </article>
 {{ end }}

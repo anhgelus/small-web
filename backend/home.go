@@ -27,7 +27,7 @@ func (h *homeData) SetData(d *data) {
 func HandleHome(r *chi.Mux) {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		cfg := r.Context().Value(configKey).(*Config)
-		d := handleGenericSectionDisplay(w, r, cfg.Sections, 3)
+		d := handleGenericSectionDisplay(w, r, cfg.Sections, 4)
 		if d == nil {
 			return
 		}

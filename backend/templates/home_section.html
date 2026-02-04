@@ -5,7 +5,7 @@
         <h1>{{ .Name }}</h1>
         <p>{{ .Description }}</p>
       </div>
-      {{ template "section_display" . }}
+      {{ template "section_display--no-first" . }}
     {{ end }}
   </main>
 {{ end }}
