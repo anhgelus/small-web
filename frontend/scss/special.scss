@@ -3,7 +3,7 @@ header {
   height: var(--height-header);
 
   margin: 0 auto var(--margin-header) auto;
-  padding-bottom: 2rem;
+  padding-bottom: calc(var(--height-header) / 4);
 
   display: flex;
   flex-direction: row;
@@ -17,27 +17,30 @@ header {
   }
 
   & nav {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    & > ul {
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      gap: 0.25rem 1rem;
 
-    max-height: 100%;
+      max-height: var(--height-header);
+
+      list-style-type: none;
+      margin: 0;
+
+      & > li {
+        margin-bottom: 0;
+      }
+    }
 
     & a {
       display: block;
 
-      min-width: 7rem;
+      padding: 0 1rem 0 0;
 
       font-family: monospace;
     }
   }
-  @media only screen and (max-width: 800px) {
-    height: 12rem;
-    padding-bottom: 0;
-    align-items: start;
-  }
-
   @media only screen and (max-width: 600px) {
     flex-direction: column;
     align-items: normal;
@@ -45,7 +48,13 @@ header {
     height: auto;
     min-height: var(--height-header);
 
-    padding-bottom: 2rem;
+    padding-bottom: 1rem;
+
+    & nav > ul {
+      flex-direction: column;
+      max-height: unset;
+      gap: 0.5rem;
+    }
 
     & img {
       height: 100%;

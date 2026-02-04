@@ -20,19 +20,16 @@
     {{ if ne .PubDate "" }}
       <meta name="article:published_time" content="{{ .PubDate }}" />
     {{ end }}
-    <!-- Twitter  -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:domain" content="{{ .Domain }}" />
-    <meta name="twitter:url" content="https://{{ .Domain }}{{ .URL }}" />
-    <meta name="twitter:title" content="{{ .Title }}" />
-    <meta name="twitter:description" content="{{ .PageDescription }}" />
-    <meta name="twitter:image" content="{{ fullStatic .Image }}" />
   </head>
   <body>
     <header>
       <img src="{{ static .Logo.Header }}" alt="Logo" />
       {{ $url := .URL }}
-      <nav>{{ range .Links }}{{ .Render $url }}{{ end }}</nav>
+      <nav>
+        <ul>
+          {{ range .Links }}<li>{{ .Render $url }}</li>{{ end }}
+        </ul>
+      </nav>
     </header>
     {{ template "body" . }}
     <footer>
