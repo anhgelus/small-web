@@ -110,46 +110,42 @@ func lex(s string, opt *Option) *lexers {
 			continue
 		}
 		switch c {
-		case '*', '_':
-			if c == '*' && newLine && i < len(runes)-1 && runes[i+1] == ' ' {
+		case '*':
+			if newLine && i < len(runes)-1 && runes[i+1] == ' ' {
 				fn(c, lexerList, nil)
-			} else {
-				if (currentType != lexerModifier && len(previous) > 0) ||
-					(len(previous) > 0 && []rune(previous)[0] != c) ||
-					len(previous) >= 3 {
-					lexs = append(lexs, lexer{Type: currentType, Value: previous})
-					previous = ""
-				}
-				currentType = lexerModifier
-				previous += string(c)
+				newLine = false
+				continue
 			}
-			newLine = false
+			fallthrough
+		case '_':
+			if (currentType != lexerModifier && len(previous) > 0) ||
+				(len(previous) > 0 && []rune(previous)[0] != c) ||
+				len(previous) >= 3 {
+				lexs = append(lexs, lexer{Type: currentType, Value: previous})
+				previous = ""
+			}
+			currentType = lexerModifier
+			previous += string(c)
 		case '`':
-			newLine = false
 			fn(c, lexerCode, nil)
 		case '\n':
-			newLine = true
 			fn(c, lexerBreak, nil)
 		case '#':
-			newLine = false
 			fn(c, lexerHeading, nil)
 		case '>':
-			newLine = false
 			fn(c, lexerQuote, nil)
 		case '[', ']', '(', ')', '!':
-			newLine = false
 			fn(c, lexerExternal, func(c rune) bool { return validExternal(previous + string(c)) })
 		case '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
-			newLine = false
 			fn(c, lexerList, nil)
 		default:
-			newLine = false
 			if _, ok := opt.Replaces[c]; ok {
 				fn(c, lexerReplace, func(c rune) bool { return false })
 			} else {
 				fn(c, lexerLiteral, nil)
 			}
 		}
+		newLine = c == '\n'
 	}
 	if len(previous) > 0 {
 		lexs = append(lexs, lexer{Type: currentType, Value: previous})
