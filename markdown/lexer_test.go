@@ -28,6 +28,11 @@ func TestLex(t *testing.T) {
 	if lxs.String() != `Lexers[list(*) literal( list) ]` {
 		t.Errorf("invalid lex, got %s", lxs)
 	}
+	lxs = lex(`> [!NOTE] title
+> hey`, opt)
+	if lxs.String() != `Lexers[quote(>) literal( ) callout([!) literal(NOTE) callout(]) literal( title) break({\n}) quote(>) literal( hey) ]` {
+		t.Errorf("invalid lex, got %s", lxs)
+	}
 }
 
 func TestLex_Replacer(t *testing.T) {

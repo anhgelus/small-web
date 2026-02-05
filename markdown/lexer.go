@@ -19,6 +19,7 @@ const (
 	lexerList    lexerType = "list"
 
 	lexerExternal lexerType = "external"
+	lexerCallout  lexerType = "callout"
 
 	lexerLiteral lexerType = "literal"
 	lexerReplace lexerType = "replace"
@@ -134,7 +135,23 @@ func lex(s string, opt *Option) *lexers {
 			fn(c, lexerHeading, nil)
 		case '>':
 			fn(c, lexerQuote, nil)
-		case '[', ']', '(', ')', '!':
+		case '[', ']', '!':
+			if !newLine && i < len(runes)-1 {
+				next := runes[i+1]
+				runes := []rune(previous)
+				if c == '[' && next == '!' {
+					fn(c, lexerCallout, nil)
+					continue
+				} else if c == '!' && len(runes) > 0 && previous[len(previous)-1] == '[' {
+					fn(c, lexerCallout, nil)
+					continue
+				} else if c == ']' && next != '(' {
+					fn(c, lexerCallout, nil)
+					continue
+				}
+			}
+			fallthrough
+		case '(', ')':
 			fn(c, lexerExternal, func(c rune) bool { return validExternal(previous + string(c)) })
 		case '-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			fn(c, lexerList, nil)
