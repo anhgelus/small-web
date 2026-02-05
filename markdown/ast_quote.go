@@ -2,7 +2,6 @@ package markdown
 
 import (
 	"html/template"
-	"strings"
 
 	"git.anhgelus.world/anhgelus/small-web/dom"
 )
@@ -13,27 +12,18 @@ type astQuote struct {
 }
 
 func (a *astQuote) Eval(opt *Option) (template.HTML, *ParseError) {
-	var quoteContent template.HTML
-	for _, c := range a.quote {
-		ct, err := c.Eval(opt)
-		if err != nil {
-			return "", err
-		}
-		quoteContent += ct
+	quoteContent, err := evalBlock(a.quote, opt)
+	if err != nil {
+		return "", err
 	}
 	blockquote := dom.NewLiteralContentElement(
 		"blockquote",
-		template.HTML(strings.TrimSpace(string(quoteContent))),
+		template.HTML(quoteContent),
 	)
-	var source template.HTML
-	for _, c := range a.source {
-		ct, err := c.Eval(opt)
-		if err != nil {
-			return "", err
-		}
-		source += ct
+	source, err := evalBlock(a.source, opt)
+	if err != nil {
+		return "", err
 	}
-	source = template.HTML(strings.TrimSpace(string(source)))
 	quote := dom.NewContentElement("div", make([]dom.Element, 0))
 	quote.ClassList().Add("quote")
 	quote.Contents = append(quote.Contents, blockquote)
@@ -43,26 +33,31 @@ func (a *astQuote) Eval(opt *Option) (template.HTML, *ParseError) {
 	return quote.Render(), nil
 }
 
-func quote(lxs *lexers) (*astQuote, *ParseError) {
+func quote(lxs *lexers) (block, *ParseError) {
 	tree := new(astQuote)
 	n := 0
 	quoteContinue := true
 	source := false
 	for lxs.Next() && n < 2 {
-		switch lxs.Current().Type {
+		current := lxs.Current()
+		n = 0
+		switch current.Type {
 		case lexerBreak:
-			n = len(lxs.Current().Value)
+			n = len(current.Value)
 			quoteContinue = false
 		case lexerQuote:
-			n = 0
 			if source {
 				// because the code did not use it
 				lxs.Before()
 				return tree, nil
 			}
 			quoteContinue = true
+		case lexerCallout:
+			if len(tree.quote) == 0 {
+				return callout(lxs)
+			}
+			fallthrough
 		case lexerLiteral, lexerModifier, lexerCode, lexerExternal:
-			n = 0
 			if !quoteContinue {
 				source = true
 			}

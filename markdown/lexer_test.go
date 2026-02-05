@@ -30,7 +30,7 @@ func TestLex(t *testing.T) {
 	}
 	lxs = lex(`> [!NOTE] title
 > hey`, opt)
-	if lxs.String() != `Lexers[quote(>) literal( ) callout([!) literal(NOTE) callout(]) literal( title) break({\n}) quote(>) literal( hey) ]` {
+	if lxs.String() != `Lexers[quote(>) callout([!) literal(NOTE) callout(]) literal( title) break({\n}) quote(>) literal( hey) ]` {
 		t.Errorf("invalid lex, got %s", lxs)
 	}
 }

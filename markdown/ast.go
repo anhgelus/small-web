@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"strings"
 )
 
 var ErrUnkownLexType = errors.New("unkown lex type")
@@ -105,4 +106,16 @@ func getBlock(lxs *lexers, newLine bool) (block, *ParseError) {
 		}
 	}
 	return b, err
+}
+
+func evalBlock(bs []*astParagraph, opt *Option) (template.HTML, *ParseError) {
+	var sb strings.Builder
+	for _, c := range bs {
+		ct, err := c.Eval(opt)
+		if err != nil {
+			return "", err
+		}
+		sb.WriteString(string(ct))
+	}
+	return template.HTML(strings.TrimSpace(sb.String())), nil
 }

@@ -139,13 +139,18 @@ func lex(s string, opt *Option) *lexers {
 			if !newLine && i < len(runes)-1 {
 				next := runes[i+1]
 				runes := []rune(previous)
-				if c == '[' && next == '!' {
-					fn(c, lexerCallout, nil)
-					continue
-				} else if c == '!' && len(runes) > 0 && previous[len(previous)-1] == '[' {
-					fn(c, lexerCallout, nil)
-					continue
-				} else if c == ']' && next != '(' {
+				if (c == '[' && next == '!') ||
+					(c == '!' && len(runes) > 0 && previous[len(previous)-1] == '[') ||
+					(c == ']' && next != '(') {
+					allSpace := true
+					for i := 0; allSpace && i < len(runes); i++ {
+						if runes[i] != ' ' {
+							allSpace = false
+						}
+					}
+					if allSpace {
+						previous = ""
+					}
 					fn(c, lexerCallout, nil)
 					continue
 				}

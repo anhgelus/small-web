@@ -19,6 +19,10 @@ avec une source
 > qui recommence après !
 qui a elle aussi une source :D
 
+> [!NOTE] Hey :3
+> Hehe
+> That's cool
+
 - Ceci est une liste
 - pas ordonnée
 1. et maintenant
@@ -36,6 +40,7 @@ var parsed = `
 <p>Et je peux mettre du texte en <b>gras</b>, en <em>italique</em> et les <b><em>deux en même temps</em></b> !</p>
 <div class="quote"><blockquote>Je suis une magnifique citation sur plusieurs lignes</blockquote><p>avec une source</p></div>
 <div class="quote"><blockquote>qui recommence après !</blockquote><p>qui a elle aussi une source :D</p></div>
+<div data-kind="note" class="callout"><h4>Hey :3</h4><div><p>Hehe</p><p>That&#39;s cool</p></div></div>
 <ul><li>Ceci est une liste</li><li>pas ordonnée</li></ul>
 <ol><li>et maintenant</li><li>elle l&#39;est</li></ol>
 <ul><li>hehe</li></ul>
@@ -51,6 +56,7 @@ var parsedPoem = `
 <p>Et je peux mettre du texte en <b>gras</b>,<br>en <em>italique</em> et les <b><em>deux en même temps</em></b> !</p>
 <div class="quote"><blockquote>Je suis une magnifique citation sur plusieurs lignes</blockquote><p>avec une source</p></div>
 <div class="quote"><blockquote>qui recommence après !</blockquote><p>qui a elle aussi une source :D</p></div>
+<div data-kind="note" class="callout"><h4>Hey :3</h4><div><p>Hehe</p><p>That&#39;s cool</p></div></div>
 <ul><li>Ceci est une liste</li><li>pas ordonnée</li></ul>
 <ol><li>et maintenant</li><li>elle l&#39;est</li></ol>
 <ul><li>hehe</li></ul>
