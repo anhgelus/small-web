@@ -19,7 +19,8 @@ article {
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
   font-weight: 500;
   line-height: var(--line-height-smaller);
 
@@ -45,6 +46,10 @@ h3 {
   font-size: 1.33rem;
 
   margin-top: calc(var(--margin-base) + 0.5rem);
+}
+
+h4 {
+  font-size: 1.25rem;
 }
 
 p {
@@ -247,4 +252,47 @@ article.large {
   & > div {
     margin-bottom: 2rem;
   }
+}
+
+.callout {
+  display: flex;
+  gap: 0.5rem;
+  flex-direction: column;
+
+  padding: var(--margin-base);
+  background: var(--callout-color-background);
+  color: var(--callout-color);
+
+  margin-bottom: var(--margin-base);
+
+  & h4 {
+    margin-bottom: 0;
+
+    font-weight: 600;
+  }
+
+  & div {
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+
+  & div p {
+    margin-bottom: 0;
+  }
+}
+
+[data-kind="note"] {
+  --callout-color-background: hsl(201, 60%, 70%);
+  --callout-color: hsl(189, 20%, 15%);
+}
+
+[data-kind="warn"] {
+  --callout-color-background: hsl(39, 100%, 55%);
+  --callout-color: hsl(40, 40%, 15%);
+}
+
+[data-kind="danger"] {
+  --callout-color-background: hsl(345, 95%, 42%);
+  --callout-color: hsl(345, 10%, 95%);
 }
