@@ -32,7 +32,6 @@ type Config struct {
 	Domain        string   `toml:"domain"`
 	Name          string   `toml:"name"`
 	Description   string   `toml:"description"`
-	DefaultImage  string   `toml:"default_image"`
 	Quotes        []string `toml:"quotes"`
 	Language      string   `toml:"language"`
 	Database      string   `toml:"database"`

@@ -16,7 +16,7 @@
 {{ define "data_display" }}
   <article class="large">
     <figure>
-        <a href="/{{ .URI }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
+      <a href="/{{ .URI }}/{{ .Slug }}"><img src="{{ static .Img.Src }}" alt="{{ .Img.Alt }}" /></a>
       <figcaption>{{ .Img.Legend }}</figcaption>
     </figure>
     <div>
@@ -26,15 +26,15 @@
   </article>
 {{ end }}
 {{ define "section_pagination" }}
-    <div class="pagination">
-      {{ if .Paginate }}
-        {{ template "pagination" . }}
-      {{ else }}
-        {{ if eq (len .Data) .LenMax }}
-          <a href="/{{ .URI }}/">Voir plus</a>
-        {{ end }}
+  <div class="pagination">
+    {{ if .Paginate }}
+      {{ template "pagination" . }}
+    {{ else }}
+      {{ if eq (len .Data) .LenMax }}
+        <a href="/{{ .URI }}/">Voir plus</a>
       {{ end }}
-    </div>
+    {{ end }}
+  </div>
 {{ end }}
 {{ define "section_display--no-first" }}
   <article class="article__list">

@@ -13,7 +13,9 @@
     <meta name="og:title" content="{{ .Title }}" />
     <meta name="og:type" content="website" />
     <meta name="og:url" content="https://{{ .Domain }}{{ .URL }}" />
-    <meta name="og:image" content="{{ fullStatic .Image }}" />
+    {{ if ne (len .Image) 0 }}
+      <meta name="og:image" content="{{ fullStatic .Image }}" />
+    {{ end }}
     <meta name="og:description" content="{{ .PageDescription }}" />
     <meta name="og:local" content="fr_FR" />
     <meta name="og:site_name" content="{{ .Name }}" />

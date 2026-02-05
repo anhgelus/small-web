@@ -67,9 +67,6 @@ func (d *data) merge(cfg *Config, r *http.Request) {
 			d.Quote = cfg.Quotes[rand.Intn(len(cfg.Quotes))]
 		}
 	}
-	if d.Image == "" {
-		d.Image = cfg.DefaultImage
-	}
 	if d.URL == "" {
 		d.URL = r.URL.Path
 	}
