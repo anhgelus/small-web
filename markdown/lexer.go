@@ -61,23 +61,13 @@ func (l *lexers) String() string {
 	var sb strings.Builder
 	// 8 for "Lexers[" and "]"
 	sb.Grow(8 + len(l.lexers)*4)
-	_, err := sb.WriteString("Lexers[")
-	if err != nil {
-		panic(err)
-	}
+	// always return nil error
+	sb.WriteString("Lexers[")
 	for _, l := range l.lexers {
-		_, err = sb.WriteString(l.String())
-		if err == nil {
-			_, err = sb.WriteString(" ")
-		}
-		if err != nil {
-			panic(err)
-		}
+		sb.WriteString(l.String())
+		sb.WriteString(" ")
 	}
-	_, err = sb.WriteString("]")
-	if err != nil {
-		panic(err)
-	}
+	sb.WriteString("]")
 	return sb.String()
 }
 
