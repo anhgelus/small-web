@@ -162,12 +162,12 @@ code {
   font-family: monospace;
   font-size: var(--font-size-tiny);
 
-  color: var(--color-gray);
+  color: var(--color-white);
   border: var(--color-light) 1px solid;
 }
 
 pre {
-  border: var(--color-light) 2px solid;
+  border: var(--color-rose) 2px solid;
 
   margin: 0 -1rem var(--margin-base) -1rem;
   padding: 0.5rem 1rem;
@@ -175,6 +175,8 @@ pre {
   & code {
     display: block;
     max-width: 100%;
+
+    line-height: 1.5em;
 
     padding: 0;
 

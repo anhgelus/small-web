@@ -9,7 +9,8 @@
   --color-gray: #bcb3bb; /* quote and legend */
   --color-rose: #f2b5d4; /* link accent */
   --color-light-rose: hsl(330, 55%, 70%, 0.2); /* link accent hover and highlight */
-  --color-black: rgba(0, 0, 0, 0.4); /* pre, code */
+  --color-black: hsl(210, 15%, 5%); /* pre, code */
+  --color-white: #dce4e4; /* pre, code */
 
   --callout-color-background: hsl(210, 10%, 23%);
   --callout-color: hsl(210, 14%, 89%);
@@ -20,7 +21,6 @@
     --color-gray: #433b42; /* quote and legend */
     --color-rose: #a01a5e; /* link accent */
     --color-light-rose: hsla(330, 86%, 67%, 0.2); /* link accent hover and highlight */
-    --color-black: rgba(0, 0, 0, 0.2); /* pre, code */
 
     --callout-color-background: hsl(210, 14%, 89%);
     --callout-color: hsl(210, 10%, 23%);
