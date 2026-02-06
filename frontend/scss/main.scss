@@ -11,6 +11,9 @@
   --color-light-rose: hsl(330, 55%, 70%, 0.2); /* link accent hover and highlight */
   --color-black: rgba(0, 0, 0, 0.4); /* pre, code */
 
+  --callout-color-background: hsl(210, 10%, 23%);
+  --callout-color: hsl(210, 14%, 89%);
+
   @media (prefers-color-scheme: light) {
     --color-dark: #dbf6f6;
     --color-light: hsl(202, 25%, 9%);
@@ -18,6 +21,9 @@
     --color-rose: #a01a5e; /* link accent */
     --color-light-rose: hsla(330, 86%, 67%, 0.2); /* link accent hover and highlight */
     --color-black: rgba(0, 0, 0, 0.2); /* pre, code */
+
+    --callout-color-background: hsl(210, 14%, 89%);
+    --callout-color: hsl(210, 10%, 23%);
   }
 
   --font-size-tiny: 0.85rem; /* quote, legend, code */

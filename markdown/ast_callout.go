@@ -40,9 +40,11 @@ func (a *astCallout) Eval(opt *Option) (template.HTML, *ParseError) {
 	}
 	title := dom.NewLiteralContentElement("h4", titleContent)
 
-	callout := dom.NewContentElement("div", make([]dom.Element, 2))
-	callout.Contents[0] = title
-	callout.Contents[1] = inner
+	callout := dom.NewContentElement("div", make([]dom.Element, 0))
+	callout.Contents = append(callout.Contents, title)
+	if len(inner.Contents) > 0 {
+		callout.Contents = append(callout.Contents, inner)
+	}
 	callout.SetAttribute("data-kind", a.kind)
 	callout.ClassList().Add("callout")
 	return callout.Render(), nil
