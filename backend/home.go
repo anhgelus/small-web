@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/go-chi/chi/v5"
+	"git.anhgelus.world/anhgelus/small-web/backend/common"
 )
 
 var (
@@ -24,22 +24,16 @@ func (h *homeData) SetData(d *data) {
 	h.data = d
 }
 
-func HandleHome(r *chi.Mux) {
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		cfg := r.Context().Value(configKey).(*Config)
-		d := handleGenericSectionDisplay(w, r, cfg.Sections, 4)
-		if d == nil {
-			return
-		}
-		d.handleGeneric(w, r, "home", d)
-	})
+func HomeHandler(w http.ResponseWriter, r *http.Request) {
+	cfg := common.ContextConfig[*Config](r.Context())
+	d := handleGenericSectionDisplay(w, r, cfg.Sections, 4)
+	if d == nil {
+		return
+	}
+	d.handleGeneric(w, r, "home", d)
 }
 
-func Handle404(r *chi.Mux) {
-	r.NotFound(notFound)
-}
-
-func notFound(w http.ResponseWriter, r *http.Request) {
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	d := new(data)
 	d.title = "404"
 	w.WriteHeader(http.StatusNotFound)
@@ -55,30 +49,19 @@ func (l *rootData) SetData(d *data) {
 	l.data = d
 }
 
-func HandleRoot(r *chi.Mux, cfg *Config) {
-	err := os.Mkdir(cfg.RootFolder, 0774)
-	if err != nil && !os.IsExist(err) {
-		panic(err)
-	}
-	r.Get("/rss", handleGenericRSS)
-	r.Get("/rss/", handleGenericRSS)
-	r.Get("/{name:[a-zA-Z-]+}", func(w http.ResponseWriter, r *http.Request) {
-		handleGenericRoot(w, r, chi.URLParam(r, "name"))
-	})
-}
-
-func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
+func GenericRootHandler(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("any")
 	d := new(rootData)
 	d.data = new(data)
 	if c, ok := rootContent[name]; ok {
 		*d = *c
 	} else {
-		cfg := r.Context().Value(configKey).(*Config)
+		cfg := common.ContextConfig[*Config](r.Context())
 		path := filepath.Join(cfg.RootFolder, name+".md")
 		b, err := os.ReadFile(path)
 		if err != nil {
 			if os.IsNotExist(err) {
-				notFound(w, r)
+				NotFoundHandler(w, r)
 				return
 			}
 			panic(err)
@@ -94,8 +77,8 @@ func handleGenericRoot(w http.ResponseWriter, r *http.Request, name string) {
 	d.handleGeneric(w, r, "simple", d)
 }
 
-func handleGenericRSS(w http.ResponseWriter, r *http.Request) {
-	cfg := r.Context().Value(configKey).(*Config)
+func GenericRSSHandler(w http.ResponseWriter, r *http.Request) {
+	cfg := common.ContextConfig[*Config](r.Context())
 	var data iter.Seq[*sectionData]
 	for _, sec := range cfg.Sections {
 		if len(sec.Data) == 0 {
@@ -118,7 +101,7 @@ func handleGenericRSS(w http.ResponseWriter, r *http.Request) {
 	s.Name = cfg.Name
 	s.Description = cfg.Description
 	s.URI = ""
-	s.handleRSS(w, r)
+	s.RSSHandler(w, r)
 }
 
 func handleGenericSectionDisplay(_ http.ResponseWriter, _ *http.Request, sections []Section, maxLogsPerPage int) *homeData {

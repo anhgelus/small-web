@@ -10,10 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"git.anhgelus.world/anhgelus/small-web/backend/log"
+	"git.anhgelus.world/anhgelus/small-web/backend/common"
 )
-
-const IPAddressKey = "ip_address"
 
 type loadRequest struct {
 	target  string
@@ -94,7 +92,7 @@ func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	if !ok {
 		return nil
 	}
-	ip := ctx.Value(IPAddressKey).(string)
+	ip := common.ContextIP(ctx)
 	load.Add(ip, ref, target)
 	go func(ip, target string) {
 		time.Sleep(5 * time.Second)
@@ -104,7 +102,7 @@ func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 }
 
 func humanLoad(ctx context.Context, r *http.Request, domain string) error {
-	ip := ctx.Value(IPAddressKey).(string)
+	ip := common.ContextIP(ctx)
 	ref, ok := getReferer(r, domain)
 	if !ok {
 		return nil
@@ -121,7 +119,7 @@ func humanLoad(ctx context.Context, r *http.Request, domain string) error {
 	}
 	defer func() {
 		if err == nil {
-			log.GetLogger(ctx).Debug("stats updated")
+			common.ContextLogger(ctx).Debug("stats updated")
 			load.Remove(ip, lr.target)
 		}
 	}()

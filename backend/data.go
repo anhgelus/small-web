@@ -14,7 +14,7 @@ import (
 	"strings"
 	txt "text/template"
 
-	"git.anhgelus.world/anhgelus/small-web/backend/log"
+	"git.anhgelus.world/anhgelus/small-web/backend/common"
 )
 
 var (
@@ -76,7 +76,7 @@ func (d *data) merge(cfg *Config, r *http.Request) {
 }
 
 func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string, custom dataUsable) {
-	cfg := r.Context().Value(configKey).(*Config)
+	cfg := common.ContextConfig[*Config](r.Context())
 	d.merge(cfg, r)
 	t, err := template.New("").Funcs(template.FuncMap{
 		"static": getStatic,
@@ -86,7 +86,7 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 			}
 			return fmt.Sprintf("https://%s/static/%s", cfg.Domain, path)
 		},
-		"asset": func(path string) *assetData {
+		"asset": func(path string) common.AssetData {
 			return getAsset(r.Context(), path)
 		},
 		"next":      func(i int) int { return i + 1 },
@@ -115,7 +115,7 @@ func (d *data) handleGeneric(w http.ResponseWriter, r *http.Request, name string
 }
 
 func (d *data) handleRSS(w http.ResponseWriter, r *http.Request, custom dataUsable) {
-	cfg := r.Context().Value(configKey).(*Config)
+	cfg := common.ContextConfig[*Config](r.Context())
 	d.merge(cfg, r)
 	t, err := txt.New("").Funcs(txt.FuncMap{
 		"first": templateFirst,
@@ -163,20 +163,15 @@ func getStatic(path string) string {
 	return fmt.Sprintf("/static/%s", strings.TrimPrefix(path, "/"))
 }
 
-type assetData struct {
-	Src      string
-	Checksum string
-}
+var assets = map[string]common.AssetData{}
 
-var assets = map[string]*assetData{}
-
-func getAsset(ctx context.Context, path string) *assetData {
+func getAsset(ctx context.Context, path string) common.AssetData {
 	asset, ok := assets[path]
-	if ok && !ctx.Value(debugKey).(bool) {
+	if ok && !common.ContextDebug(ctx) {
 		return asset
 	}
-	asset = &assetData{}
-	logger := log.GetLogger(ctx)
+	asset = common.AssetData{}
+	logger := common.ContextLogger(ctx)
 	var b []byte
 	if regexIsHttp.MatchString(path) {
 		asset.Src = path
@@ -193,7 +188,7 @@ func getAsset(ctx context.Context, path string) *assetData {
 		}
 	} else {
 		asset.Src = fmt.Sprintf("/assets/%s", path)
-		aFS := ctx.Value(assetsFSKey).(fs.FS)
+		aFS := common.ContextAssetsFS(ctx)
 		var err error
 		b, err = fs.ReadFile(aFS, path)
 		if err != nil {

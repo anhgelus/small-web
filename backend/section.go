@@ -15,8 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"git.anhgelus.world/anhgelus/small-web/backend/log"
-	"github.com/go-chi/chi/v5"
+	"git.anhgelus.world/anhgelus/small-web/backend/common"
 )
 
 var (
@@ -149,21 +148,7 @@ func (s *Section) readDir(path string, dir []os.DirEntry) error {
 	return nil
 }
 
-func (s *Section) Handle(r *chi.Mux) {
-	base := "/" + s.URI
-	r.Get(base, s.handleList)
-	r.Route(base, func(r chi.Router) {
-		r.Get("/", s.handleList)
-
-		r.Get("/rss", s.handleRSS)
-		r.Get("/rss/", s.handleRSS)
-
-		r.Get("/{slug:[a-zA-Z0-9-]+}", s.handleOne)
-		r.Get("/{slug:[a-zA-Z0-9-]+}/", s.handleOne)
-	})
-}
-
-func (s *Section) handleList(w http.ResponseWriter, r *http.Request) {
+func (s *Section) RootHandler(w http.ResponseWriter, r *http.Request) {
 	p := s.handlePagination(w, r, 7)
 	if p == nil {
 		return
@@ -181,7 +166,7 @@ func (s *Section) handleList(w http.ResponseWriter, r *http.Request) {
 	d.handleGeneric(w, r, "home_section", d)
 }
 
-func (s *Section) handleRSS(w http.ResponseWriter, r *http.Request) {
+func (s *Section) RSSHandler(w http.ResponseWriter, r *http.Request) {
 	d := handleGenericSectionDisplay(w, r, []Section{*s}, 5)
 	if d == nil {
 		return
@@ -191,8 +176,8 @@ func (s *Section) handleRSS(w http.ResponseWriter, r *http.Request) {
 	d.handleRSS(w, r, d)
 }
 
-func (s *Section) handleOne(w http.ResponseWriter, r *http.Request) {
-	slug := chi.URLParam(r, "slug")
+func (s *Section) Handler(w http.ResponseWriter, r *http.Request) {
+	slug := r.PathValue("slug")
 	path := filepath.Join(s.Folder, slug)
 	sec, ok := sections[s.Name]
 	var d *sectionData
@@ -203,7 +188,7 @@ func (s *Section) handleOne(w http.ResponseWriter, r *http.Request) {
 		d = new(sectionData)
 		d.data = new(data)
 		if ok = s.parse(d, new(sync.Mutex), path, slug); !ok {
-			notFound(w, r)
+			NotFoundHandler(w, r)
 			return
 		}
 	}
@@ -273,7 +258,7 @@ func (s *Section) handlePagination(w http.ResponseWriter, r *http.Request, maxLo
 		var err error
 		page, err = strconv.Atoi(rawPage)
 		if err != nil || page < 1 {
-			log.GetLogger(r.Context()).Warn("invalid page number", "requested", rawPage)
+			common.ContextLogger(r.Context()).Warn("invalid page number", "requested", rawPage)
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return nil
 		}
@@ -285,7 +270,7 @@ func (s *Section) handlePagination(w http.ResponseWriter, r *http.Request, maxLo
 	p.Current = page
 	p.Max = max(1, (len(s.Data)-1)/maxLogsPerPage+1)
 	if p.Max < page {
-		notFound(w, r)
+		NotFoundHandler(w, r)
 		return nil
 	}
 	p.Start = (page - 1) * maxLogsPerPage

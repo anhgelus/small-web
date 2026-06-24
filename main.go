@@ -3,17 +3,21 @@ package main
 import (
 	"context"
 	"embed"
-	"errors"
 	"flag"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
+	"anhgelus.world/ljus"
+	"anhgelus.world/ljus/middleware"
 	"git.anhgelus.world/anhgelus/small-web/backend"
+	"git.anhgelus.world/anhgelus/small-web/backend/common"
 	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 )
 
@@ -35,16 +39,16 @@ func init() {
 func main() {
 	flag.Parse()
 
-	backend.SetupLogger(dev)
-
 	cfg, ok := backend.LoadConfig(configFile)
 	if !ok {
 		slog.Info("exiting")
 		os.Exit(1)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
+	ctx, cancelMigration := context.WithTimeout(
+		context.Background(),
+		15*time.Second)
+	defer cancelMigration()
 	db := storage.ConnectDatabase(cfg.Database)
 	defer db.Close()
 	err := storage.RunMigration(ctx, db)
@@ -64,50 +68,63 @@ func main() {
 		assetsFS = os.DirFS("dist")
 	}
 
-	r := backend.NewRouter(dev, cfg, db, assetsFS)
+	r := ljus.New()
 
-	backend.HandleHome(r)
-	backend.HandleRoot(r, cfg)
-	for _, sec := range cfg.Sections {
-		sec.Handle(r)
+	r.Use(middleware.Log(slog.Default(), false, false))
+	if !dev {
+		r.Use(middleware.SecurityHeaders(cfg.Domain, 24*time.Hour))
 	}
-	backend.Handle404(r)
+	r.Use(
+		backend.ContextMiddleware(cfg, dev, db),
+		backend.RateLimitMiddleware(),
+		backend.DumbBotMiddleware(),
+		backend.StatsMiddleware())
 
-	backend.HandleAdmin(r)
+	r.Handle(ljus.NewRouteFunc("/", backend.NotFoundHandler).SetName("404"))
+	r.Handle(ljus.NewRouteFunc("GET /{$}", backend.HomeHandler).SetName("root"))
+	r.Handle(ljus.NewRouteFunc(
+		"GET /rss",
+		backend.GenericRSSHandler,
+	).SetName("rss"))
+	r.Handle(ljus.NewRouteFunc("GET /{any}", func(w http.ResponseWriter, r *http.Request) {
+		v := r.PathValue("any")
+		if strings.HasSuffix(v, ".txt") {
+			backend.TxtFilesHandler(w, r)
+			return
+		}
+		backend.GenericRootHandler(w, r)
+	}).SetName("any-catcher"))
+	r.Handle(ljus.NewRouteFunc("GET /admin", backend.AdminHandler).SetName("admin"))
 
-	backend.HandleStaticFiles(r, "/assets", assetsFS)
-	backend.HandleStaticFiles(r, "/static", os.DirFS(cfg.PublicFolder))
+	for _, sec := range cfg.Sections {
+		g := ljus.NewGroup("GET /" + sec.Name + "/")
+		g.Add(ljus.NewRouteFunc("/", sec.RootHandler).SetName("root"))
+		g.Add(ljus.NewRouteFunc("/{slug}", sec.Handler).SetName("article"))
+		g.Add(ljus.NewRouteFunc("GET /rss", sec.RSSHandler).SetName("rss"))
+		g.Add(ljus.NewRouteFunc("GET /rss/", sec.RSSHandler).SetName("rss"))
+		r.Handle(g.SetName("section " + sec.Name))
+	}
+
+	backend.StaticFilesHandler(r, "/assets", assetsFS)
+	backend.StaticFilesHandler(r, "/static", os.DirFS(cfg.PublicFolder))
 
 	slog.Info("starting http server")
-	server := &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: r}
 
-	errChan := make(chan error)
-	go startServer(server, errChan)
+	ctx, cancel := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt, os.Kill, syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+	ctx = common.SetContextAssetsFS(ctx, assetsFS)
 
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-
-	ok = true
-	for ok {
-		select {
-		case err := <-errChan:
-			slog.Error("http server running", "error", err)
-			slog.Info("restarting the server")
-			go startServer(server, errChan)
-		case <-sc:
-			err := server.Shutdown(context.Background())
-			if err != nil {
-				slog.Error("closing http server", "error", err)
-			}
-			ok = false
-		}
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		panic(err)
+	}
+	err = r.Serve(ctx, l)
+	select {
+	case <-ctx.Done():
+	default:
+		panic(err)
 	}
 	slog.Info("http server stopped")
-}
-
-func startServer(server *http.Server, errChan chan error) {
-	err := server.ListenAndServe()
-	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		errChan <- err
-	}
 }

@@ -3,7 +3,7 @@ module git.anhgelus.world/anhgelus/small-web
 go 1.25.1
 
 require (
-	github.com/go-chi/chi/v5 v5.2.4
+	anhgelus.world/ljus v0.2.0
 	github.com/pelletier/go-toml/v2 v2.2.4
 )
 
