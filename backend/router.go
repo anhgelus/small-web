@@ -164,17 +164,16 @@ func UsableEmbedFS(folder string, em embed.FS) fs.FS {
 	}
 }
 
-func StaticFilesHandler(r *ljus.Server, path string, root fs.FS) {
-	if path != "/" && path[len(path)-1] != '/' {
+func StaticFilesHandler(path string, root fs.FS) ljus.Route {
+	if !strings.HasSuffix(path, "/") {
 		path += "/"
 	}
-	path += "*"
 
-	r.Handle(ljus.NewRouteFunc(path, func(w http.ResponseWriter, req *http.Request) {
+	return ljus.NewRouteFunc(path+"{file...}", func(w http.ResponseWriter, req *http.Request) {
 		if strings.HasSuffix(req.RequestURI, "/") {
 			NotFoundHandler(w, req)
 			return
 		}
-		http.StripPrefix(req.Pattern, http.FileServerFS(root)).ServeHTTP(w, req)
-	}).SetName("static files " + path))
+		http.StripPrefix(path, http.FileServerFS(root)).ServeHTTP(w, req)
+	}).SetName("static files " + path)
 }

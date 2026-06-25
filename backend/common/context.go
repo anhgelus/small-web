@@ -102,14 +102,16 @@ func SetContext(
 	ctx = context.WithValue(ctx, debug, debugEnabled)
 	ctx = SetContextLogger(ctx, slog.Default())
 	ctx = context.WithValue(ctx, cfg, c)
-	return setContextDB(ctx, db)
+	ctx = setContextDB(ctx, db)
+	return ctx
 }
 
 func CloneContext(parent, source context.Context) context.Context {
 	ctx := context.WithValue(parent, assets, ContextAssets(source))
 	ctx = context.WithValue(ctx, debug, ContextDebug(source))
-	ctx = context.WithValue(ctx, logger, ContextLogger(source))
+	ctx = SetContextLogger(ctx, ContextLogger(source))
 	ctx = context.WithValue(ctx, cfg, ContextConfig[any](source))
 	ctx = context.WithValue(ctx, ipAddress, ContextIP(source))
+	ctx = setContextDB(ctx, ContextDB(source))
 	return ctx
 }

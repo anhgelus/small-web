@@ -13,8 +13,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const DBKey = "db"
-
 //go:embed migrations
 var migrations embed.FS
 
@@ -67,8 +65,4 @@ func RunMigration(ctx context.Context, db *sql.DB) error {
 		}
 	}
 	return nil
-}
-
-func getDB(ctx context.Context) *sql.DB {
-	return ctx.Value(DBKey).(*sql.DB)
 }

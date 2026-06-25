@@ -74,25 +74,25 @@ func main() {
 	if !dev {
 		r.Use(middleware.SecurityHeaders(cfg.Domain, 24*time.Hour))
 	}
-	r.Use(
-		backend.ContextMiddleware(cfg, dev, db),
+	r.Use(backend.ContextMiddleware(cfg, dev, db),
 		backend.RateLimitMiddleware(),
 		backend.DumbBotMiddleware(),
 		backend.StatsMiddleware())
 
-	r.Handle(ljus.NewRouteFunc("/", backend.NotFoundHandler).SetName("404"))
+	r.NotFoundHandler = http.HandlerFunc(backend.NotFoundHandler)
+
 	r.Handle(ljus.NewRouteFunc("GET /{$}", backend.HomeHandler).SetName("root"))
 	r.Handle(ljus.NewRouteFunc(
 		"GET /rss",
 		backend.GenericRSSHandler,
 	).SetName("rss"))
-	r.Handle(ljus.NewRouteFunc("GET /{any}", func(w http.ResponseWriter, r *http.Request) {
-		v := r.PathValue("any")
+	r.Handle(ljus.NewRouteFunc("GET /{any}", func(w http.ResponseWriter, req *http.Request) {
+		v := req.PathValue("any")
 		if strings.HasSuffix(v, ".txt") {
-			backend.TxtFilesHandler(w, r)
+			backend.TxtFilesHandler(w, req)
 			return
 		}
-		backend.GenericRootHandler(w, r)
+		backend.GenericRootHandler(w, req)
 	}).SetName("any-catcher"))
 	r.Handle(ljus.NewRouteFunc("GET /admin", backend.AdminHandler).SetName("admin"))
 
@@ -105,8 +105,8 @@ func main() {
 		r.Handle(g.SetName("section " + sec.Name))
 	}
 
-	backend.StaticFilesHandler(r, "/assets", assetsFS)
-	backend.StaticFilesHandler(r, "/static", os.DirFS(cfg.PublicFolder))
+	r.Handle(backend.StaticFilesHandler("/assets", assetsFS),
+		backend.StaticFilesHandler("/static", os.DirFS(cfg.PublicFolder)))
 
 	slog.Info("starting http server")
 

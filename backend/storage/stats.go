@@ -112,7 +112,7 @@ func humanLoad(ctx context.Context, r *http.Request, domain string) error {
 		lr.referer = "?"
 		lr.target = ref
 	}
-	db := getDB(ctx)
+	db := common.ContextDB(ctx)
 	rows, err := db.QueryContext(ctx, "SELECT id, visit FROM stats WHERE origin = ? AND target = ?", lr.referer, lr.target)
 	if err != nil {
 		return err
@@ -150,7 +150,7 @@ type StatsRow struct {
 const StatsPerPage = 25
 
 func GetStatsRows(ctx context.Context, page uint) ([]StatsRow, error) {
-	rows, err := getDB(ctx).QueryContext(
+	rows, err := common.ContextDB(ctx).QueryContext(
 		ctx,
 		"SELECT origin, target, visit FROM stats ORDER BY visit DESC LIMIT ? OFFSET ?",
 		StatsPerPage, (page-1)*StatsPerPage,
@@ -176,7 +176,7 @@ func GetStatsRows(ctx context.Context, page uint) ([]StatsRow, error) {
 }
 
 func GetUnionStatsRows(ctx context.Context) ([]StatsRow, error) {
-	rows, err := getDB(ctx).QueryContext(ctx, "SELECT target, visit FROM stats ORDER BY visit DESC")
+	rows, err := common.ContextDB(ctx).QueryContext(ctx, "SELECT target, visit FROM stats ORDER BY visit DESC")
 	if err != nil {
 		return nil, err
 	}
