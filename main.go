@@ -8,14 +8,20 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
 
+	site "anhgelus.world/goat-site"
 	"anhgelus.world/ljus"
 	"anhgelus.world/ljus/middleware"
+	"anhgelus.world/xrpc"
+	"anhgelus.world/xrpc/atproto"
+	"anhgelus.world/xrpc/server"
+	atp "git.anhgelus.world/anhgelus/small-web/atproto"
 	"git.anhgelus.world/anhgelus/small-web/backend"
 	"git.anhgelus.world/anhgelus/small-web/backend/common"
 	"git.anhgelus.world/anhgelus/small-web/backend/storage"
@@ -28,12 +34,16 @@ var (
 	configFile = "config.toml"
 	port       = 8000
 	dev        = false
+	sync       = false
+	publish    = ""
 )
 
 func init() {
 	flag.StringVar(&configFile, "config", configFile, "config file")
 	flag.IntVar(&port, "port", port, "server port")
-	flag.BoolVar(&dev, "dev", false, "development mode")
+	flag.BoolVar(&dev, "dev", dev, "development mode")
+	flag.BoolVar(&sync, "sync", sync, "sync everything with stored data in ATProto PDS")
+	flag.StringVar(&publish, "publish", publish, "publish an article on ATProto")
 }
 
 func main() {
@@ -61,6 +71,72 @@ func main() {
 			slog.Info("exiting")
 			os.Exit(2)
 		}
+	}
+
+	did, err := atproto.ParseDID(cfg.ATProto.DID)
+	if err != nil {
+		panic(err)
+	}
+
+	ctx, cancelNext := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	defer cancelNext()
+
+	var client xrpc.Client = xrpc.NewClient(
+		http.DefaultClient,
+		atproto.NewDirectory(http.DefaultClient, net.DefaultResolver),
+		"Small Web 1.0")
+	doc, err := client.Directory().ResolveDID(ctx, did)
+	if err != nil {
+		panic(err)
+	}
+	pds, _ := doc.PDS()
+	res, err := server.CreateSession(
+		ctx,
+		client,
+		pds,
+		server.CreateSessionRequest{Identifier: cfg.ATProto.DID, Password: cfg.ATProto.Password})
+	if err != nil {
+		panic(err)
+	}
+	client = res.Client
+
+	if sync {
+		u, _ := url.Parse("https://" + cfg.Domain)
+		s, err := atp.CreateSite(ctx,
+			client,
+			did,
+			cfg.ATProto.PublicationRKey,
+			&site.Publication{
+				URL:         u,
+				Name:        cfg.Name,
+				Description: &cfg.Description,
+				Preferences: &site.Preferences{ShowInDiscover: true},
+			})
+		if err != nil {
+			panic(err)
+		}
+		for _, sec := range cfg.Sections {
+			for _, data := range sec.Data {
+				publishDoc(ctx, client, cfg, did, s, data.URI, &data.EntryInfo)
+			}
+		}
+		slog.Info("syncing done", "rkey", cfg.ATProto.PublicationRKey)
+		return
+	}
+	if publish != "" {
+		s, err := atp.LoadSite(ctx, client, did, cfg.ATProto.PublicationRKey)
+		if err != nil {
+			panic(err)
+		}
+		info, err := backend.Publish(publish)
+		if err != nil {
+			panic(err)
+		}
+		publishDoc(ctx, client, cfg, did, s, publish, info)
+		slog.Info("publishing done", "path", publish)
+		return
 	}
 
 	assetsFS := backend.UsableEmbedFS("dist", embeds)
@@ -127,4 +203,45 @@ func main() {
 		panic(err)
 	}
 	slog.Info("http server stopped")
+}
+
+func publishDoc(
+	ctx context.Context,
+	client xrpc.Client,
+	cfg *backend.Config,
+	did *atproto.DID,
+	s *atp.Site,
+	path string,
+	info *backend.EntryInfo,
+) {
+	contribs := make([]*site.Contributor, 0, len(info.Contributors)+1)
+	contribs[0] = &site.Contributor{
+		DID:         did,
+		Role:        "Autheur",
+		DisplayName: cfg.ATProto.DisplayName,
+	}
+	for k, v := range info.Contributors {
+		d, err := atproto.ParseDID(v.DID)
+		if err != nil {
+			panic(d)
+		}
+		contribs = append(contribs, &site.Contributor{
+			DisplayName: k,
+			Role:        v.Role,
+			DID:         d,
+		})
+	}
+	_, err := s.PublishDoc(
+		ctx,
+		client,
+		info.Title,
+		path,
+		info.PubLocalDate.AsTime(time.Local),
+		info.Description,
+		&info.Img.Src,
+		info.Tags,
+		contribs)
+	if err != nil {
+		panic(err)
+	}
 }

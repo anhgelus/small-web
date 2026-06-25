@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 
+	"anhgelus.world/xrpc/atproto"
 	"git.anhgelus.world/anhgelus/small-web/markdown"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -28,6 +29,13 @@ type Replacer struct {
 	Replace string `tomle:"replace"`
 }
 
+type ATProto struct {
+	PublicationRKey atproto.RecordKey `toml:"publication_rkey"`
+	DID             string            `toml:"did"`
+	Password        string            `toml:"password"`
+	DisplayName     string            `toml:"display_name"`
+}
+
 type Config struct {
 	Domain        string   `toml:"domain"`
 	Name          string   `toml:"name"`
@@ -37,13 +45,16 @@ type Config struct {
 	Database      string   `toml:"database"`
 	AdminPassword string   `toml:"admin_password"`
 
-	Sections []Section `toml:"section"`
-
 	RootFolder   string `toml:"root_folder"`
 	PublicFolder string `toml:"public_folder"`
 
+	Logo Logo `toml:"logo"`
+
+	ATProto ATProto `toml:"atproto"`
+
+	Sections []Section `toml:"section"`
+
 	Links []Link `toml:"links"`
-	Logo  Logo   `toml:"logo"`
 
 	Replacers []Replacer `toml:"replacers"`
 }
@@ -79,6 +90,10 @@ func (c *Config) DefaultValues() {
 	c.AdminPassword = "Ch@ngeM€Please!"
 	c.Quotes = []string{"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do."}
 	c.Replacers = []Replacer{{"~", "&thinsp;"}}
+	c.ATProto.DID = "did:plc:1234"
+	c.ATProto.Password = "your password"
+	c.ATProto.PublicationRKey = "foobar"
+	c.ATProto.DisplayName = "foobar"
 }
 
 var defaultMarkdownOption markdown.Option

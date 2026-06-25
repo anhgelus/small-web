@@ -210,14 +210,14 @@ func templateFirst(a []*Section) *Section {
 	return a[0]
 }
 
-func templateFirstData(a []*sectionData) *sectionData {
+func templateFirstData(a []*SectionData) *SectionData {
 	if len(a) == 0 {
 		return nil
 	}
 	return a[0]
 }
 
-func templateRestData(a []*sectionData) []*sectionData {
+func templateRestData(a []*SectionData) []*SectionData {
 	if len(a) < 2 {
 		return nil
 	}

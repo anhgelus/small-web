@@ -79,12 +79,12 @@ func GenericRootHandler(w http.ResponseWriter, r *http.Request) {
 
 func GenericRSSHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := common.ContextConfig[*Config](r.Context())
-	var data iter.Seq[*sectionData]
+	var data iter.Seq[*SectionData]
 	for _, sec := range cfg.Sections {
 		if len(sec.Data) == 0 {
 			sec.sort()
 		}
-		var sl []*sectionData
+		var sl []*SectionData
 		for _, d := range sec.Data[:min(3, len(sec.Data))] {
 			dd := *d
 			dd.Slug = sec.URI + "/" + dd.Slug

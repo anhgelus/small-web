@@ -12,12 +12,19 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
+type Contributor struct {
+	DID  string `toml:"did"`
+	Role string `toml:"role"`
+}
+
 type EntryInfo struct {
-	Title        string         `toml:"title"`
-	Description  string         `toml:"description"`
-	Img          image          `toml:"image"`
-	PubLocalDate toml.LocalDate `toml:"publication_date"`
-	Poem         bool           `toml:"poem"`
+	Title        string                 `toml:"title"`
+	Description  string                 `toml:"description"`
+	Img          image                  `toml:"image"`
+	PubLocalDate toml.LocalDate         `toml:"publication_date"`
+	Poem         bool                   `toml:"poem"`
+	Tags         []string               `toml:"tags"`
+	Contributors map[string]Contributor `toml:"contributors"`
 }
 
 func renderLinkFunc(url string) func(string, string) template.HTML {

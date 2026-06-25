@@ -1,10 +1,13 @@
 module git.anhgelus.world/anhgelus/small-web
 
-go 1.25.1
+go 1.26.0
 
 require (
-	anhgelus.world/ljus v0.2.0
+	anhgelus.world/goat-site v0.2.1
+	anhgelus.world/ljus v0.2.1
+	anhgelus.world/xrpc v0.6.1
+	github.com/mattn/go-sqlite3 v1.14.33
 	github.com/pelletier/go-toml/v2 v2.2.4
 )
 
-require github.com/mattn/go-sqlite3 v1.14.33
+require golang.org/x/net v0.56.0 // indirect

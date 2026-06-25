@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	sections = map[string]map[string]*sectionData{}
+	sections = map[string]map[string]*SectionData{}
 	now      = time.Now()
 )
 
@@ -29,14 +29,14 @@ type Section struct {
 	Folder      string         `toml:"folder"`
 	Description string         `toml:"description"`
 	URI         string         `toml:"uri"`
-	Data        []*sectionData `toml:"-"`
+	Data        []*SectionData `toml:"-"`
 	LenMax      int            `toml:"-"`
 	Paginate    bool           `toml:"-"`
 	PagesNumber int            `toml:"-"`
 	CurrentPage int            `toml:"-"`
 }
 
-type sectionData struct {
+type SectionData struct {
 	*data
 	EntryInfo
 	DataTitle string
@@ -45,15 +45,15 @@ type sectionData struct {
 	URI       string
 }
 
-func (d *sectionData) SetData(dt *data) {
+func (d *SectionData) SetData(dt *data) {
 	d.data = dt
 }
 
-func (d *sectionData) PubDate() string {
+func (d *SectionData) PubDate() string {
 	return d.PubLocalDate.String()
 }
 
-func (d *sectionData) PubDateRSS() string {
+func (d *SectionData) PubDateRSS() string {
 	t := d.PubLocalDate.AsTime(time.Local)
 	// if same day, assume that it's published now
 	if t.Year() == now.Year() && t.Month() == now.Month() && t.Day() == now.Day() {
@@ -62,7 +62,7 @@ func (d *sectionData) PubDateRSS() string {
 	return t.Format(time.RFC1123Z) // because RFC822 in go isn't RFC822???
 }
 
-func (d *sectionData) Title() string {
+func (d *SectionData) Title() string {
 	return d.data.Title()
 }
 
@@ -121,14 +121,14 @@ func (s *Section) readDir(path string, dir []os.DirEntry) error {
 			slug := strings.TrimSuffix(p, ".md")
 			sec, ok := sections[s.Name]
 			if !ok {
-				sec = make(map[string]*sectionData, 2)
+				sec = make(map[string]*SectionData, 2)
 				sections[s.Name] = sec
 			}
 			_, ok = sec[slug]
 			if ok {
 				return fmt.Errorf("data already exists: %s", d.Name())
 			}
-			dd := new(sectionData)
+			dd := new(SectionData)
 			dd.data = new(data)
 
 			wg.Add(1)
@@ -180,12 +180,12 @@ func (s *Section) Handler(w http.ResponseWriter, r *http.Request) {
 	slug := r.PathValue("slug")
 	path := filepath.Join(s.Folder, slug)
 	sec, ok := sections[s.Name]
-	var d *sectionData
+	var d *SectionData
 	if ok {
 		d, ok = sec[path]
 	}
 	if !ok {
-		d = new(sectionData)
+		d = new(SectionData)
 		d.data = new(data)
 		if ok = s.parse(d, new(sync.Mutex), path, slug); !ok {
 			NotFoundHandler(w, r)
@@ -196,7 +196,18 @@ func (s *Section) Handler(w http.ResponseWriter, r *http.Request) {
 	d.handleGeneric(w, r, "data", d)
 }
 
-func (s *Section) parse(d *sectionData, mu *sync.Mutex, path, slug string) bool {
+func Publish(path string) (*EntryInfo, error) {
+	b, err := os.ReadFile(path + ".md")
+	if err != nil {
+		return nil, err
+	}
+	var info EntryInfo
+	_, _ = parse(b, &info, new(data))
+	return &info, nil
+
+}
+
+func (s *Section) parse(d *SectionData, mu *sync.Mutex, path, slug string) bool {
 	d.Article = true
 	d.DataTitle = slug
 	d.Slug = slug
@@ -218,7 +229,7 @@ func (s *Section) parse(d *sectionData, mu *sync.Mutex, path, slug string) bool 
 	mu.Lock()
 	sec, ok := sections[s.Name]
 	if !ok {
-		sec = make(map[string]*sectionData, 2)
+		sec = make(map[string]*SectionData, 2)
 		sections[s.Name] = sec
 	}
 	sec[path] = d
@@ -230,17 +241,12 @@ func (s *Section) sort() {
 	s.Data = sort(maps.Values(sections[s.Name]))
 }
 
-func sort(values iter.Seq[*sectionData]) []*sectionData {
-	return slices.SortedFunc(values, func(l *sectionData, l2 *sectionData) int {
+func sort(values iter.Seq[*SectionData]) []*SectionData {
+	return slices.SortedFunc(values, func(l *SectionData, l2 *SectionData) int {
 		lt := l.PubLocalDate.AsTime(time.UTC)
 		l2t := l2.PubLocalDate.AsTime(time.UTC)
 		// we want it reversed
-		if lt.Before(l2t) {
-			return 1
-		} else if lt.After(l2t) {
-			return -1
-		}
-		return 0
+		return -lt.Compare(l2t)
 	})
 }
 

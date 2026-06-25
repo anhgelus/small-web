@@ -4,6 +4,8 @@ Welcome to anhgelus's logs.
 
 Bienvenue dans les logs d'anhgelus.
 
+It's content is published on the AT Protocol with [Standard.site](https://standard.site/)'s lexicons.
+
 ## Concept
 
 Personnal website in the vibe of the small web mouvance.
@@ -30,8 +32,3 @@ Only HTML and raw CSS here.
 This project uses a custom markdown parser.
 It is located in `markdown`.
 I made my custom parser because I have extended its specification.
-
-The backend is in `backend`.
-It uses `github.com/go-chi/chi/v5`.
-
-The frontend stuff is in `frontend`.
