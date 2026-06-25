@@ -6,7 +6,7 @@
   "scripts": {
     "build:sass": "sass --no-source-map --style=compressed frontend/scss/main.scss dist/styles.css",
     "watch:sass": "sass --watch frontend/scss/main.scss dist/styles.css",
-    "build": "bun run build:sass",
+    "build": "deno run build:sass",
     "format": "prettier . --write"
   },
   "devDependencies": {
