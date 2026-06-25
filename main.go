@@ -101,6 +101,10 @@ func main() {
 		panic(err)
 	}
 	client = res.Client
+	err = server.RefreshSession(ctx, client.(*xrpc.AuthClient))
+	if err != nil {
+		panic(err)
+	}
 
 	if sync {
 		u, _ := url.Parse("https://" + cfg.Domain)
