@@ -219,7 +219,7 @@ func publishDoc(
 	path string,
 	info *backend.EntryInfo,
 ) {
-	contribs := make([]*site.Contributor, 0, len(info.Contributors)+1)
+	contribs := make([]*site.Contributor, 1, len(info.Contributors)+1)
 	contribs[0] = &site.Contributor{
 		DID:         did,
 		Role:        "Autheur",

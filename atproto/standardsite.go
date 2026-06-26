@@ -43,7 +43,7 @@ func CreateSite(
 	pub *site.Publication,
 ) (*Site, error) {
 	res, err := xrpc.CreateRecord(
-		ctx, client, pub, rkey, new(true), nil)
+		ctx, client, pub, rkey, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -89,5 +89,5 @@ func (s *Site) PublishDoc(
 		CoverImage:   blob,
 	}
 	return xrpc.CreateRecord(
-		ctx, client, doc, atproto.RecordKey(s.genTid.Next()), new(true), nil)
+		ctx, client, doc, atproto.RecordKey(s.genTid.Next()), nil, nil)
 }
