@@ -106,10 +106,13 @@ func main() {
 		panic(err)
 	}
 
+	files := os.DirFS(cfg.PublicFolder)
+
 	if sync {
 		u, _ := url.Parse("https://" + cfg.Domain)
 		s, err := atp.CreateSite(ctx,
 			client,
+			files,
 			did,
 			cfg.ATProto.PublicationRKey,
 			&site.Publication{
@@ -131,7 +134,7 @@ func main() {
 		return
 	}
 	if publish != "" {
-		s, err := atp.LoadSite(ctx, client, did, cfg.ATProto.PublicationRKey)
+		s, err := atp.LoadSite(ctx, client, files, did, cfg.ATProto.PublicationRKey)
 		if err != nil {
 			panic(err)
 		}

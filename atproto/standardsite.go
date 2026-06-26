@@ -2,8 +2,9 @@ package atproto
 
 import (
 	"context"
+	"io"
+	"io/fs"
 	"mime"
-	"os"
 	"strings"
 	"time"
 
@@ -18,10 +19,17 @@ type Site struct {
 	*site.Publication
 	URL    atproto.RawURI
 	RKey   atproto.RecordKey
+	Files  fs.FS
 	genTid *atproto.TIDGenerator
 }
 
-func LoadSite(ctx context.Context, client xrpc.Client, did *atproto.DID, rkey atproto.RecordKey) (*Site, error) {
+func LoadSite(
+	ctx context.Context,
+	client xrpc.Client,
+	files fs.FS,
+	did *atproto.DID,
+	rkey atproto.RecordKey,
+) (*Site, error) {
 	pub, err := xrpc.GetRecord[*site.Publication](
 		ctx, client, did, rkey, nil)
 	if err != nil {
@@ -31,6 +39,7 @@ func LoadSite(ctx context.Context, client xrpc.Client, did *atproto.DID, rkey at
 		pub.Value,
 		pub.URI,
 		rkey,
+		files,
 		atproto.NewTIDGenerator(tidGeneratorClockId),
 	}, nil
 }
@@ -38,6 +47,7 @@ func LoadSite(ctx context.Context, client xrpc.Client, did *atproto.DID, rkey at
 func CreateSite(
 	ctx context.Context,
 	client xrpc.Client,
+	files fs.FS,
 	did *atproto.DID,
 	rkey atproto.RecordKey,
 	pub *site.Publication,
@@ -51,6 +61,7 @@ func CreateSite(
 		pub,
 		*res.URI,
 		rkey,
+		files,
 		atproto.NewTIDGenerator(tidGeneratorClockId),
 	}, nil
 }
@@ -68,7 +79,12 @@ func (s *Site) PublishDoc(
 ) (*xrpc.SendRecordResult, error) {
 	var blob *xrpc.Blob
 	if imagePath != nil {
-		b, err := os.ReadFile(*imagePath)
+		f, err := s.Files.Open(*imagePath)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+		b, err := io.ReadAll(f)
 		if err != nil {
 			return nil, err
 		}
