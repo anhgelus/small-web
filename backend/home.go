@@ -104,7 +104,7 @@ func GenericRSSHandler(w http.ResponseWriter, r *http.Request) {
 	s.RSSHandler(w, r)
 }
 
-func handleGenericSectionDisplay(_ http.ResponseWriter, _ *http.Request, sections []Section, maxLogsPerPage int) *homeData {
+func handleGenericSectionDisplay(_ http.ResponseWriter, _ *http.Request, sections []*Section, maxLogsPerPage int) *homeData {
 	d := new(homeData)
 	d.data = new(data)
 	for _, sec := range sections {
@@ -113,7 +113,7 @@ func handleGenericSectionDisplay(_ http.ResponseWriter, _ *http.Request, section
 		}
 		sec.LenMax = maxLogsPerPage
 		sec.Data = sec.Data[:min(maxLogsPerPage, len(sec.Data))]
-		d.Sections = append(d.Sections, &sec)
+		d.Sections = append(d.Sections, sec)
 	}
 	return d
 }

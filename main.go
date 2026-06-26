@@ -125,6 +125,7 @@ func main() {
 			for _, data := range sec.Data {
 				publishDoc(ctx, client, cfg, did, s, data.URI, &data.EntryInfo)
 			}
+			slog.Info("syncing done", "section", sec.Name)
 		}
 		slog.Info("syncing done", "rkey", cfg.ATProto.PublicationRKey)
 		return

@@ -167,7 +167,7 @@ func (s *Section) RootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Section) RSSHandler(w http.ResponseWriter, r *http.Request) {
-	d := handleGenericSectionDisplay(w, r, []Section{*s}, 5)
+	d := handleGenericSectionDisplay(w, r, []*Section{s}, 5)
 	if d == nil {
 		return
 	}

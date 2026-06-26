@@ -52,7 +52,7 @@ type Config struct {
 
 	ATProto ATProto `toml:"atproto"`
 
-	Sections []Section `toml:"section"`
+	Sections []*Section `toml:"section"`
 
 	Links []Link `toml:"links"`
 
@@ -77,7 +77,7 @@ func (c *Config) DefaultValues() {
 		Header:  "logo.jpg",
 		Favicon: "favicon.jpg",
 	}
-	c.Sections = []Section{{
+	c.Sections = []*Section{{
 		Name:        "logs",
 		TitleName:   "log",
 		Description: "Aut maxime voluptatibus ut dicta voluptates et ut alias. Sunt et incidunt similique et doloremque nostrum fugit autem. Ut omnis quo nisi. Accusantium voluptas fugit autem maiores numquam doloribus.",
