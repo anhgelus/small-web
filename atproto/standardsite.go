@@ -2,6 +2,7 @@ package atproto
 
 import (
 	"context"
+	"errors"
 	"io"
 	"io/fs"
 	"mime"
@@ -52,8 +53,17 @@ func CreateSite(
 	rkey atproto.RecordKey,
 	pub *site.Publication,
 ) (*Site, error) {
+	latest, err := xrpc.GetRecord[*site.Publication](
+		ctx, client, did, rkey, nil)
+	var cid *atproto.CID
+	if err == nil {
+		cid = latest.CID.CID()
+	}
+	if !errors.Is(err, xrpc.ErrRecordNotFound) {
+		return nil, err
+	}
 	res, err := xrpc.CreateRecord(
-		ctx, client, pub, rkey, nil, nil)
+		ctx, client, pub, rkey, nil, cid)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,9 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"io"
 	"log/slog"
+	"mime"
 	"net"
 	"net/http"
 	"net/url"
@@ -115,6 +117,33 @@ func main() {
 	}
 
 	if sync {
+		var logo []byte
+		var name string
+		if strings.HasPrefix(cfg.Logo.Favicon, "https://") {
+			raw := strings.Split(cfg.Logo.Favicon, "/")
+			name = raw[len(raw)-1]
+			resp, err := http.Get(cfg.Logo.Favicon)
+			if err != nil {
+				panic(err)
+			}
+			logo, err = io.ReadAll(resp.Body)
+		} else {
+			f, err := files.Open(cfg.Logo.Favicon)
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+			logo, err = io.ReadAll(f)
+			if err != nil {
+				panic(err)
+			}
+			name = cfg.Logo.Favicon
+		}
+		blob, err := xrpc.UploadBlob(
+			ctx, client, mime.TypeByExtension("."+strings.Split(name, ".")[1]), logo)
+		if err != nil {
+			panic(err)
+		}
 		u, _ := url.Parse("https://" + cfg.Domain)
 		s, err := atp.CreateSite(ctx,
 			client,
@@ -124,6 +153,7 @@ func main() {
 			&site.Publication{
 				URL:         u,
 				Name:        cfg.Name,
+				Icon:        blob,
 				Description: &cfg.Description,
 				Preferences: &site.Preferences{ShowInDiscover: true},
 			})
@@ -270,9 +300,10 @@ func publishDoc(
 		panic(err)
 	}
 	err = storage.SetPublishedDocument(ctx, db, storage.PublishedDocument{
-		Path:      path,
-		RecordKey: rkey,
-		CID:       res.CID,
+		Path:          path,
+		RecordKey:     rkey,
+		CID:           res.CID,
+		ImageUploaded: imgPath != nil,
 	})
 	if err != nil {
 		panic(err)
