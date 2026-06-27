@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"flag"
 	"fmt"
@@ -108,6 +109,11 @@ func main() {
 
 	files := os.DirFS(cfg.PublicFolder)
 
+	docs, err := storage.PublishedDocuments(ctx, db)
+	if err != nil {
+		panic(err)
+	}
+
 	if sync {
 		u, _ := url.Parse("https://" + cfg.Domain)
 		s, err := atp.CreateSite(ctx,
@@ -126,7 +132,7 @@ func main() {
 		}
 		for _, sec := range cfg.Sections {
 			for _, data := range sec.Data {
-				publishDoc(ctx, client, cfg, did, s, data.URL, &data.EntryInfo)
+				publishDoc(ctx, client, db, docs, cfg, did, s, data.URL, &data.EntryInfo)
 			}
 			slog.Info("syncing done", "section", sec.Name)
 		}
@@ -142,7 +148,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		publishDoc(ctx, client, cfg, did, s, publish, info)
+		publishDoc(ctx, client, db, docs, cfg, did, s, publish, info)
 		slog.Info("publishing done", "path", publish)
 		return
 	}
@@ -216,6 +222,8 @@ func main() {
 func publishDoc(
 	ctx context.Context,
 	client xrpc.Client,
+	db *sql.DB,
+	docs map[string]storage.PublishedDocument,
 	cfg *backend.Config,
 	did *atproto.DID,
 	s *atp.Site,
@@ -239,16 +247,33 @@ func publishDoc(
 			DID:         d,
 		})
 	}
-	_, err := s.PublishDoc(
+	var cid *atproto.CID
+	imgPath := &info.Img.Src
+	if v, ok := docs[path]; ok {
+		cid = v.CID.CID()
+		if v.ImageUploaded {
+			imgPath = nil
+		}
+	}
+	res, rkey, err := s.PublishDoc(
 		ctx,
 		client,
 		info.Title,
 		path,
 		info.PubLocalDate.AsTime(time.Local),
 		info.Description,
-		&info.Img.Src,
+		imgPath,
 		info.Tags,
-		contribs)
+		contribs,
+		cid)
+	if err != nil {
+		panic(err)
+	}
+	err = storage.SetPublishedDocument(ctx, db, storage.PublishedDocument{
+		Path:      path,
+		RecordKey: rkey,
+		CID:       res.CID,
+	})
 	if err != nil {
 		panic(err)
 	}

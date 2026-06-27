@@ -76,22 +76,23 @@ func (s *Site) PublishDoc(
 	imagePath *string,
 	tags []string,
 	contributors []*site.Contributor,
-) (*xrpc.SendRecordResult, error) {
+	cid *atproto.CID,
+) (*xrpc.SendRecordResult, atproto.RecordKey, error) {
 	var blob *xrpc.Blob
 	if imagePath != nil {
 		f, err := s.Files.Open(*imagePath)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		defer f.Close()
 		b, err := io.ReadAll(f)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		typ := mime.TypeByExtension("." + strings.Split(*imagePath, ".")[1])
 		blob, err = xrpc.UploadBlob(ctx, client, typ, b)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 	}
 	doc := &site.Document{
@@ -104,6 +105,8 @@ func (s *Site) PublishDoc(
 		Contributors: contributors,
 		CoverImage:   blob,
 	}
-	return xrpc.CreateRecord(
-		ctx, client, doc, atproto.RecordKey(s.genTid.Next()), nil, nil)
+	tid := s.genTid.Next().RecordKey()
+	res, err := xrpc.CreateRecord(
+		ctx, client, doc, tid, nil, cid)
+	return res, tid, err
 }
