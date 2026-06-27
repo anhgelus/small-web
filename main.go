@@ -74,16 +74,16 @@ func main() {
 		panic(err)
 	}
 
-	for _, sec := range cfg.Sections {
-		if ok = sec.Load(docs); !ok {
-			slog.Info("exiting")
-			os.Exit(2)
-		}
-	}
-
 	did, err := atproto.ParseDID(cfg.ATProto.DID)
 	if err != nil {
 		panic(err)
+	}
+
+	for _, sec := range cfg.Sections {
+		if ok = sec.Load(did, docs); !ok {
+			slog.Info("exiting")
+			os.Exit(2)
+		}
 	}
 
 	ctx, cancelNext := signal.NotifyContext(
@@ -200,13 +200,10 @@ func main() {
 
 	r.NotFoundHandler = http.HandlerFunc(backend.NotFoundHandler)
 
-	r.Handle(ljus.NewRouteFunc(
+	r.Handle(ljus.NewRoute(
 		"GET /.well-known/site.standard.publication",
-		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "text/plain")
-			w.Write([]byte(
-				"at://" + cfg.ATProto.DID + "/site.standard.publication/" + cfg.ATProto.PublicationRKey.String()))
-		}).SetName("atproto-verification"))
+		site.HandlePublicationVerification(did, cfg.ATProto.PublicationRKey)).
+		SetName("atproto-verification"))
 
 	r.Handle(ljus.NewRouteFunc("GET /{$}", backend.HomeHandler).SetName("root"))
 	r.Handle(ljus.NewRouteFunc(

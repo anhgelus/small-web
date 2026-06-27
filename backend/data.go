@@ -38,7 +38,7 @@ type data struct {
 	Quote           string
 	Language        string
 	section         string
-	Linked          string
+	Linked          template.HTML
 }
 
 func (d *data) SetData(data *data) {

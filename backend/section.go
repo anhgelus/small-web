@@ -15,6 +15,8 @@ import (
 	"sync"
 	"time"
 
+	site "anhgelus.world/goat-site"
+	"anhgelus.world/xrpc/atproto"
 	"git.anhgelus.world/anhgelus/small-web/backend/common"
 	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 )
@@ -73,7 +75,7 @@ type image struct {
 	Legend string `toml:"legend"`
 }
 
-func (s *Section) Load(docs map[string]storage.PublishedDocument) bool {
+func (s *Section) Load(did *atproto.DID, docs map[string]storage.PublishedDocument) bool {
 	dir, err := os.ReadDir(s.Folder)
 	logger := slog.With("folder", s.Folder)
 	if err != nil {
@@ -89,7 +91,7 @@ func (s *Section) Load(docs map[string]storage.PublishedDocument) bool {
 		return false
 	}
 	logger.Info("checking directory...")
-	err = s.readDir(docs, s.Folder, dir)
+	err = s.readDir(did, docs, s.Folder, dir)
 	if err != nil {
 		slog.Error("reading directory", "error", err)
 		return false
@@ -98,7 +100,7 @@ func (s *Section) Load(docs map[string]storage.PublishedDocument) bool {
 	return true
 }
 
-func (s *Section) readDir(docs map[string]storage.PublishedDocument, path string, dir []os.DirEntry) error {
+func (s *Section) readDir(did *atproto.DID, docs map[string]storage.PublishedDocument, path string, dir []os.DirEntry) error {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	for _, d := range dir {
@@ -108,7 +110,7 @@ func (s *Section) readDir(docs map[string]storage.PublishedDocument, path string
 			if err != nil {
 				return err
 			}
-			if err = s.readDir(docs, p, dd); err != nil {
+			if err = s.readDir(did, docs, p, dd); err != nil {
 				return err
 			}
 		} else {
@@ -131,14 +133,11 @@ func (s *Section) readDir(docs map[string]storage.PublishedDocument, path string
 			}
 			dd := new(SectionData)
 			dd.data = new(data)
-			if doc, ok := docs[path]; ok {
-				dd.Linked = doc.RecordKey.String()
-			}
 
 			wg.Add(1)
 			go func(p string, d os.DirEntry) {
 				defer wg.Done()
-				ok = s.parse(dd, &mu, slug, strings.TrimSuffix(d.Name(), ".md"))
+				ok = s.parse(dd, &mu, did, docs, slug, strings.TrimSuffix(d.Name(), ".md"))
 				if ok {
 					slog.Debug("data parsed", "path", p)
 				} else {
@@ -189,12 +188,8 @@ func (s *Section) Handler(w http.ResponseWriter, r *http.Request) {
 		d, ok = sec[path]
 	}
 	if !ok {
-		d = new(SectionData)
-		d.data = new(data)
-		if ok = s.parse(d, new(sync.Mutex), path, slug); !ok {
-			NotFoundHandler(w, r)
-			return
-		}
+		NotFoundHandler(w, r)
+		return
 	}
 	d.section = s.TitleName
 	d.handleGeneric(w, r, "data", d)
@@ -211,7 +206,7 @@ func Publish(path string) (*EntryInfo, error) {
 
 }
 
-func (s *Section) parse(d *SectionData, mu *sync.Mutex, path, slug string) bool {
+func (s *Section) parse(d *SectionData, mu *sync.Mutex, did *atproto.DID, docs map[string]storage.PublishedDocument, path, slug string) bool {
 	d.Article = true
 	d.DataTitle = slug
 	d.Slug = slug
@@ -225,6 +220,10 @@ func (s *Section) parse(d *SectionData, mu *sync.Mutex, path, slug string) bool 
 	}
 	var ok bool
 	d.data.URL = fmt.Sprintf("/%s/%s", s.URI, slug)
+	if doc, ok := docs[d.data.URL]; ok {
+		d.data.Linked = site.GetDocumentVerificationTag(did, doc.RecordKey)
+	}
+
 	d.Content, ok = parse(b, &d.EntryInfo, d.data)
 	if !ok {
 		return false

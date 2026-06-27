@@ -112,17 +112,6 @@ func TxtFilesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleSus(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := common.ContextLogger(ctx)
-	logger.Debug("sus request", "User-Agent", r.Header.Get("User-Agent"))
-	if rateLimit(ctx) {
-		http.Error(w, "Too many requests", http.StatusTooManyRequests)
-		return
-	}
-	NotFoundHandler(w, r)
-}
-
 // httpEmbedFS is an implementation of fs.FS, fs.ReadDirFS and fs.ReadFileFS helping to manage embed.FS for http server
 type httpEmbedFS struct {
 	embed.FS
