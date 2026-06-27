@@ -196,7 +196,6 @@ func main() {
 	}
 	r.Use(backend.ContextMiddleware(cfg, dev, db),
 		backend.RateLimitMiddleware(),
-		backend.DumbBotMiddleware(),
 		backend.StatsMiddleware())
 
 	r.NotFoundHandler = http.HandlerFunc(backend.NotFoundHandler)

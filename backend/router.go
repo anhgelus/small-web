@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 	"time"
 
@@ -92,18 +91,6 @@ func StatsMiddleware() ljus.Middleware {
 				logger.Error("updating stats", "error", err)
 			}
 		}(r)
-	}
-}
-
-func DumbBotMiddleware() ljus.Middleware {
-	return func(next ljus.Handler, w *ljus.StatusWriter, r *http.Request) {
-		phpUri := regexp.MustCompile(`/.+\.php(/.*)?`)
-		dotUri := regexp.MustCompile(`/(.*/)*\..*`)
-		if phpUri.MatchString(r.RequestURI) || dotUri.MatchString(r.RequestURI) {
-			handleSus(w, r)
-			return
-		}
-		next(w, r)
 	}
 }
 
