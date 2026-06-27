@@ -126,7 +126,7 @@ func main() {
 		}
 		for _, sec := range cfg.Sections {
 			for _, data := range sec.Data {
-				publishDoc(ctx, client, cfg, did, s, data.URI, &data.EntryInfo)
+				publishDoc(ctx, client, cfg, did, s, data.URL, &data.EntryInfo)
 			}
 			slog.Info("syncing done", "section", sec.Name)
 		}
