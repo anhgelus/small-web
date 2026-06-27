@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"strings"
 
-	"git.anhgelus.world/anhgelus/small-web/dom"
-	"git.anhgelus.world/anhgelus/small-web/markdown"
+	"anhgelus.world/small-web/dom"
+	"anhgelus.world/small-web/markdown"
 	"github.com/pelletier/go-toml/v2"
 )
 

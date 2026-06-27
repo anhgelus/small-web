@@ -1,4 +1,4 @@
-module git.anhgelus.world/anhgelus/small-web
+module anhgelus.world/small-web
 
 go 1.26.0
 

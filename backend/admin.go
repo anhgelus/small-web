@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"git.anhgelus.world/anhgelus/small-web/backend/common"
-	"git.anhgelus.world/anhgelus/small-web/backend/storage"
+	"anhgelus.world/small-web/backend/common"
+	"anhgelus.world/small-web/backend/storage"
 )
 
 type adminData struct {

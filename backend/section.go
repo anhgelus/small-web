@@ -17,8 +17,8 @@ import (
 
 	site "anhgelus.world/goat-site"
 	"anhgelus.world/xrpc/atproto"
-	"git.anhgelus.world/anhgelus/small-web/backend/common"
-	"git.anhgelus.world/anhgelus/small-web/backend/storage"
+	"anhgelus.world/small-web/backend/common"
+	"anhgelus.world/small-web/backend/storage"
 )
 
 var (

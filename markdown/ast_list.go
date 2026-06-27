@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"git.anhgelus.world/anhgelus/small-web/dom"
+	"anhgelus.world/small-web/dom"
 )
 
 var regexOrdered = regexp.MustCompile(`\d+\.`)

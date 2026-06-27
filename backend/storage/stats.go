@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"git.anhgelus.world/anhgelus/small-web/backend/common"
+	"anhgelus.world/small-web/backend/common"
 )
 
 type loadRequest struct {

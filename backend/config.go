@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"anhgelus.world/xrpc/atproto"
-	"git.anhgelus.world/anhgelus/small-web/markdown"
+	"anhgelus.world/small-web/markdown"
 	"github.com/pelletier/go-toml/v2"
 )
 

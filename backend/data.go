@@ -14,7 +14,7 @@ import (
 	"strings"
 	txt "text/template"
 
-	"git.anhgelus.world/anhgelus/small-web/backend/common"
+	"anhgelus.world/small-web/backend/common"
 )
 
 var (

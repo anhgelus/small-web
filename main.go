@@ -24,10 +24,10 @@ import (
 	"anhgelus.world/xrpc"
 	"anhgelus.world/xrpc/atproto"
 	"anhgelus.world/xrpc/server"
-	atp "git.anhgelus.world/anhgelus/small-web/atproto"
-	"git.anhgelus.world/anhgelus/small-web/backend"
-	"git.anhgelus.world/anhgelus/small-web/backend/common"
-	"git.anhgelus.world/anhgelus/small-web/backend/storage"
+	atp "anhgelus.world/small-web/atproto"
+	"anhgelus.world/small-web/backend"
+	"anhgelus.world/small-web/backend/common"
+	"anhgelus.world/small-web/backend/storage"
 )
 
 //go:embed dist

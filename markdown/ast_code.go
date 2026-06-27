@@ -5,7 +5,7 @@ import (
 	"html"
 	"html/template"
 
-	"git.anhgelus.world/anhgelus/small-web/dom"
+	"anhgelus.world/small-web/dom"
 )
 
 var (
