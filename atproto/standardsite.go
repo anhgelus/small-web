@@ -2,7 +2,6 @@ package atproto
 
 import (
 	"context"
-	"errors"
 	"io"
 	"io/fs"
 	"mime"
@@ -53,17 +52,8 @@ func CreateSite(
 	rkey atproto.RecordKey,
 	pub *site.Publication,
 ) (*Site, error) {
-	latest, err := xrpc.GetRecord[*site.Publication](
-		ctx, client, did, rkey, nil)
-	var cid *atproto.CID
-	if err == nil {
-		cid = latest.CID.CID()
-	}
-	if !errors.Is(err, xrpc.ErrRecordNotFound) {
-		return nil, err
-	}
-	res, err := xrpc.CreateRecord(
-		ctx, client, pub, rkey, nil, cid)
+	res, err := xrpc.PutRecord(
+		ctx, client, pub, rkey, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +76,6 @@ func (s *Site) PublishDoc(
 	imagePath *string,
 	tags []string,
 	contributors []*site.Contributor,
-	cid *atproto.CID,
 ) (*xrpc.SendRecordResult, atproto.RecordKey, error) {
 	var blob *xrpc.Blob
 	if imagePath != nil {
@@ -116,7 +105,7 @@ func (s *Site) PublishDoc(
 		CoverImage:   blob,
 	}
 	tid := s.genTid.Next().RecordKey()
-	res, err := xrpc.CreateRecord(
-		ctx, client, doc, tid, nil, cid)
+	res, err := xrpc.PutRecord(
+		ctx, client, doc, tid, nil, nil, nil)
 	return res, tid, err
 }

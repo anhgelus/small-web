@@ -277,13 +277,9 @@ func publishDoc(
 			DID:         d,
 		})
 	}
-	var cid *atproto.CID
 	imgPath := &info.Img.Src
-	if v, ok := docs[path]; ok {
-		cid = v.CID.CID()
-		if v.ImageUploaded {
-			imgPath = nil
-		}
+	if v, ok := docs[path]; ok && v.ImageUploaded {
+		imgPath = nil
 	}
 	res, rkey, err := s.PublishDoc(
 		ctx,
@@ -294,8 +290,7 @@ func publishDoc(
 		info.Description,
 		imgPath,
 		info.Tags,
-		contribs,
-		cid)
+		contribs)
 	if err != nil {
 		panic(err)
 	}
