@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"git.anhgelus.world/anhgelus/small-web/backend/common"
+	"git.anhgelus.world/anhgelus/small-web/backend/storage"
 )
 
 var (
@@ -72,7 +73,7 @@ type image struct {
 	Legend string `toml:"legend"`
 }
 
-func (s *Section) Load(_ *Config) bool {
+func (s *Section) Load(docs map[string]storage.PublishedDocument) bool {
 	dir, err := os.ReadDir(s.Folder)
 	logger := slog.With("folder", s.Folder)
 	if err != nil {
@@ -88,7 +89,7 @@ func (s *Section) Load(_ *Config) bool {
 		return false
 	}
 	logger.Info("checking directory...")
-	err = s.readDir(s.Folder, dir)
+	err = s.readDir(docs, s.Folder, dir)
 	if err != nil {
 		slog.Error("reading directory", "error", err)
 		return false
@@ -97,7 +98,7 @@ func (s *Section) Load(_ *Config) bool {
 	return true
 }
 
-func (s *Section) readDir(path string, dir []os.DirEntry) error {
+func (s *Section) readDir(docs map[string]storage.PublishedDocument, path string, dir []os.DirEntry) error {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	for _, d := range dir {
@@ -107,7 +108,7 @@ func (s *Section) readDir(path string, dir []os.DirEntry) error {
 			if err != nil {
 				return err
 			}
-			if err = s.readDir(p, dd); err != nil {
+			if err = s.readDir(docs, p, dd); err != nil {
 				return err
 			}
 		} else {
@@ -130,6 +131,9 @@ func (s *Section) readDir(path string, dir []os.DirEntry) error {
 			}
 			dd := new(SectionData)
 			dd.data = new(data)
+			if doc, ok := docs[path]; ok {
+				dd.Linked = doc.RecordKey.String()
+			}
 
 			wg.Add(1)
 			go func(p string, d os.DirEntry) {

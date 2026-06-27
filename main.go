@@ -69,8 +69,13 @@ func main() {
 		panic(err)
 	}
 
+	docs, err := storage.PublishedDocuments(ctx, db)
+	if err != nil {
+		panic(err)
+	}
+
 	for _, sec := range cfg.Sections {
-		if ok = sec.Load(cfg); !ok {
+		if ok = sec.Load(docs); !ok {
 			slog.Info("exiting")
 			os.Exit(2)
 		}
@@ -110,11 +115,6 @@ func main() {
 	}
 
 	files := os.DirFS(cfg.PublicFolder)
-
-	docs, err := storage.PublishedDocuments(ctx, db)
-	if err != nil {
-		panic(err)
-	}
 
 	if sync {
 		var logo []byte
@@ -200,6 +200,14 @@ func main() {
 		backend.StatsMiddleware())
 
 	r.NotFoundHandler = http.HandlerFunc(backend.NotFoundHandler)
+
+	r.Handle(ljus.NewRouteFunc(
+		"GET /.well-known/site.standard.publication",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/plain")
+			w.Write([]byte(
+				"at://" + cfg.ATProto.DID + "/site.standard.publication/" + cfg.ATProto.PublicationRKey.String()))
+		}).SetName("atproto-verification"))
 
 	r.Handle(ljus.NewRouteFunc("GET /{$}", backend.HomeHandler).SetName("root"))
 	r.Handle(ljus.NewRouteFunc(

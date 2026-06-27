@@ -22,6 +22,9 @@
     {{ if ne .PubDate "" }}
       <meta name="article:published_time" content="{{ .PubDate }}" />
     {{ end }}
+	{{ if ne .Linked "" }}
+		<link rel="site.standard.document" href="{{ .Linked }}">
+	{{ end }}
   </head>
   <body>
     <header>

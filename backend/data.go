@@ -38,6 +38,7 @@ type data struct {
 	Quote           string
 	Language        string
 	section         string
+	Linked          string
 }
 
 func (d *data) SetData(data *data) {
