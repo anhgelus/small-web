@@ -1,0 +1,21 @@
+when:
+  - event: ["push", "manual"]
+    branch: ["main"]
+
+engine: microvm
+image: alpine
+
+steps:
+  - name: "Install deps"
+    command: apk add go git deno curl just ssh rsync
+  - name: "Building"
+    command: just build
+  - name: "Install secrets"
+    command: |
+      echo "$DEPLOY_PRIVATE_KEY" > server_key
+      ssh-keyscan "$DEPLOY_SERVER" >> ~/.ssh/known_hosts
+  - name: "Deploy"
+    command: |
+      rsync -riz ./small-web "$DEPLOY_USER@$DEPLOY_SERVER":small-web
+      ssh -i server_key "$DEPLOY_USER@$DEPLOY_SERVER" \
+        "doas install -m 755 small-web /usr/local/bin && doas rc-service small-web restart"
