@@ -14,11 +14,18 @@ steps:
       just build
   - name: "Install secrets"
     command: |
-      echo "$DEPLOY_PRIVATE_KEY" > server_key
       mkdir ~/.ssh/
+      echo "$DEPLOY_PRIVATE_KEY" > ~/.ssh/key
+      cat <<EOF > ./ssh/config
+      Host server
+        HostName $DEPLOY_SERVER
+        User $DEPLOY_USER
+        IdentityFile ~/.ssh/key
+        PreferredAuthentications publickey
+      EOF
       ssh-keyscan "$DEPLOY_SERVER" > ~/.ssh/known_hosts
   - name: "Deploy"
     command: |
-      rsync -riz ./small-web "$DEPLOY_USER@$DEPLOY_SERVER":small-web
-      ssh -i server_key "$DEPLOY_USER@$DEPLOY_SERVER" \
+      rsync -riz ./small-web server:small-web
+      ssh server \
         "doas install -m 755 small-web /usr/local/bin && doas rc-service small-web restart"
