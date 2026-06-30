@@ -10,7 +10,7 @@ steps:
     command: apk add go git deno curl just openssh rsync
   - name: "Building"
     command: |
-      deno ci
+      deno i
       just build
   - name: "Install secrets"
     command: |

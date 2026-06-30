@@ -1,7 +1,6 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@types/bun@latest": "1.3.14",
     "npm:prettier-plugin-go-template@^0.0.15": "0.0.15_prettier@3.8.4",
     "npm:prettier@^3.7.4": "3.8.4",
     "npm:reset-css@^5.0.2": "5.0.2",
@@ -99,24 +98,6 @@
       ],
       "scripts": true
     },
-    "@types/bun@1.3.14": {
-      "integrity": "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw==",
-      "dependencies": [
-        "bun-types"
-      ]
-    },
-    "@types/node@26.0.1": {
-      "integrity": "sha512-fc3KiUoBt6kie0N9bIW3E47vZsuaMf0PM2AaUpLCLT0s/LvX1nxAim6Fc049cNxODPpGm6qRAuUOB86SkRuPQw==",
-      "dependencies": [
-        "undici-types"
-      ]
-    },
-    "bun-types@1.3.14": {
-      "integrity": "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ==",
-      "dependencies": [
-        "@types/node"
-      ]
-    },
     "chokidar@5.0.0": {
       "integrity": "sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==",
       "dependencies": [
@@ -188,15 +169,11 @@
     "ulid@2.4.0": {
       "integrity": "sha512-fIRiVTJNcSRmXKPZtGzFQv9WRrZ3M9eoptl/teFJvjOzmpU+/K/JH6HZ8deBfb5vMEpicJcLn7JmvdknlMq7Zg==",
       "bin": true
-    },
-    "undici-types@8.3.0": {
-      "integrity": "sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ=="
     }
   },
   "workspace": {
     "packageJson": {
       "dependencies": [
-        "npm:@types/bun@latest",
         "npm:prettier-plugin-go-template@^0.0.15",
         "npm:prettier@^3.7.4",
         "npm:reset-css@^5.0.2",
