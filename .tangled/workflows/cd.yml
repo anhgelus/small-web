@@ -15,7 +15,8 @@ steps:
   - name: "Install secrets"
     command: |
       echo "$DEPLOY_PRIVATE_KEY" > server_key
-      ssh-keyscan "$DEPLOY_SERVER" >> ~/.ssh/known_hosts
+      mkdir ~/.ssh/
+      ssh-keyscan "$DEPLOY_SERVER" > ~/.ssh/known_hosts
   - name: "Deploy"
     command: |
       rsync -riz ./small-web "$DEPLOY_USER@$DEPLOY_SERVER":small-web
