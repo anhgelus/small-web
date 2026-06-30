@@ -9,7 +9,9 @@ steps:
   - name: "Install deps"
     command: apk add go git deno curl just openssh rsync
   - name: "Building"
-    command: just build
+    command: |
+      deno ci
+      just build
   - name: "Install secrets"
     command: |
       echo "$DEPLOY_PRIVATE_KEY" > server_key
