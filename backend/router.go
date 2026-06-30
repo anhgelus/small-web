@@ -25,7 +25,6 @@ func ContextMiddleware(cfg *Config, debug bool, db *sql.DB) ljus.Middleware {
 	return func(next ljus.Handler, w *ljus.StatusWriter, r *http.Request) {
 		ctx := common.SetContext(
 			r.Context(),
-			r,
 			cfg,
 			assets,
 			debug,

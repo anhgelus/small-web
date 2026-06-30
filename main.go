@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"embed"
 	"flag"
-	"fmt"
 	"io"
 	"log/slog"
 	"mime"
@@ -21,13 +20,13 @@ import (
 	site "anhgelus.world/goat-site"
 	"anhgelus.world/ljus"
 	"anhgelus.world/ljus/middleware"
-	"anhgelus.world/xrpc"
-	"anhgelus.world/xrpc/atproto"
-	"anhgelus.world/xrpc/server"
 	atp "anhgelus.world/small-web/atproto"
 	"anhgelus.world/small-web/backend"
 	"anhgelus.world/small-web/backend/common"
 	"anhgelus.world/small-web/backend/storage"
+	"anhgelus.world/xrpc"
+	"anhgelus.world/xrpc/atproto"
+	"anhgelus.world/xrpc/server"
 )
 
 //go:embed dist
@@ -35,18 +34,20 @@ var embeds embed.FS
 
 var (
 	configFile = "config.toml"
-	port       = 8000
+	address    = ":8000"
 	dev        = false
 	sync       = false
 	publish    = ""
+	fcgi       = false
 )
 
 func init() {
 	flag.StringVar(&configFile, "config", configFile, "config file")
-	flag.IntVar(&port, "port", port, "server port")
+	flag.StringVar(&address, "address", address, "address to listen to")
 	flag.BoolVar(&dev, "dev", dev, "development mode")
 	flag.BoolVar(&sync, "sync", sync, "sync everything with stored data in ATProto PDS")
 	flag.StringVar(&publish, "publish", publish, "publish an article on ATProto")
+	flag.BoolVar(&fcgi, "fcgi", fcgi, "use fcgi")
 }
 
 func main() {
@@ -190,6 +191,26 @@ func main() {
 
 	r := ljus.New()
 
+	r.Use(func(next ljus.Handler, w *ljus.StatusWriter, r *http.Request) {
+		ctx := r.Context()
+		var ip string
+		if fcgi {
+			ip = r.RemoteAddr
+		} else {
+			ip := r.Header.Get("X-Real-Ip")
+			if ip == "" {
+				ip = r.Header.Get("X-Forwarded-For")
+			}
+			if ip == "" {
+				ip = r.RemoteAddr
+			}
+		}
+		if strings.Contains(ip, ":") {
+			ip = strings.Split(ip, ":")[0]
+		}
+		next(w, r.WithContext(common.SetContextIP(ctx, ip)))
+	})
+
 	r.Use(middleware.Log(slog.Default(), false, false))
 	if !dev {
 		r.Use(middleware.SecurityHeaders(cfg.Domain, 24*time.Hour))
@@ -240,11 +261,20 @@ func main() {
 	defer cancel()
 	ctx = common.SetContextAssetsFS(ctx, assetsFS)
 
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	var l net.Listener
+	if strings.HasPrefix(address, "/") {
+		l, err = ljus.ListenSocket(address, 0o666)
+	} else {
+		l, err = net.Listen("tcp", address)
+	}
 	if err != nil {
 		panic(err)
 	}
-	err = r.Serve(ctx, l)
+	if fcgi {
+		err = r.ServeFastCGI(ctx, l)
+	} else {
+		err = r.Serve(ctx, l)
+	}
 	select {
 	case <-ctx.Done():
 	default:

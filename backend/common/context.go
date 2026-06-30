@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"io/fs"
 	"log/slog"
-	"net/http"
-	"strings"
 )
 
 type AssetData struct {
@@ -71,6 +69,10 @@ func ContextIP(ctx context.Context) string {
 	return ctx.Value(ipAddress).(string)
 }
 
+func SetContextIP(ctx context.Context, ip string) context.Context {
+	return context.WithValue(ctx, ipAddress, ip)
+}
+
 func ContextConnnected(ctx context.Context) bool {
 	return ctx.Value(connected).(bool)
 }
@@ -81,23 +83,11 @@ func SetContextConnected(ctx context.Context, ok bool) context.Context {
 
 func SetContext(
 	ctx context.Context,
-	r *http.Request,
 	c any,
 	assetsFS map[string]AssetData,
 	debugEnabled bool,
 	db *sql.DB,
 ) context.Context {
-	ip := r.Header.Get("X-Real-Ip")
-	if ip == "" {
-		ip = r.Header.Get("X-Forwarded-For")
-	}
-	if ip == "" {
-		ip = r.RemoteAddr
-	}
-	if strings.Contains(ip, ":") {
-		ip = strings.Split(ip, ":")[0]
-	}
-	ctx = context.WithValue(ctx, ipAddress, ip)
 	ctx = context.WithValue(ctx, assets, assetsFS)
 	ctx = context.WithValue(ctx, debug, debugEnabled)
 	ctx = SetContextLogger(ctx, slog.Default())
