@@ -16,6 +16,7 @@ steps:
     command: |
       mkdir ~/.ssh/
       echo "$DEPLOY_PRIVATE_KEY" > ~/.ssh/key
+      chmod 600 ~/.ssh/key
       cat <<EOF > ~/.ssh/config
       Host server
         HostName $DEPLOY_SERVER
