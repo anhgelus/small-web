@@ -92,32 +92,10 @@ func main() {
 		syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	defer cancelNext()
 
-	var client xrpc.Client = xrpc.NewClient(
-		http.DefaultClient,
-		atproto.NewDirectory(http.DefaultClient, net.DefaultResolver),
-		"Small Web 1.0")
-	doc, err := client.Directory().ResolveDID(ctx, did)
-	if err != nil {
-		panic(err)
-	}
-	pds, _ := doc.PDS()
-	res, err := server.CreateSession(
-		ctx,
-		client,
-		pds,
-		server.CreateSessionRequest{Identifier: cfg.ATProto.DID, Password: cfg.ATProto.Password})
-	if err != nil {
-		panic(err)
-	}
-	client = res.Client
-	err = server.RefreshSession(ctx, client.(*xrpc.AuthClient))
-	if err != nil {
-		panic(err)
-	}
-
 	files := os.DirFS(cfg.PublicFolder)
 
 	if sync {
+		client := xrpcClient(ctx, cfg, did)
 		var logo []byte
 		var name string
 		if strings.HasPrefix(cfg.Logo.Favicon, "https://") {
@@ -171,6 +149,7 @@ func main() {
 		return
 	}
 	if publish != "" {
+		client := xrpcClient(ctx, cfg, did)
 		s, err := atp.LoadSite(ctx, client, files, did, cfg.ATProto.PublicationRKey)
 		if err != nil {
 			panic(err)
@@ -243,7 +222,7 @@ func main() {
 
 	for _, sec := range cfg.Sections {
 		g := ljus.NewGroup("GET /" + sec.Name + "/")
-		g.Add(ljus.NewRouteFunc("/", sec.RootHandler).SetName("root"))
+		g.Add(ljus.NewRouteFunc("GET /{$}", sec.RootHandler).SetName("root"))
 		g.Add(ljus.NewRouteFunc("/{slug}", sec.Handler).SetName("article"))
 		g.Add(ljus.NewRouteFunc("GET /rss", sec.RSSHandler).SetName("rss"))
 		g.Add(ljus.NewRouteFunc("GET /rss/", sec.RSSHandler).SetName("rss"))
@@ -337,4 +316,30 @@ func publishDoc(
 	if err != nil {
 		panic(err)
 	}
+}
+
+func xrpcClient(ctx context.Context, cfg *backend.Config, did *atproto.DID) xrpc.Client {
+	var client xrpc.Client = xrpc.NewClient(
+		http.DefaultClient,
+		atproto.NewDirectory(http.DefaultClient, net.DefaultResolver),
+		"Small Web 1.0")
+	doc, err := client.Directory().ResolveDID(ctx, did)
+	if err != nil {
+		panic(err)
+	}
+	pds, _ := doc.PDS()
+	res, err := server.CreateSession(
+		ctx,
+		client,
+		pds,
+		server.CreateSessionRequest{Identifier: cfg.ATProto.DID, Password: cfg.ATProto.Password})
+	if err != nil {
+		panic(err)
+	}
+	client = res.Client
+	err = server.RefreshSession(ctx, client.(*xrpc.AuthClient))
+	if err != nil {
+		panic(err)
+	}
+	return client
 }
