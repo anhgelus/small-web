@@ -219,7 +219,7 @@ func main() {
 		backend.RateLimitMiddleware(),
 		backend.StatsMiddleware())
 
-	r.NotFoundHandler = http.HandlerFunc(backend.NotFoundHandler)
+	r.Handle(ljus.NewRouteFunc("/", backend.NotFoundHandler).SetName("not-found"))
 
 	r.Handle(ljus.NewRoute(
 		"GET /.well-known/site.standard.publication",

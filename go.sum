@@ -1,7 +1,7 @@
 anhgelus.world/goat-site v0.2.3 h1:13hAaZZ3/oMctB54F46+5ls30AvdpXntJ236azqEUUE=
 anhgelus.world/goat-site v0.2.3/go.mod h1:yzTSpLh1Ixy+huF5gmR8Jci5gBFLINb678NQF7HL7xI=
-anhgelus.world/ljus v0.2.1 h1:qHNQrrPXbelaJKJJzti4e3cKLo+Sx1TOjgmWn8oMu4I=
-anhgelus.world/ljus v0.2.1/go.mod h1:q9MOlvI49rGReUPC9AYznAs/c1zTB5BM9bHpPqy6C+s=
+anhgelus.world/ljus v0.2.2 h1:23/s8nTWl22frro5CIXNQl5oyBj2aICJyZvWf6x4izs=
+anhgelus.world/ljus v0.2.2/go.mod h1:q9MOlvI49rGReUPC9AYznAs/c1zTB5BM9bHpPqy6C+s=
 anhgelus.world/xrpc v0.6.4 h1:jh0FfhKb8VNO2hz8v3tec8okULnDeXBNdRP0oWNCTnk=
 anhgelus.world/xrpc v0.6.4/go.mod h1:WAVSGXd0UI2CYK+tRUQ1+fbeb6ULBy5gqFpowfzUizY=
 github.com/mattn/go-sqlite3 v1.14.33 h1:A5blZ5ulQo2AtayQ9/limgHEkFreKj1Dv226a1K73s0=
