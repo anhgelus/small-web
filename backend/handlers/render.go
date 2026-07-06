@@ -40,7 +40,7 @@ type Data struct {
 func (d *Data) Title() string {
 	title := d.SiteName
 	if len(d.PageTitle) != 0 {
-		title += " - " + d.PageTitle
+		title = d.PageTitle + " - " + title
 	}
 	return title
 }

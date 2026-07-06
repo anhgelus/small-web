@@ -1,6 +1,10 @@
 package backend
 
-import "github.com/pelletier/go-toml/v2"
+import (
+	"html/template"
+
+	"github.com/pelletier/go-toml/v2"
+)
 
 type Section struct {
 	Name        string `toml:"name"`
@@ -8,6 +12,7 @@ type Section struct {
 	Folder      string `toml:"folder"`
 	Description string `toml:"description"`
 	URI         string `toml:"uri"`
+	Articles    map[string]*Article
 }
 
 type ImageHeader struct {
@@ -30,4 +35,8 @@ type Article struct {
 	Poem         bool                          `toml:"poem"`
 	Contributors map[string]ArticleContributor `toml:"contributors"`
 	filePath     string
+}
+
+func (a *Article) Content() template.HTML {
+	return ""
 }

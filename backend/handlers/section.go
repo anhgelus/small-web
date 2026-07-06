@@ -66,3 +66,22 @@ func SectionHome(sec *backend.Section) http.Handler {
 		}
 	})
 }
+
+func SectionArticle(sec *backend.Section) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		slug := r.PathValue("slug")
+		art, ok := sec.Articles[slug]
+		if !ok {
+			NotFound(w, r)
+			return
+		}
+		err := render(r.Context(), w, "data", Data{
+			PageTitle: art.Title + " - " + sec.TitleName + " entry",
+			Custom:    art,
+			PubDate:   art.PubLocalDate.String(),
+		})
+		if err != nil {
+			panic(err)
+		}
+	})
+}
