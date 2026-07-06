@@ -4,9 +4,11 @@ import (
 	"html/template"
 	"log/slog"
 	"os"
+	"strings"
 
-	"anhgelus.world/xrpc/atproto"
+	"anhgelus.world/small-web/dom"
 	"anhgelus.world/small-web/markdown"
+	"anhgelus.world/xrpc/atproto"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -16,7 +18,17 @@ type Link struct {
 }
 
 func (l *Link) Render(url string) template.HTML {
-	return renderLink(l.Name, l.URL, url)
+	return func(content, href string) template.HTML {
+		anchor := dom.NewLiteralContentElement("a", template.HTML(content))
+		anchor.SetAttribute("href", href)
+		if href == url || (href != "/" && url != "/" && strings.HasPrefix(url, href)) {
+			anchor.ClassList().Add("target")
+		}
+		if markdown.ExternalLink.MatchString(href) {
+			anchor.SetAttribute("target", "_blank").SetAttribute("rel", "noreferrer")
+		}
+		return anchor.Render()
+	}(l.Name, l.URL)
 }
 
 type Logo struct {
@@ -130,7 +142,12 @@ func LoadConfig(path string) (*Config, bool) {
 	if len(config.AdminPassword) == 0 {
 		config.AdminPassword = os.Getenv("SW_ADMIN_PASSWORD")
 	}
-	defaultMarkdownOption.ImageSource = getStatic
+	defaultMarkdownOption.ImageSource = func(path string) string {
+		if strings.HasPrefix(path, "https://") {
+			return path
+		}
+		return "/static/" + strings.TrimPrefix(path, "/")
+	}
 	defaultMarkdownOption.Replaces = make(map[rune]string, len(config.Replacers))
 	for _, r := range config.Replacers {
 		if len(r.Symbol) != 1 {

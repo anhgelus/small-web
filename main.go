@@ -22,7 +22,7 @@ import (
 	"anhgelus.world/ljus/middleware"
 	atp "anhgelus.world/small-web/atproto"
 	"anhgelus.world/small-web/backend"
-	"anhgelus.world/small-web/backend/common"
+	"anhgelus.world/small-web/backend/handlers"
 	"anhgelus.world/small-web/backend/storage"
 	"anhgelus.world/xrpc"
 	"anhgelus.world/xrpc/atproto"
@@ -163,7 +163,7 @@ func main() {
 		return
 	}
 
-	assetsFS := backend.UsableEmbedFS("dist", embeds)
+	assetsFS := handlers.UsableEmbedFS("dist", embeds)
 	if dev {
 		assetsFS = os.DirFS("dist")
 	}
@@ -187,7 +187,7 @@ func main() {
 		if strings.Contains(ip, ":") {
 			ip = strings.Split(ip, ":")[0]
 		}
-		next(w, r.WithContext(common.SetContextIP(ctx, ip)))
+		next(w, r.WithContext(backend.SetContextIP(ctx, ip)))
 	})
 
 	r.Use(middleware.Log(slog.Default(), false, false))
@@ -196,7 +196,7 @@ func main() {
 	}
 	r.Use(backend.ContextMiddleware(cfg, dev, db),
 		backend.RateLimitMiddleware(),
-		backend.StatsMiddleware())
+		storage.StatsMiddleware())
 
 	r.Handle(ljus.NewRouteFunc("/", backend.NotFoundHandler).SetName("not-found"))
 
@@ -213,7 +213,7 @@ func main() {
 	r.Handle(ljus.NewRouteFunc("GET /{any}", func(w http.ResponseWriter, req *http.Request) {
 		v := req.PathValue("any")
 		if strings.HasSuffix(v, ".txt") {
-			backend.TxtFilesHandler(w, req)
+			handlers.TxtFiles(w, req)
 			return
 		}
 		backend.GenericRootHandler(w, req)
@@ -229,8 +229,8 @@ func main() {
 		r.Handle(g.SetName("section " + sec.Name))
 	}
 
-	r.Handle(backend.StaticFilesHandler("/assets", assetsFS),
-		backend.StaticFilesHandler("/static", os.DirFS(cfg.PublicFolder)))
+	r.Handle(handlers.StaticFiles("/assets", assetsFS),
+		handlers.StaticFiles("/static", os.DirFS(cfg.PublicFolder)))
 
 	slog.Info("starting http server")
 
@@ -238,7 +238,7 @@ func main() {
 		context.Background(),
 		os.Interrupt, os.Kill, syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
-	ctx = common.SetContextAssetsFS(ctx, assetsFS)
+	ctx = backend.SetContextAssetsFS(ctx, assetsFS)
 
 	var l net.Listener
 	if strings.HasPrefix(address, "/") {

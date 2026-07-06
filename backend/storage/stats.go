@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"anhgelus.world/small-web/backend/common"
+	"anhgelus.world/small-web/backend"
 )
 
 type loadRequest struct {
@@ -92,7 +92,7 @@ func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 	if !ok {
 		return nil
 	}
-	ip := common.ContextIP(ctx)
+	ip := backend.ContextIP(ctx)
 	load.Add(ip, ref, target)
 	go func(ip, target string) {
 		time.Sleep(5 * time.Second)
@@ -102,7 +102,7 @@ func UpdateStats(ctx context.Context, r *http.Request, domain string) error {
 }
 
 func humanLoad(ctx context.Context, r *http.Request, domain string) error {
-	ip := common.ContextIP(ctx)
+	ip := backend.ContextIP(ctx)
 	ref, ok := getReferer(r, domain)
 	if !ok {
 		return nil
@@ -112,14 +112,14 @@ func humanLoad(ctx context.Context, r *http.Request, domain string) error {
 		lr.referer = "?"
 		lr.target = ref
 	}
-	db := common.ContextDB(ctx)
+	db := backend.ContextDB(ctx)
 	rows, err := db.QueryContext(ctx, "SELECT id, visit FROM stats WHERE origin = ? AND target = ?", lr.referer, lr.target)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err == nil {
-			common.ContextLogger(ctx).Debug("stats updated")
+			backend.ContextLogger(ctx).Debug("stats updated")
 			load.Remove(ip, lr.target)
 		}
 	}()
@@ -150,7 +150,7 @@ type StatsRow struct {
 const StatsPerPage = 25
 
 func GetStatsRows(ctx context.Context, page uint) ([]StatsRow, error) {
-	rows, err := common.ContextDB(ctx).QueryContext(
+	rows, err := backend.ContextDB(ctx).QueryContext(
 		ctx,
 		"SELECT origin, target, visit FROM stats ORDER BY visit DESC LIMIT ? OFFSET ?",
 		StatsPerPage, (page-1)*StatsPerPage,
@@ -176,7 +176,7 @@ func GetStatsRows(ctx context.Context, page uint) ([]StatsRow, error) {
 }
 
 func GetUnionStatsRows(ctx context.Context) ([]StatsRow, error) {
-	rows, err := common.ContextDB(ctx).QueryContext(ctx, "SELECT target, visit FROM stats ORDER BY visit DESC")
+	rows, err := backend.ContextDB(ctx).QueryContext(ctx, "SELECT target, visit FROM stats ORDER BY visit DESC")
 	if err != nil {
 		return nil, err
 	}
