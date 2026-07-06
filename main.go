@@ -198,7 +198,7 @@ func main() {
 		backend.RateLimitMiddleware(),
 		storage.StatsMiddleware())
 
-	r.Handle(ljus.NewRouteFunc("/", backend.NotFoundHandler).SetName("not-found"))
+	r.Handle(ljus.NewRouteFunc("/", handlers.NotFound).SetName("not-found"))
 
 	r.Handle(ljus.NewRoute(
 		"GET /.well-known/site.standard.publication",
@@ -222,7 +222,7 @@ func main() {
 
 	for _, sec := range cfg.Sections {
 		g := ljus.NewGroup("GET /" + sec.Name + "/")
-		g.Add(ljus.NewRouteFunc("GET /{$}", sec.RootHandler).SetName("root"))
+		g.Add(ljus.NewRoute("GET /{$}", handlers.SectionHome(sec)).SetName("root"))
 		g.Add(ljus.NewRouteFunc("/{slug}", sec.Handler).SetName("article"))
 		g.Add(ljus.NewRouteFunc("GET /rss", sec.RSSHandler).SetName("rss"))
 		g.Add(ljus.NewRouteFunc("GET /rss/", sec.RSSHandler).SetName("rss"))
@@ -271,15 +271,15 @@ func publishDoc(
 	did *atproto.DID,
 	s *atp.Site,
 	path string,
-	info *backend.EntryInfo,
+	art *backend.Article,
 ) {
-	contribs := make([]*site.Contributor, 1, len(info.Contributors)+1)
+	contribs := make([]*site.Contributor, 1, len(art.Contributors)+1)
 	contribs[0] = &site.Contributor{
 		DID:         did,
 		Role:        "Autheur",
 		DisplayName: cfg.ATProto.DisplayName,
 	}
-	for k, v := range info.Contributors {
+	for k, v := range art.Contributors {
 		d, err := atproto.ParseDID(v.DID)
 		if err != nil {
 			panic(d)
@@ -290,19 +290,19 @@ func publishDoc(
 			DID:         d,
 		})
 	}
-	imgPath := &info.Img.Src
+	imgPath := &art.Image.Src
 	if v, ok := docs[path]; ok && v.ImageUploaded {
 		imgPath = nil
 	}
 	res, rkey, err := s.PublishDoc(
 		ctx,
 		client,
-		info.Title,
+		art.Title,
 		path,
-		info.PubLocalDate.AsTime(time.Local),
-		info.Description,
+		art.PubLocalDate.AsTime(time.Local),
+		art.Description,
 		imgPath,
-		info.Tags,
+		art.Tags,
 		contribs)
 	if err != nil {
 		panic(err)

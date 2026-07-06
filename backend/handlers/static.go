@@ -30,12 +30,10 @@ func (h *httpEmbedFS) ReadDir(name string) ([]fs.DirEntry, error) {
 	return h.FS.ReadDir(h.prefix + "/" + name)
 }
 
-// UsableEmbedFS converts embed.FS into usable fs.FS by Golatt
-//
-// folder may not finish or start with a slash (/)
+// UsableEmbedFS converts embed.FS into usable fs.FS
 func UsableEmbedFS(folder string, em embed.FS) fs.FS {
 	return &httpEmbedFS{
-		prefix: folder,
+		prefix: strings.Trim(folder, "/"),
 		FS:     em,
 	}
 }
@@ -47,7 +45,7 @@ func StaticFiles(path string, root fs.FS) ljus.Route {
 
 	return ljus.NewRouteFunc(path+"{file...}", func(w http.ResponseWriter, req *http.Request) {
 		if strings.HasSuffix(req.RequestURI, "/") {
-			NotFoundHandler(w, req)
+			NotFound(w, req)
 			return
 		}
 		http.StripPrefix(path, http.FileServerFS(root)).ServeHTTP(w, req)
@@ -61,7 +59,7 @@ func TxtFiles(w http.ResponseWriter, r *http.Request) {
 	logger.Info("requesting txt file", "User-Agent", r.Header.Get("User-Agent"))
 	b, err := os.ReadFile(path.Join(cfg.PublicFolder, r.PathValue("any")))
 	if os.IsNotExist(err) {
-		NotFoundHandler(w, r)
+		NotFound(w, r)
 		return
 	} else if err != nil {
 		panic(err)
