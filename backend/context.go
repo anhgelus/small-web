@@ -53,8 +53,8 @@ func ContextDebug(ctx context.Context) bool {
 	return ctx.Value(debug).(bool)
 }
 
-func ContextConfig[T any](ctx context.Context) T {
-	return ctx.Value(cfg).(T)
+func ContextConfig(ctx context.Context) *Config {
+	return ctx.Value(cfg).(*Config)
 }
 
 func ContextAssetsFS(ctx context.Context) fs.FS {
@@ -100,7 +100,7 @@ func CloneContext(parent, source context.Context) context.Context {
 	ctx := context.WithValue(parent, assets, ContextAssets(source))
 	ctx = context.WithValue(ctx, debug, ContextDebug(source))
 	ctx = SetContextLogger(ctx, ContextLogger(source))
-	ctx = context.WithValue(ctx, cfg, ContextConfig[any](source))
+	ctx = context.WithValue(ctx, cfg, ContextConfig(source))
 	ctx = context.WithValue(ctx, ipAddress, ContextIP(source))
 	ctx = setContextDB(ctx, ContextDB(source))
 	return ctx

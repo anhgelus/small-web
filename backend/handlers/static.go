@@ -10,7 +10,6 @@ import (
 
 	"anhgelus.world/ljus"
 	"anhgelus.world/small-web/backend"
-	"anhgelus.world/small-web/backend/common"
 )
 
 // httpEmbedFS is an implementation of fs.FS, fs.ReadDirFS and fs.ReadFileFS helping to manage embed.FS for http server
@@ -57,8 +56,8 @@ func StaticFiles(path string, root fs.FS) ljus.Route {
 
 func TxtFiles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	cfg := common.ContextConfig[*backend.Config](ctx)
-	logger := common.ContextLogger(ctx)
+	cfg := backend.ContextConfig(ctx)
+	logger := backend.ContextLogger(ctx)
 	logger.Info("requesting txt file", "User-Agent", r.Header.Get("User-Agent"))
 	b, err := os.ReadFile(path.Join(cfg.PublicFolder, r.PathValue("any")))
 	if os.IsNotExist(err) {

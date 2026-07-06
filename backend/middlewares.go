@@ -4,14 +4,10 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"database/sql"
-	"embed"
 	"net/http"
 
 	"anhgelus.world/ljus"
 )
-
-//go:embed templates
-var templates embed.FS
 
 func ContextMiddleware(cfg *Config, debug bool, db *sql.DB) ljus.Middleware {
 	return func(next ljus.Handler, w *ljus.StatusWriter, r *http.Request) {
@@ -34,7 +30,7 @@ func RateLimitMiddleware() ljus.Middleware {
 		}
 		_, pass, ok := r.BasicAuth()
 		if ok {
-			cfg := ContextConfig[*Config](ctx)
+			cfg := ContextConfig(ctx)
 			passHash := sha256.Sum256([]byte(pass))
 			rightPassHash := sha256.Sum256([]byte(cfg.AdminPassword))
 			ok = subtle.ConstantTimeCompare(passHash[:], rightPassHash[:]) == 1

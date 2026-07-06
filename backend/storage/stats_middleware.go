@@ -29,7 +29,7 @@ func StatsMiddleware() ljus.Middleware {
 				logger.Debug("not updating stats for status code above 299", "status", statusCode)
 				return
 			}
-			cfg := backend.ContextConfig[*backend.Config](ctx)
+			cfg := backend.ContextConfig(ctx)
 			ctx2, cancel := context.WithTimeout(
 				context.Background(),
 				1*time.Second)
