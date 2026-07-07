@@ -7,6 +7,7 @@ import (
 	"flag"
 	"io"
 	"log/slog"
+	"log/syslog"
 	"mime"
 	"net"
 	"net/http"
@@ -27,6 +28,7 @@ import (
 	"anhgelus.world/xrpc"
 	"anhgelus.world/xrpc/atproto"
 	"anhgelus.world/xrpc/server"
+	"github.com/nyttikord/logos"
 )
 
 //go:embed dist
@@ -38,6 +40,8 @@ var (
 	dev        = false
 	sync       = false
 	fcgi       = false
+	toSyslog   = false
+	verbose    = false
 )
 
 func init() {
@@ -46,10 +50,30 @@ func init() {
 	flag.BoolVar(&dev, "dev", dev, "development mode")
 	flag.BoolVar(&sync, "sync", sync, "sync everything with stored data in ATProto PDS")
 	flag.BoolVar(&fcgi, "fcgi", fcgi, "use fcgi")
+	flag.BoolVar(&toSyslog, "syslog", toSyslog, "log to syslog instead of stderr")
+	flag.BoolVar(&verbose, "v", verbose, "increase verbosity")
 }
 
 func main() {
 	flag.Parse()
+
+	opts := &logos.Options{Level: slog.LevelInfo}
+	if dev || verbose {
+		opts.Level = slog.LevelDebug
+	}
+
+	var h slog.Handler
+	var err error
+	if toSyslog {
+		h, err = logos.NewSyslog("small-web", syslog.LOG_USER, opts)
+	} else {
+		h = logos.NewColor(os.Stderr, opts)
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	slog.SetDefault(slog.New(h))
 
 	cfg := backend.LoadConfig(configFile)
 	if cfg == nil {
@@ -63,7 +87,7 @@ func main() {
 	defer cancelMigration()
 	db := storage.ConnectDatabase(cfg.Database)
 	defer db.Close()
-	err := storage.RunMigration(ctx, db)
+	err = storage.RunMigration(ctx, db)
 	if err != nil {
 		panic(err)
 	}
@@ -317,5 +341,4 @@ func syncDocuments(ctx context.Context, db *sql.DB, cfg *backend.Config, did *at
 		slog.Info("syncing done", "section", sec.Name)
 	}
 	slog.Info("syncing done", "rkey", cfg.ATProto.PublicationRKey)
-	return
 }
