@@ -134,7 +134,7 @@ func main() {
 		}
 		handlers.Root().ServeHTTP(w, req)
 	}).SetName("any-catcher"))
-	r.Handle(ljus.NewRouteFunc("GET /admin", backend.AdminHandler).SetName("admin"))
+	r.Handle(ljus.NewRoute("GET /admin", handlers.Admin()).SetName("admin"))
 
 	for _, sec := range cfg.Sections {
 		g := ljus.NewGroup("GET /" + sec.Name + "/")
