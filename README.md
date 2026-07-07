@@ -4,7 +4,7 @@ Welcome to anhgelus's logs.
 
 Bienvenue dans les logs d'anhgelus.
 
-It's content is published on the AT Protocol with [Standard.site](https://standard.site/)'s lexicons.
+Its content is published on the AT Protocol with [Standard.site](https://standard.site/)'s lexicons.
 
 ## Concept
 
@@ -17,8 +17,9 @@ Backend written in modern Go.
 
 Light CSS, runs everywhere.
 SSR first.
+No JS.
 
-Content written in markdown.
+Content written in markdown and soon in [typdown](https://tangled.org/anhgelus.world/typdown).
 
 RSS feed.
 
