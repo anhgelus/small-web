@@ -8,6 +8,12 @@ import (
 	"anhgelus.world/small-web/backend"
 )
 
+type HomeData struct {
+	Sections    []SectionData
+	Title       string
+	Description string
+}
+
 func Home() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cfg := backend.ContextConfig(r.Context())
@@ -21,7 +27,11 @@ func Home() http.Handler {
 			})
 		}
 		err := render(r.Context(), w, "home", Data{
-			Custom:          sec,
+			Custom: HomeData{
+				Sections:    sec,
+				Title:       cfg.Name,
+				Description: cfg.Description,
+			},
 			PageDescription: cfg.Description,
 		})
 		if err != nil {

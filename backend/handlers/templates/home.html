@@ -2,10 +2,10 @@
   <main id="content">
     <div class="introduction">
       <h1>{{ .Title }}</h1>
-      <p>{{ .PageDescription }}</p>
+      <p>{{ .Description }}</p>
     </div>
     <div class="sections">
-      {{ range .Custom }}
+      {{ range .Sections }}
         <section>
           <h2>{{ .Name }}</h2>
           <p>{{ .Description }}</p>

@@ -1,12 +1,11 @@
 {{ define "body" }}
   <article id="content">
-		{{ $art := .Custom }}
-    <h1>{{ $art.Title }}</h1>
-    <p>{{ $art.Description }}</p>
+    <h1>{{ .Title }}</h1>
+    <p>{{ .Description }}</p>
     <figure>
-      <img src="{{ static $art.Image.Src }}" alt="{{ $art.Image.Alt }}" class="large" />
-      <figcaption>{{ $art.Image.Legend }}</figcaption>
+      <img src="{{ static .Image.Src }}" alt="{{ .Image.Alt }}" class="large" />
+      <figcaption>{{ .Image.Legend }}</figcaption>
     </figure>
-    {{ $art.Content }}
+    {{ .Content }}
   </article>
 {{ end }}

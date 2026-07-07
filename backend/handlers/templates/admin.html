@@ -18,7 +18,7 @@
           </tr>
         </thead>
         <tbody>
-          {{ range .Custom.Visits }}
+          {{ range .Visits }}
             <tr>
               <td>{{ .Target }}</td>
               <td>{{ .Visit }}</td>
@@ -36,7 +36,7 @@
           </tr>
         </thead>
         <tbody>
-          {{ range .Custom.Rows }}
+          {{ range .Rows }}
             <tr>
               <td>{{ .Origin }}</td>
               <td>{{ .Target }}</td>
@@ -45,7 +45,7 @@
           {{ end }}
         </tbody>
       </table>
-      <div class="pagination">{{ template "pagination" .Custom }}</div>
+      <div class="pagination">{{ template "pagination" . }}</div>
     </article>
   </main>
 {{ end }}

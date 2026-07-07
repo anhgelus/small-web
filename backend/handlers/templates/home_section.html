@@ -1,9 +1,9 @@
 {{ define "body" }}
 <main id="content">
 	<div class="introduction">
-		<h1>{{ .Custom.Name }}</h1>
-		<p>{{ .Custom.Description }}</p>
+		<h1>{{ .Name }}</h1>
+		<p>{{ .Description }}</p>
 	</div>
-	{{ template "section_display--no-first" .Custom }}
+	{{ template "section_display--no-first" . }}
 </main>
 {{ end }}
