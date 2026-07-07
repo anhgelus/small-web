@@ -1,22 +1,20 @@
 <?xml version="1.0"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-    <channel>
-        <atom:link href="https://{{ .Domain }}{{ .URL }}" rel="self" type="application/rss+xml" />
-        <title>{{ .Title }}</title>
-        {{ $sec := first .Sections }}
-        {{ $uri := uri $sec.URI }}
-        <link>https://{{ .Domain }}/{{ $uri }}</link>
-        <description>{{ .PageDescription }}</description>
-        <language>{{ .Language }}</language>
-        {{ $domain := .Domain }}
-        {{ range $sec.Data }}
-        <item>
-            <title>{{ .DataTitle }}</title>
-            <link>https://{{ $domain }}/{{ $uri }}{{ .Slug }}</link>
-            <guid>https://{{ $domain }}/{{ $uri }}{{ .Slug }}</guid>
-            <description>{{ .Description }}</description>
-            <pubDate>{{ .PubDateRSS }}</pubDate>
-        </item>
-        {{ end }}
-    </channel>
+	<channel>
+		<atom:link href="https://{{ .Domain }}{{ .URL }}" rel="self" type="application/rss+xml" />
+		<title>{{ .Title }}</title>
+		<link>https://{{ .Domain }}/{{ uri .URI }}</link>
+		<description>{{ .Description }}</description>
+		<language>{{ .Language }}</language>
+		{{ $domain := .Domain }}
+		{{ range .Items }}
+		<item>
+			<title>{{ .Title }}</title>
+			<link>https://{{ $domain }}/{{ .URI }}/{{ .Slug }}</link>
+			<guid>https://{{ $domain }}/{{ .URI }}/{{ .Slug }}</guid>
+			<description>{{ .Description }}</description>
+			<pubDate>{{ .PubDateRSS }}</pubDate>
+		</item>
+		{{ end }}
+	</channel>
 </rss>

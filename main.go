@@ -37,7 +37,6 @@ var (
 	address    = ":8000"
 	dev        = false
 	sync       = false
-	publish    = ""
 	fcgi       = false
 )
 
@@ -46,7 +45,6 @@ func init() {
 	flag.StringVar(&address, "address", address, "address to listen to")
 	flag.BoolVar(&dev, "dev", dev, "development mode")
 	flag.BoolVar(&sync, "sync", sync, "sync everything with stored data in ATProto PDS")
-	flag.StringVar(&publish, "publish", publish, "publish an article on ATProto")
 	flag.BoolVar(&fcgi, "fcgi", fcgi, "use fcgi")
 }
 
@@ -70,90 +68,18 @@ func main() {
 		panic(err)
 	}
 
-	docs, err := storage.PublishedDocuments(ctx, db)
-	if err != nil {
-		panic(err)
-	}
+	ctx, cancelNext := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	defer cancelNext()
 
 	did, err := atproto.ParseDID(cfg.ATProto.DID)
 	if err != nil {
 		panic(err)
 	}
 
-	ctx, cancelNext := signal.NotifyContext(
-		context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	defer cancelNext()
-
-	files := os.DirFS(cfg.PublicFolder)
-
 	if sync {
-		client := xrpcClient(ctx, cfg, did)
-		var logo []byte
-		var name string
-		if strings.HasPrefix(cfg.Logo.Favicon, "https://") {
-			raw := strings.Split(cfg.Logo.Favicon, "/")
-			name = raw[len(raw)-1]
-			resp, err := http.Get(cfg.Logo.Favicon)
-			if err != nil {
-				panic(err)
-			}
-			logo, err = io.ReadAll(resp.Body)
-		} else {
-			f, err := files.Open(cfg.Logo.Favicon)
-			if err != nil {
-				panic(err)
-			}
-			defer f.Close()
-			logo, err = io.ReadAll(f)
-			if err != nil {
-				panic(err)
-			}
-			name = cfg.Logo.Favicon
-		}
-		blob, err := xrpc.UploadBlob(
-			ctx, client, mime.TypeByExtension("."+strings.Split(name, ".")[1]), logo)
-		if err != nil {
-			panic(err)
-		}
-		u, _ := url.Parse("https://" + cfg.Domain)
-		s, err := atp.CreateSite(ctx,
-			client,
-			files,
-			did,
-			cfg.ATProto.PublicationRKey,
-			&site.Publication{
-				URL:         u,
-				Name:        cfg.Name,
-				Icon:        blob,
-				Description: &cfg.Description,
-				Preferences: &site.Preferences{ShowInDiscover: true},
-			})
-		if err != nil {
-			panic(err)
-		}
-		for _, sec := range cfg.Sections {
-			for slug, art := range sec.Articles {
-				publishDoc(ctx, client, db, docs, cfg, did, s, sec.URI+"/"+slug, art)
-			}
-			slog.Info("syncing done", "section", sec.Name)
-		}
-		slog.Info("syncing done", "rkey", cfg.ATProto.PublicationRKey)
-		return
-	}
-	if publish != "" {
-		client := xrpcClient(ctx, cfg, did)
-		s, err := atp.LoadSite(ctx, client, files, did, cfg.ATProto.PublicationRKey)
-		if err != nil {
-			panic(err)
-		}
-		info, err := backend.Publish(publish)
-		if err != nil {
-			panic(err)
-		}
-		publishDoc(ctx, client, db, docs, cfg, did, s, publish, info)
-		slog.Info("publishing done", "path", publish)
-		return
+		syncDocuments(ctx, db, cfg, did)
 	}
 
 	assetsFS := handlers.UsableEmbedFS("dist", embeds)
@@ -199,10 +125,7 @@ func main() {
 		SetName("atproto-verification"))
 
 	r.Handle(ljus.NewRoute("GET /{$}", handlers.Home()).SetName("root"))
-	r.Handle(ljus.NewRouteFunc(
-		"GET /rss",
-		backend.GenericRSSHandler,
-	).SetName("rss"))
+	r.Handle(ljus.NewRoute("GET /rss", handlers.RSS()).SetName("rss"))
 	r.Handle(ljus.NewRouteFunc("GET /{any}", func(w http.ResponseWriter, req *http.Request) {
 		v := req.PathValue("any")
 		if strings.HasSuffix(v, ".txt") {
@@ -217,8 +140,7 @@ func main() {
 		g := ljus.NewGroup("GET /" + sec.Name + "/")
 		g.Add(ljus.NewRoute("GET /{$}", handlers.SectionHome(sec)).SetName("root"))
 		g.Add(ljus.NewRoute("/{slug}", handlers.SectionArticle(sec)).SetName("article"))
-		g.Add(ljus.NewRouteFunc("GET /rss", sec.RSSHandler).SetName("rss"))
-		g.Add(ljus.NewRouteFunc("GET /rss/", sec.RSSHandler).SetName("rss"))
+		g.Add(ljus.NewRoute("GET /rss", handlers.SectionRSS(sec)).SetName("rss"))
 		r.Handle(g.SetName("section " + sec.Name))
 	}
 
@@ -335,4 +257,66 @@ func xrpcClient(ctx context.Context, cfg *backend.Config, did *atproto.DID) xrpc
 		panic(err)
 	}
 	return client
+}
+
+func syncDocuments(ctx context.Context, db *sql.DB, cfg *backend.Config, did *atproto.DID) {
+	docs, err := storage.PublishedDocuments(ctx, db)
+	if err != nil {
+		panic(err)
+	}
+
+	files := os.DirFS(cfg.PublicFolder)
+
+	client := xrpcClient(ctx, cfg, did)
+	var logo []byte
+	var name string
+	if strings.HasPrefix(cfg.Logo.Favicon, "https://") {
+		raw := strings.Split(cfg.Logo.Favicon, "/")
+		name = raw[len(raw)-1]
+		resp, err := http.Get(cfg.Logo.Favicon)
+		if err != nil {
+			panic(err)
+		}
+		logo, err = io.ReadAll(resp.Body)
+	} else {
+		f, err := files.Open(cfg.Logo.Favicon)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		logo, err = io.ReadAll(f)
+		if err != nil {
+			panic(err)
+		}
+		name = cfg.Logo.Favicon
+	}
+	blob, err := xrpc.UploadBlob(
+		ctx, client, mime.TypeByExtension("."+strings.Split(name, ".")[1]), logo)
+	if err != nil {
+		panic(err)
+	}
+	u, _ := url.Parse("https://" + cfg.Domain)
+	s, err := atp.CreateSite(ctx,
+		client,
+		files,
+		did,
+		cfg.ATProto.PublicationRKey,
+		&site.Publication{
+			URL:         u,
+			Name:        cfg.Name,
+			Icon:        blob,
+			Description: &cfg.Description,
+			Preferences: &site.Preferences{ShowInDiscover: true},
+		})
+	if err != nil {
+		panic(err)
+	}
+	for _, sec := range cfg.Sections {
+		for slug, art := range sec.Articles {
+			publishDoc(ctx, client, db, docs, cfg, did, s, sec.URI+"/"+slug, art)
+		}
+		slog.Info("syncing done", "section", sec.Name)
+	}
+	slog.Info("syncing done", "rkey", cfg.ATProto.PublicationRKey)
+	return
 }

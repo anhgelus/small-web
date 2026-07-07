@@ -43,3 +43,17 @@ func Root() http.Handler {
 		}
 	})
 }
+
+func RSS() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cfg := backend.ContextConfig(r.Context())
+		err := renderRSS(r.Context(), w, RSSData{
+			Title:       cfg.Name,
+			Description: cfg.Description,
+			Items:       nil,
+		})
+		if err != nil {
+			panic(err)
+		}
+	})
+}

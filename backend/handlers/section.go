@@ -89,3 +89,17 @@ func SectionArticle(sec *backend.Section) http.Handler {
 		}
 	})
 }
+
+func SectionRSS(sec *backend.Section) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := renderRSS(r.Context(), w, RSSData{
+			Title:       sec.Name,
+			Description: sec.Description,
+			URI:         sec.URI,
+			Items:       nil,
+		})
+		if err != nil {
+			panic(err)
+		}
+	})
+}

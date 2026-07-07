@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"anhgelus.world/small-web/markdown"
 	"github.com/pelletier/go-toml/v2"
@@ -17,6 +18,33 @@ type Section struct {
 	Description string `toml:"description"`
 	URI         string `toml:"uri"`
 	Articles    map[string]*Article
+}
+
+func (s *Section) Init(basePath string) error {
+	entries, err := os.ReadDir(basePath)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), ".bk") {
+			continue
+		}
+		p := path.Join(basePath, entry.Name())
+		if entry.IsDir() {
+			err = s.Init(p)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+		art, err := Parse(p)
+		if err != nil {
+			return err
+		}
+		slug := strings.TrimSuffix(entry.Name(), ".md")
+		s.Articles[slug] = art
+	}
+	return nil
 }
 
 type ImageHeader struct {
@@ -54,29 +82,13 @@ func (a *Article) Content() template.HTML {
 	return res
 }
 
-func (s *Section) Init(basePath string) error {
-	entries, err := os.ReadDir(basePath)
-	if err != nil {
-		return err
+var now = time.Now()
+
+func (a *Article) PubDateRSS() string {
+	t := a.PubLocalDate.AsTime(time.Local)
+	// if same day, assume that it's published now
+	if t.Year() == now.Year() && t.Month() == now.Month() && t.Day() == now.Day() {
+		t = now
 	}
-	for _, entry := range entries {
-		if strings.HasSuffix(entry.Name(), ".bk") {
-			continue
-		}
-		p := path.Join(basePath, entry.Name())
-		if entry.IsDir() {
-			err = s.Init(p)
-			if err != nil {
-				return err
-			}
-			continue
-		}
-		art, err := Parse(p)
-		if err != nil {
-			return err
-		}
-		slug := strings.TrimSuffix(entry.Name(), ".md")
-		s.Articles[slug] = art
-	}
-	return nil
+	return t.Format(time.RFC1123Z) // because RFC822 in go isn't RFC822???
 }

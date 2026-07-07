@@ -48,27 +48,9 @@ func (d *Data) Quote() string {
 	return d.quotes[rand.IntN(len(d.quotes))]
 }
 
-func render(ctx context.Context, w http.ResponseWriter, file string, data Data) error {
-	t, err := template.ParseFS(
-		templates,
-		"templates/base.html",
-		"templates/components.html",
-		"templates/"+file+".html",
-	)
-	if err != nil {
-		panic(err)
-	}
+func funcMap(ctx context.Context) template.FuncMap {
 	cfg := backend.ContextConfig(ctx)
-	data.quotes = cfg.Quotes
-	data.Language = cfg.Language
-	data.Logo = cfg.Logo
-	data.Links = cfg.Links
-	data.SiteName = cfg.Name
-	data.Domain = cfg.Domain
-	if len(data.PageDescription) == 0 {
-		data.PageDescription = cfg.Description
-	}
-	t = t.Funcs(template.FuncMap{
+	return template.FuncMap{
 		"static": getStatic,
 		"fullStatic": func(path string) string {
 			s := getStatic(path)
@@ -92,8 +74,56 @@ func render(ctx context.Context, w http.ResponseWriter, file string, data Data) 
 		},
 		"next":   func(i int) int { return i + 1 },
 		"before": func(i int) int { return i - 1 },
-	})
-	return t.Execute(w, data)
+		"uri": func(p string) string {
+			if len(p) == 0 {
+				return ""
+			}
+			return p + "/"
+		},
+	}
+}
+
+func render(ctx context.Context, w http.ResponseWriter, file string, data Data) error {
+	t, err := template.New("").ParseFS(
+		templates,
+		"templates/base.html",
+		"templates/components.html",
+		"templates/"+file+".html",
+	)
+	if err != nil {
+		panic(err)
+	}
+	cfg := backend.ContextConfig(ctx)
+	data.quotes = cfg.Quotes
+	data.Language = cfg.Language
+	data.Logo = cfg.Logo
+	data.Links = cfg.Links
+	data.SiteName = cfg.Name
+	data.Domain = cfg.Domain
+	if len(data.PageDescription) == 0 {
+		data.PageDescription = cfg.Description
+	}
+	return t.Funcs(funcMap(ctx)).Execute(w, data)
+}
+
+type RSSData struct {
+	Domain      string
+	Language    string
+	Title       string
+	Description string
+	URI         string
+	Items       []ArticleData
+}
+
+func renderRSS(ctx context.Context, w http.ResponseWriter, data RSSData) error {
+	cfg := backend.ContextConfig(ctx)
+	data.Domain = cfg.Domain
+	data.Language = cfg.Language
+	t, err := template.New("").ParseFS(templates, "templates/rss.xml")
+	if err != nil {
+		panic(err)
+	}
+	return t.Funcs(funcMap(ctx)).Execute(w, data)
 }
 
 func getStatic(path string) string {
