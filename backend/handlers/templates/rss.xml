@@ -10,8 +10,8 @@
 		{{ range .Items }}
 		<item>
 			<title>{{ .Title }}</title>
-			<link>https://{{ $domain }}/{{ .URI }}/{{ .Slug }}</link>
-			<guid>https://{{ $domain }}/{{ .URI }}/{{ .Slug }}</guid>
+			<link>https://{{ $domain }}{{ .URI }}</link>
+			<guid>https://{{ $domain }}{{ .URI }}</guid>
 			<description>{{ .Description }}</description>
 			<pubDate>{{ .PubDateRSS }}</pubDate>
 		</item>

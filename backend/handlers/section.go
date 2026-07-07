@@ -7,15 +7,9 @@ import (
 	"anhgelus.world/small-web/backend"
 )
 
-type ArticleData struct {
-	*backend.Article
-	URI  string
-	Slug string
-}
-
 type SectionData struct {
 	*backend.Section
-	Articles []ArticleData
+	Articles []*backend.Article
 	// Pagination
 	Paginate    bool
 	LenMax      int
@@ -23,7 +17,7 @@ type SectionData struct {
 	PagesNumber int
 }
 
-func paginate(articles []ArticleData, maxLogs int, r *http.Request) (page int, arts []ArticleData) {
+func paginate(articles []*backend.Article, maxLogs int, r *http.Request) (page int, arts []*backend.Article) {
 	rawPage := r.URL.Query().Get("page")
 	if rawPage == "" {
 		page = 1
@@ -43,10 +37,7 @@ func paginate(articles []ArticleData, maxLogs int, r *http.Request) (page int, a
 }
 
 func SectionHome(sec *backend.Section) http.Handler {
-	arts := make([]ArticleData, 0, len(sec.Articles))
-	for s, a := range sec.Articles {
-		arts = append(arts, ArticleData{Article: a, URI: sec.URI, Slug: s})
-	}
+	arts := sec.Articles()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		page, arts := paginate(arts, 7, r)
 		if page < 1 {
@@ -74,8 +65,8 @@ func SectionHome(sec *backend.Section) http.Handler {
 func SectionArticle(sec *backend.Section) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		slug := r.PathValue("slug")
-		art, ok := sec.Articles[slug]
-		if !ok {
+		art := sec.Get(slug)
+		if art == nil {
 			NotFound().ServeHTTP(w, r)
 			return
 		}
@@ -91,12 +82,13 @@ func SectionArticle(sec *backend.Section) http.Handler {
 }
 
 func SectionRSS(sec *backend.Section) http.Handler {
+	items := sec.FirstN(7)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		err := renderRSS(r.Context(), w, RSSData{
 			Title:       sec.Name,
 			Description: sec.Description,
 			URI:         sec.URI,
-			Items:       nil,
+			Items:       items,
 		})
 		if err != nil {
 			panic(err)

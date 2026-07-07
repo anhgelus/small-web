@@ -112,7 +112,7 @@ type RSSData struct {
 	Title       string
 	Description string
 	URI         string
-	Items       []ArticleData
+	Items       []*backend.Article
 }
 
 func renderRSS(ctx context.Context, w http.ResponseWriter, data RSSData) error {

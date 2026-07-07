@@ -16,11 +16,11 @@
 {{ define "article_card" }}
 <article class="large">
 	<figure>
-		<a href="/{{ .URI }}/{{ .Slug }}"><img src="{{ static .Image.Src }}" alt="{{ .Image.Alt }}" /></a>
+		<a href="/{{ .URI }}"><img src="{{ static .Image.Src }}" alt="{{ .Image.Alt }}" /></a>
 		<figcaption>{{ .Image.Legend }}</figcaption>
 	</figure>
 	<div>
-		<h3><a href="/{{ .URI }}/{{ .Slug }}">{{ .Title }}</a></h3>
+		<h3><a href="/{{ .URI }}">{{ .Title }}</a></h3>
 		<p>{{ .Description }}</p>
 	</div>
 </article>
@@ -46,9 +46,9 @@
 <article class="article__list">
 	{{ $first := first .Articles }}
 	<article>
-		<h3><a href="/{{ .URI }}/{{ $first.Slug }}">{{ $first.DataTitle }}</a></h3>
+		<h3><a href="{{ $first.URI }}">{{ $first.DataTitle }}</a></h3>
 		<figure>
-			<a href="/{{ .URI }}/{{ $first.Slug }}"><img src="{{ static $first.Img.Src }}" alt="{{ $first.Img.Alt }}" /></a>
+			<a href="{{ $first.URI }}"><img src="{{ static $first.Img.Src }}" alt="{{ $first.Img.Alt }}" /></a>
 			<figcaption>{{ $first.Img.Legend }}</figcaption>
 		</figure>
 		<p>{{ $first.Description }}</p>

@@ -185,7 +185,6 @@ func publishDoc(
 	cfg *backend.Config,
 	did *atproto.DID,
 	s *atp.Site,
-	path string,
 	art *backend.Article,
 ) {
 	contribs := make([]*site.Contributor, 1, len(art.Contributors)+1)
@@ -206,14 +205,14 @@ func publishDoc(
 		})
 	}
 	imgPath := &art.Image.Src
-	if v, ok := docs[path]; ok && v.ImageUploaded {
+	if v, ok := docs[art.URI]; ok && v.ImageUploaded {
 		imgPath = nil
 	}
 	res, rkey, err := s.PublishDoc(
 		ctx,
 		client,
 		art.Title,
-		path,
+		art.URI,
 		art.PubLocalDate.AsTime(time.Local),
 		art.Description,
 		imgPath,
@@ -223,7 +222,7 @@ func publishDoc(
 		panic(err)
 	}
 	err = storage.SetPublishedDocument(ctx, db, storage.PublishedDocument{
-		Path:          path,
+		Path:          art.URI,
 		RecordKey:     rkey,
 		CID:           res.CID,
 		ImageUploaded: imgPath != nil,
@@ -312,8 +311,8 @@ func syncDocuments(ctx context.Context, db *sql.DB, cfg *backend.Config, did *at
 		panic(err)
 	}
 	for _, sec := range cfg.Sections {
-		for slug, art := range sec.Articles {
-			publishDoc(ctx, client, db, docs, cfg, did, s, sec.URI+"/"+slug, art)
+		for _, art := range sec.Articles() {
+			publishDoc(ctx, client, db, docs, cfg, did, s, art)
 		}
 		slog.Info("syncing done", "section", sec.Name)
 	}

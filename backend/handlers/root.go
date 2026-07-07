@@ -47,10 +47,14 @@ func Root() http.Handler {
 func RSS() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cfg := backend.ContextConfig(r.Context())
+		items := make([]*backend.Article, 0, len(cfg.Sections)*7)
+		for _, sec := range cfg.Sections {
+			items = append(items, sec.FirstN(5)...)
+		}
 		err := renderRSS(r.Context(), w, RSSData{
 			Title:       cfg.Name,
 			Description: cfg.Description,
-			Items:       nil,
+			Items:       items,
 		})
 		if err != nil {
 			panic(err)

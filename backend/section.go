@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"anhgelus.world/small-web/markdown"
+	"github.com/nyttikord/avl"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -17,10 +18,42 @@ type Section struct {
 	Folder      string `toml:"folder"`
 	Description string `toml:"description"`
 	URI         string `toml:"uri"`
-	Articles    map[string]*Article
+	articles    *avl.KeyAVL[toml.LocalDate, *Article]
+	slugToDate  map[string]toml.LocalDate
+}
+
+func (s *Section) Get(slug string) *Article {
+	k, ok := s.slugToDate[slug]
+	if !ok {
+		return nil
+	}
+	v := s.articles.Get(k)
+	if v == nil {
+		return nil
+	}
+	return *v
+}
+
+func (s *Section) Add(slug string, art *Article) {
+	s.articles.Insert(art.PubLocalDate, art)
+	s.slugToDate[slug] = art.PubLocalDate
+}
+
+func (s *Section) FirstN(n int) []*Article {
+	arts := s.Articles()
+	return arts[:min(n, len(arts))]
+}
+
+func (s *Section) Articles() []*Article {
+	return s.articles.Sort()
 }
 
 func (s *Section) Init(basePath string) error {
+	if s.articles == nil {
+		s.articles = avl.NewKey[toml.LocalDate, *Article](func(a, b toml.LocalDate) int {
+			return -a.AsTime(time.Local).Compare(b.AsTime(time.Local))
+		})
+	}
 	entries, err := os.ReadDir(basePath)
 	if err != nil {
 		return err
@@ -42,7 +75,8 @@ func (s *Section) Init(basePath string) error {
 			return err
 		}
 		slug := strings.TrimSuffix(entry.Name(), ".md")
-		s.Articles[slug] = art
+		art.URI = "/" + s.URI + "/" + slug
+		s.Add(slug, art)
 	}
 	return nil
 }
@@ -67,6 +101,7 @@ type Article struct {
 	Poem         bool                          `toml:"poem"`
 	Contributors map[string]ArticleContributor `toml:"contributors"`
 	filePath     string
+	URI          string `toml:"-"`
 }
 
 func (a *Article) Content() template.HTML {
