@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"log/slog"
 	"os"
-	"path"
 	"strings"
 
 	"anhgelus.world/small-web/dom"
@@ -158,7 +157,7 @@ func LoadConfig(p string) *Config {
 		defaultMarkdownOption.Replaces[[]rune(r.Symbol)[0]] = r.Replace
 	}
 	for _, sec := range cfg.Sections {
-		err = sec.Init(path.Join(cfg.DataFolder, sec.Folder))
+		err = sec.Init(sec.Folder)
 		if err != nil {
 			slog.Error("cannot load section", "error", err, "name", sec.Name)
 			return nil

@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"bytes"
 	"html/template"
 	"os"
 	"path"
@@ -36,6 +37,9 @@ func (s *Section) Get(slug string) *Article {
 
 func (s *Section) Add(slug string, art *Article) {
 	s.articles.Insert(art.PubLocalDate, art)
+	if s.slugToDate == nil {
+		s.slugToDate = make(map[string]toml.LocalDate)
+	}
 	s.slugToDate[slug] = art.PubLocalDate
 }
 
@@ -108,6 +112,10 @@ func (a *Article) Content() template.HTML {
 	b, err := os.ReadFile(a.filePath)
 	if err != nil {
 		panic(err)
+	}
+	_, n, ok := bytes.Cut(b, []byte("---"))
+	if ok {
+		b = n
 	}
 	res, mdErr := markdown.ParseBytes(b, &markdown.Option{Poem: a.Poem})
 	if mdErr != nil {

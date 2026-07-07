@@ -32,16 +32,9 @@ type Data struct {
 	URL             string
 	Image           string
 	PubDate         string
-	PageTitle       string
+	Title           string
 	quotes          []string
 	Custom          any
-}
-
-func (d *Data) Title() string {
-	if len(d.PageTitle) == 0 {
-		return d.SiteName
-	}
-	return d.PageTitle + " - " + d.SiteName
 }
 
 func (d *Data) Quote() string {
@@ -60,13 +53,13 @@ func funcMap(ctx context.Context) template.FuncMap {
 			return "https://" + cfg.Domain + s
 		},
 		"asset": func(path string) backend.AssetData { return getAsset(ctx, path) },
-		"first": func(sl []any) any {
+		"first": func(sl []*backend.Article) *backend.Article {
 			if len(sl) == 0 {
 				return nil
 			}
 			return sl[0]
 		},
-		"queue": func(sl []any) any {
+		"queue": func(sl []*backend.Article) []*backend.Article {
 			if len(sl) < 2 {
 				return nil
 			}
@@ -84,7 +77,7 @@ func funcMap(ctx context.Context) template.FuncMap {
 }
 
 func render(ctx context.Context, w http.ResponseWriter, file string, data Data) error {
-	t, err := template.New("").ParseFS(
+	t, err := template.New("base.html").Funcs(funcMap(ctx)).ParseFS(
 		templates,
 		"templates/base.html",
 		"templates/components.html",
@@ -100,10 +93,15 @@ func render(ctx context.Context, w http.ResponseWriter, file string, data Data) 
 	data.Links = cfg.Links
 	data.SiteName = cfg.Name
 	data.Domain = cfg.Domain
+	if len(data.Title) != 0 {
+		data.Title += " - " + data.SiteName
+	} else {
+		data.Title = data.SiteName
+	}
 	if len(data.PageDescription) == 0 {
 		data.PageDescription = cfg.Description
 	}
-	return t.Funcs(funcMap(ctx)).Execute(w, data)
+	return t.Execute(w, &data)
 }
 
 type RSSData struct {
@@ -119,11 +117,13 @@ func renderRSS(ctx context.Context, w http.ResponseWriter, data RSSData) error {
 	cfg := backend.ContextConfig(ctx)
 	data.Domain = cfg.Domain
 	data.Language = cfg.Language
-	t, err := template.New("").ParseFS(templates, "templates/rss.xml")
+	t, err := template.New("rss.xml").
+		Funcs(funcMap(ctx)).
+		ParseFS(templates, "templates/rss.xml")
 	if err != nil {
 		panic(err)
 	}
-	return t.Funcs(funcMap(ctx)).Execute(w, data)
+	return t.Execute(w, data)
 }
 
 func getStatic(path string) string {

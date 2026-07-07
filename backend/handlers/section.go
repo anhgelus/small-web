@@ -55,7 +55,7 @@ func SectionHome(sec *backend.Section) http.Handler {
 			LenMax:      7,
 			CurrentPage: page,
 		}
-		err := render(r.Context(), w, "home_section", Data{PageTitle: sec.TitleName, Custom: v})
+		err := render(r.Context(), w, "home_section", Data{Title: sec.TitleName, Custom: v})
 		if err != nil {
 			panic(err)
 		}
@@ -71,9 +71,9 @@ func SectionArticle(sec *backend.Section) http.Handler {
 			return
 		}
 		err := render(r.Context(), w, "data", Data{
-			PageTitle: art.Title + " - " + sec.TitleName + " entry",
-			Custom:    art,
-			PubDate:   art.PubLocalDate.String(),
+			Title:   art.Title + " - " + sec.TitleName + " entry",
+			Custom:  art,
+			PubDate: art.PubLocalDate.String(),
 		})
 		if err != nil {
 			panic(err)

@@ -11,8 +11,17 @@ import (
 func Home() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cfg := backend.ContextConfig(r.Context())
+		sec := make([]SectionData, 0, len(cfg.Sections))
+		for _, s := range cfg.Sections {
+			sec = append(sec, SectionData{
+				Section:  s,
+				Articles: s.FirstN(4),
+				Paginate: false,
+				LenMax:   4,
+			})
+		}
 		err := render(r.Context(), w, "home", Data{
-			Custom:          cfg.Sections,
+			Custom:          sec,
 			PageDescription: cfg.Description,
 		})
 		if err != nil {
@@ -35,8 +44,8 @@ func Root() http.Handler {
 			panic(err)
 		}
 		err = render(r.Context(), w, "simple", Data{
-			Custom:    art.Content(),
-			PageTitle: art.Title,
+			Custom: art.Content(),
+			Title:  art.Title,
 		})
 		if err != nil {
 			panic(err)
