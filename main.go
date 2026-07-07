@@ -53,8 +53,8 @@ func init() {
 func main() {
 	flag.Parse()
 
-	cfg, ok := backend.LoadConfig(configFile)
-	if !ok {
+	cfg := backend.LoadConfig(configFile)
+	if cfg == nil {
 		slog.Info("exiting")
 		os.Exit(1)
 	}
@@ -78,13 +78,6 @@ func main() {
 	did, err := atproto.ParseDID(cfg.ATProto.DID)
 	if err != nil {
 		panic(err)
-	}
-
-	for _, sec := range cfg.Sections {
-		if ok = sec.Load(did, docs); !ok {
-			slog.Info("exiting")
-			os.Exit(2)
-		}
 	}
 
 	ctx, cancelNext := signal.NotifyContext(
@@ -140,8 +133,8 @@ func main() {
 			panic(err)
 		}
 		for _, sec := range cfg.Sections {
-			for _, data := range sec.Data {
-				publishDoc(ctx, client, db, docs, cfg, did, s, data.URL, &data.EntryInfo)
+			for slug, art := range sec.Articles {
+				publishDoc(ctx, client, db, docs, cfg, did, s, sec.URI+"/"+slug, art)
 			}
 			slog.Info("syncing done", "section", sec.Name)
 		}
@@ -194,7 +187,7 @@ func main() {
 	if !dev {
 		r.Use(middleware.SecurityHeaders(cfg.Domain, 24*time.Hour))
 	}
-	r.Use(backend.ContextMiddleware(cfg, dev, db),
+	r.Use(backend.ContextMiddleware(handlers.Assets, cfg, dev, db),
 		backend.RateLimitMiddleware(),
 		storage.StatsMiddleware())
 

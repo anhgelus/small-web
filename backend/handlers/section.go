@@ -43,8 +43,12 @@ func paginate(articles []ArticleData, maxLogs int, r *http.Request) (page int, a
 }
 
 func SectionHome(sec *backend.Section) http.Handler {
+	arts := make([]ArticleData, 0, len(sec.Articles))
+	for s, a := range sec.Articles {
+		arts = append(arts, ArticleData{Article: a, URI: sec.URI, Slug: s})
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		page, arts := paginate(nil, 7, r)
+		page, arts := paginate(arts, 7, r)
 		if page < 1 {
 			http.Error(w, "Bad request: invalid page number", http.StatusBadRequest)
 			return

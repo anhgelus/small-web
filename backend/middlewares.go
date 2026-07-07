@@ -9,7 +9,7 @@ import (
 	"anhgelus.world/ljus"
 )
 
-func ContextMiddleware(cfg *Config, debug bool, db *sql.DB) ljus.Middleware {
+func ContextMiddleware(assets map[string]AssetData, cfg *Config, debug bool, db *sql.DB) ljus.Middleware {
 	return func(next ljus.Handler, w *ljus.StatusWriter, r *http.Request) {
 		ctx := SetContext(
 			r.Context(),

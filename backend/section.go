@@ -1,8 +1,13 @@
 package backend
 
 import (
+	"bytes"
 	"html/template"
+	"os"
+	"path"
+	"strings"
 
+	"anhgelus.world/small-web/markdown"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -38,5 +43,54 @@ type Article struct {
 }
 
 func (a *Article) Content() template.HTML {
-	return ""
+	b, err := os.ReadFile(a.filePath)
+	if err != nil {
+		panic(err)
+	}
+	splits := strings.SplitN(string(b), "---", 2)
+	if len(splits) == 2 {
+		b = []byte(splits[1])
+	}
+	res, mdErr := markdown.ParseBytes(b, &markdown.Option{Poem: a.Poem})
+	if mdErr != nil {
+		println(mdErr.Pretty())
+		panic("cannot parse markdown (see logs)")
+	}
+	return res
+}
+
+func (s *Section) Init(basePath string) error {
+	entries, err := os.ReadDir(basePath)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if strings.HasSuffix(entry.Name(), ".bk") {
+			continue
+		}
+		p := path.Join(basePath, entry.Name())
+		if entry.IsDir() {
+			err = s.Init(p)
+			if err != nil {
+				return err
+			}
+			continue
+		}
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		var art Article
+		art.filePath = p
+		data, _, ok := bytes.Cut(b, []byte("---"))
+		if ok {
+			err = toml.Unmarshal(data, &art)
+			if err != nil {
+				return err
+			}
+		}
+		slug := strings.TrimSuffix(entry.Name(), ".md")
+		s.Articles[slug] = &art
+	}
+	return nil
 }

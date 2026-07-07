@@ -38,11 +38,10 @@ type Data struct {
 }
 
 func (d *Data) Title() string {
-	title := d.SiteName
-	if len(d.PageTitle) != 0 {
-		title = d.PageTitle + " - " + title
+	if len(d.PageTitle) == 0 {
+		return d.SiteName
 	}
-	return title
+	return d.PageTitle + " - " + d.SiteName
 }
 
 func (d *Data) Quote() string {
@@ -104,10 +103,10 @@ func getStatic(path string) string {
 	return "/static/" + strings.TrimPrefix(path, "/")
 }
 
-var assets = map[string]backend.AssetData{}
+var Assets = map[string]backend.AssetData{}
 
 func getAsset(ctx context.Context, path string) backend.AssetData {
-	asset, ok := assets[path]
+	asset, ok := Assets[path]
 	if ok && !backend.ContextDebug(ctx) {
 		return asset
 	}
@@ -140,6 +139,6 @@ func getAsset(ctx context.Context, path string) backend.AssetData {
 	sum := sha256.Sum256(b)
 	checksum := base64.StdEncoding.EncodeToString(sum[:])
 	asset.Checksum = fmt.Sprintf("sha256-%s", checksum)
-	assets[path] = asset
+	Assets[path] = asset
 	return asset
 }

@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log/slog"
 	"os"
+	"path"
 	"strings"
 
 	"anhgelus.world/small-web/dom"
@@ -57,7 +58,7 @@ type Config struct {
 	Database      string   `toml:"database"`
 	AdminPassword string   `toml:"admin_password"`
 
-	RootFolder   string `toml:"root_folder"`
+	DataFolder   string `toml:"data_folder"`
 	PublicFolder string `toml:"public_folder"`
 
 	Logo Logo `toml:"logo"`
@@ -96,7 +97,7 @@ func (c *Config) DefaultValues() {
 		Folder:      "data/logs",
 		URI:         "logs",
 	}}
-	c.RootFolder = "data"
+	c.DataFolder = "data"
 	c.PublicFolder = "public"
 	c.Database = "database.sqlite"
 	c.AdminPassword = "Ch@ngeM€Please!"
@@ -110,34 +111,34 @@ func (c *Config) DefaultValues() {
 
 var defaultMarkdownOption markdown.Option
 
-func LoadConfig(path string) (*Config, bool) {
-	b, err := os.ReadFile(path)
+func LoadConfig(p string) *Config {
+	b, err := os.ReadFile(p)
 	var config Config
 	if err != nil {
 		if !os.IsNotExist(err) {
 			slog.Error("reading config file", "error", err)
-			return nil, false
+			return nil
 		}
-		slog.Warn("config file not found", "path", path)
-		slog.Info("creating a new config file", "path", path)
+		slog.Warn("config file not found", "path", p)
+		slog.Info("creating a new config file", "path", p)
 		config.DefaultValues()
 		b, err = toml.Marshal(&config)
 		if err != nil {
 			slog.Error("marshalling config file", "error", err)
-			return nil, false
+			return nil
 		}
-		err = os.WriteFile(path, b, 0660)
+		err = os.WriteFile(p, b, 0660)
 		if err != nil {
-			slog.Error("writing config file", "error", err, "path", path)
+			slog.Error("writing config file", "error", err, "path", p)
 		} else {
-			slog.Info("config file created", "path", path)
+			slog.Info("config file created", "path", p)
 		}
-		return nil, false
+		return nil
 	}
 	err = toml.Unmarshal(b, &config)
 	if err != nil {
 		slog.Error("unmarshalling config file", "error", err)
-		return nil, false
+		return nil
 	}
 	if len(config.AdminPassword) == 0 {
 		config.AdminPassword = os.Getenv("SW_ADMIN_PASSWORD")
@@ -152,9 +153,16 @@ func LoadConfig(path string) (*Config, bool) {
 	for _, r := range config.Replacers {
 		if len(r.Symbol) != 1 {
 			slog.Error("invalid symbol in config", "symbol", r.Symbol)
-			return nil, false
+			return nil
 		}
 		defaultMarkdownOption.Replaces[[]rune(r.Symbol)[0]] = r.Replace
 	}
-	return &config, true
+	for _, sec := range config.Sections {
+		err = sec.Init(path.Join(config.DataFolder, sec.Folder))
+		if err != nil {
+			slog.Error("cannot load section", "error", err, "name", sec.Name)
+			return nil
+		}
+	}
+	return &config
 }
