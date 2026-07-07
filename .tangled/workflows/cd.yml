@@ -6,13 +6,13 @@ engine: microvm
 image: alpine
 
 steps:
-  - name: "Install deps"
-    command: apk add go git deno curl just openssh rsync
+  - name: "Installing deps"
+    command: apk add go git deno just openssh-client-default rsync
   - name: "Building"
     command: |
       deno i
       just build
-  - name: "Install secrets"
+  - name: "Installing secrets"
     command: |
       mkdir ~/.ssh/
       echo "$DEPLOY_PRIVATE_KEY" > ~/.ssh/key
@@ -25,7 +25,7 @@ steps:
         PreferredAuthentications publickey
       EOF
       ssh-keyscan "$DEPLOY_SERVER" > ~/.ssh/known_hosts
-  - name: "Deploy"
+  - name: "Deploying"
     command: |
       rsync -riz ./small-web server:small-web
       ssh server \
