@@ -113,7 +113,7 @@ var defaultMarkdownOption markdown.Option
 
 func LoadConfig(p string) *Config {
 	b, err := os.ReadFile(p)
-	var config Config
+	var cfg Config
 	if err != nil {
 		if !os.IsNotExist(err) {
 			slog.Error("reading config file", "error", err)
@@ -121,8 +121,8 @@ func LoadConfig(p string) *Config {
 		}
 		slog.Warn("config file not found", "path", p)
 		slog.Info("creating a new config file", "path", p)
-		config.DefaultValues()
-		b, err = toml.Marshal(&config)
+		cfg.DefaultValues()
+		b, err = toml.Marshal(&cfg)
 		if err != nil {
 			slog.Error("marshalling config file", "error", err)
 			return nil
@@ -135,13 +135,13 @@ func LoadConfig(p string) *Config {
 		}
 		return nil
 	}
-	err = toml.Unmarshal(b, &config)
+	err = toml.Unmarshal(b, &cfg)
 	if err != nil {
 		slog.Error("unmarshalling config file", "error", err)
 		return nil
 	}
-	if len(config.AdminPassword) == 0 {
-		config.AdminPassword = os.Getenv("SW_ADMIN_PASSWORD")
+	if len(cfg.AdminPassword) == 0 {
+		cfg.AdminPassword = os.Getenv("SW_ADMIN_PASSWORD")
 	}
 	defaultMarkdownOption.ImageSource = func(path string) string {
 		if strings.HasPrefix(path, "https://") {
@@ -149,20 +149,20 @@ func LoadConfig(p string) *Config {
 		}
 		return "/static/" + strings.TrimPrefix(path, "/")
 	}
-	defaultMarkdownOption.Replaces = make(map[rune]string, len(config.Replacers))
-	for _, r := range config.Replacers {
+	defaultMarkdownOption.Replaces = make(map[rune]string, len(cfg.Replacers))
+	for _, r := range cfg.Replacers {
 		if len(r.Symbol) != 1 {
 			slog.Error("invalid symbol in config", "symbol", r.Symbol)
 			return nil
 		}
 		defaultMarkdownOption.Replaces[[]rune(r.Symbol)[0]] = r.Replace
 	}
-	for _, sec := range config.Sections {
-		err = sec.Init(path.Join(config.DataFolder, sec.Folder))
+	for _, sec := range cfg.Sections {
+		err = sec.Init(path.Join(cfg.DataFolder, sec.Folder))
 		if err != nil {
 			slog.Error("cannot load section", "error", err, "name", sec.Name)
 			return nil
 		}
 	}
-	return &config
+	return &cfg
 }

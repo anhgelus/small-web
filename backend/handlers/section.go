@@ -54,7 +54,7 @@ func SectionHome(sec *backend.Section) http.Handler {
 			return
 		}
 		if arts == nil {
-			NotFound(w, r)
+			NotFound().ServeHTTP(w, r)
 			return
 		}
 		v := SectionData{
@@ -76,7 +76,7 @@ func SectionArticle(sec *backend.Section) http.Handler {
 		slug := r.PathValue("slug")
 		art, ok := sec.Articles[slug]
 		if !ok {
-			NotFound(w, r)
+			NotFound().ServeHTTP(w, r)
 			return
 		}
 		err := render(r.Context(), w, "data", Data{

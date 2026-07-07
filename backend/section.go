@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"bytes"
 	"html/template"
 	"os"
 	"path"
@@ -47,10 +46,6 @@ func (a *Article) Content() template.HTML {
 	if err != nil {
 		panic(err)
 	}
-	splits := strings.SplitN(string(b), "---", 2)
-	if len(splits) == 2 {
-		b = []byte(splits[1])
-	}
 	res, mdErr := markdown.ParseBytes(b, &markdown.Option{Poem: a.Poem})
 	if mdErr != nil {
 		println(mdErr.Pretty())
@@ -76,21 +71,12 @@ func (s *Section) Init(basePath string) error {
 			}
 			continue
 		}
-		b, err := os.ReadFile(p)
+		art, err := Parse(p)
 		if err != nil {
 			return err
 		}
-		var art Article
-		art.filePath = p
-		data, _, ok := bytes.Cut(b, []byte("---"))
-		if ok {
-			err = toml.Unmarshal(data, &art)
-			if err != nil {
-				return err
-			}
-		}
 		slug := strings.TrimSuffix(entry.Name(), ".md")
-		s.Articles[slug] = &art
+		s.Articles[slug] = art
 	}
 	return nil
 }

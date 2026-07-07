@@ -191,14 +191,14 @@ func main() {
 		backend.RateLimitMiddleware(),
 		storage.StatsMiddleware())
 
-	r.Handle(ljus.NewRouteFunc("/", handlers.NotFound).SetName("not-found"))
+	r.Handle(ljus.NewRoute("/", handlers.NotFound()).SetName("not-found"))
 
 	r.Handle(ljus.NewRoute(
 		"GET /.well-known/site.standard.publication",
 		site.HandlePublicationVerification(did, cfg.ATProto.PublicationRKey)).
 		SetName("atproto-verification"))
 
-	r.Handle(ljus.NewRouteFunc("GET /{$}", backend.HomeHandler).SetName("root"))
+	r.Handle(ljus.NewRoute("GET /{$}", handlers.Home()).SetName("root"))
 	r.Handle(ljus.NewRouteFunc(
 		"GET /rss",
 		backend.GenericRSSHandler,
@@ -206,10 +206,10 @@ func main() {
 	r.Handle(ljus.NewRouteFunc("GET /{any}", func(w http.ResponseWriter, req *http.Request) {
 		v := req.PathValue("any")
 		if strings.HasSuffix(v, ".txt") {
-			handlers.TxtFiles(w, req)
+			handlers.TxtFiles().ServeHTTP(w, req)
 			return
 		}
-		backend.GenericRootHandler(w, req)
+		handlers.Root().ServeHTTP(w, req)
 	}).SetName("any-catcher"))
 	r.Handle(ljus.NewRouteFunc("GET /admin", backend.AdminHandler).SetName("admin"))
 
