@@ -157,7 +157,7 @@ func LoadConfig(p string) *Config {
 		defaultMarkdownOption.Replaces[[]rune(r.Symbol)[0]] = r.Replace
 	}
 	for _, sec := range cfg.Sections {
-		err = sec.Init(&cfg, sec.Folder)
+		err = sec.Init(sec.Folder)
 		if err != nil {
 			slog.Error("cannot load section", "error", err, "name", sec.Name)
 			return nil

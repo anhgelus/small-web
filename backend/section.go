@@ -52,7 +52,7 @@ func (s *Section) Articles() []*Article {
 	return s.articles.Sort()
 }
 
-func (s *Section) Init(cfg *Config, basePath string) error {
+func (s *Section) Init(basePath string) error {
 	if s.articles == nil {
 		s.articles = avl.NewKey[toml.LocalDate, *Article](func(a, b toml.LocalDate) int {
 			return -a.AsTime(time.Local).Compare(b.AsTime(time.Local))
@@ -68,13 +68,13 @@ func (s *Section) Init(cfg *Config, basePath string) error {
 		}
 		p := path.Join(basePath, entry.Name())
 		if entry.IsDir() {
-			err = s.Init(cfg, p)
+			err = s.Init(p)
 			if err != nil {
 				return err
 			}
 			continue
 		}
-		art, err := Parse(cfg, p)
+		art, err := Parse(p)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,6 @@ type Article struct {
 	Contributors map[string]ArticleContributor `toml:"contributors"`
 	filePath     string
 	URI          string `toml:"-"`
-	Replacers map[rune]string
 }
 
 func (a *Article) Content() template.HTML {
@@ -118,10 +117,9 @@ func (a *Article) Content() template.HTML {
 	if ok {
 		b = n
 	}
-	res, mdErr := markdown.ParseBytes(b, &markdown.Option{
-		Poem: a.Poem,
-		Replaces: a.Replacers,
-	})
+	var opt = defaultMarkdownOption
+	opt.Poem = a.Poem
+	res, mdErr := markdown.ParseBytes(b, &opt)
 	if mdErr != nil {
 		println(mdErr.Pretty())
 		panic("cannot parse markdown (see logs)")

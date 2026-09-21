@@ -44,7 +44,6 @@ func Root() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cfg := backend.ContextConfig(r.Context())
 		art, err := backend.Parse(
-			backend.ContextConfig(r.Context()),
 			path.Join(cfg.DataFolder, r.PathValue("any")+".md"),
 		)
 		if err != nil {
