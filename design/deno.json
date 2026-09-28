@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "dev:scss": "deno run --allow-env=SASS_PATH --allow-read --allow-write sass -w main.scss dist/styles.css",
+    "dev:html": "python -m http.server"
+  },
+  "imports": {
+    "sass": "npm:sass@^1.105.0",
+    "scss": "npm:scss@^0.2.4"
+  }
+}
