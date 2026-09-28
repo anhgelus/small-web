@@ -1,9 +1,10 @@
 @use "reset.scss";
 
 :root {
-  --color-primary: black;
+  --color-primary: #050F1A;
   --color-primary-variant: #282168;
-  --color-primary-text: white;
+  --color-primary-text: #F0F4FD;
+  --color-primary-variant-text: white;
   --color-secondary: #DF9263;
   --color-tertiary: #5FDBE3;
   --color-accent: #FF089C;
@@ -16,6 +17,8 @@
 
 h1, h2, h3, h4, h5, h6 {
   font-family: PT Astra Serif, serif;
+  line-height: 1.2;
+  color: var(--color-primary-variant-text);
 }
 
 .titles {
@@ -50,7 +53,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--color-secondary);
 
     p:first-child {
-      color: var(--color-primary-text);
+      color: var(--color-primary-variant-text);
       background: var(--color-accent);
       display: inline-block;
       padding-top: 4rem;
@@ -81,6 +84,7 @@ header nav {
 
     a {
       padding: 2rem;
+      margin: 0;
 
       &:hover, &[enabled] {
         color: var(--color-secondary);
@@ -103,13 +107,46 @@ a {
   }
 }
 
-.presentation {
+header .presentation {
   font-family: Source Serif, serif;
   padding: 4rem;
-  font-size: 3rem;
   background: var(--color-primary-variant);
+  text-wrap: balance;
 
-  h1::before { content: "- "; }
+  & > * {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  &--home {
+    font-size: 3rem;
+    h1::before { content: "- "; }
+  }
+
+  &--article {
+    font-size: 2rem;
+    text-wrap: wrap;
+  }
+
+
+  img {
+    margin-top: 2rem;
+    width: 100%;
+  }
+
+  .meta {
+    font-size: 1rem;
+    font-style: italic;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    color: var(--color-tertiary);
+
+    list-style: none;
+    padding: 0;
+    & > *:first-child { margin-right: 2rem; }
+  }
 }
 
 h1 {
@@ -191,6 +228,20 @@ h1 {
   h3 {
     font-size: 1.25em;
   }
+}
+
+.article article {
+  max-width: 800px;
+  margin: 0 auto;
+  padding-top: 4rem;
+  text-wrap: balance;
+
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  font-size: 1.33em;
+  line-height: 1.7;
 }
 
 footer {
