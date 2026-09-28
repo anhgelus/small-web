@@ -10,6 +10,16 @@
   --color-accent: #FF089C;
   --color-5: #CFFAC6;
 
+  @media screen and (prefers-color-scheme: light) {
+    --color-primary: #F0F4FD;
+    --color-primary-variant: #A9C6F5;
+    --color-primary-text: #050F1A;
+    --color-primary-variant-text: #140621;
+    --color-secondary: #B81849;
+    --color-tertiary: #225689;
+    --color-accent: #D316A2;
+  }
+
   background: var(--color-primary);
   color: var(--color-primary-text);
   font-family: Inter, sans-serif;
