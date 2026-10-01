@@ -1,6 +1,7 @@
 {
   "tasks": {
     "dev:scss": "deno run --allow-env=SASS_PATH --allow-read --allow-write sass -w main.scss dist/styles.css",
+    "build:scss": "deno run --allow-env=SASS_PATH --allow-read --allow-write --no-source-map --style=compressed sass main.scss dist/styles.css",
     "dev:html": "python -m http.server"
   },
   "imports": {
