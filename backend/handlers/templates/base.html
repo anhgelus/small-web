@@ -1,43 +1,148 @@
 <!doctype html>
 <html lang="fr" prefix="og: https://ogp.me/ns/article#">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>{{ .Title }}</title>
-		{{ $styles := asset "styles.css" }}
-		<link rel="stylesheet" href="{{ $styles.Src }}" integrity="{{ $styles.Checksum }}" />
-		<link rel="shortcut icon" href="{{ static .Logo.Favicon }}" />
-		<link rel="alternate" href="/rss" type="application/rss+xml" title="RSS" />
-		<meta name="description" content="{{ .PageDescription }}" />
-		<!-- Open Graph -->
-		<meta name="og:title" content="{{ .Title }}" />
-		<meta name="og:type" content="website" />
-		<meta name="og:url" content="https://{{ .Domain }}{{ .URL }}" />
-		{{ if ne (len .Image) 0 }}<meta name="og:image" content="{{ fullStatic .Image }}" />{{ end }}
-		<meta name="og:description" content="{{ .PageDescription }}" />
-		<meta name="og:local" content="fr_FR" />
-		<meta name="og:site_name" content="{{ .SiteName }}" />
-		{{ if ne .PubDate "" }}<meta name="article:published_time" content="{{ .PubDate }}" />{{ end }}
-		{{ if ne .Linked "" }}{{ .Linked }}{{ end }}
-	</head>
-	<body>
-		<header>
-			<img src="{{ static .Logo.Header }}" alt="Logo" />
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<meta name="text-scale" content="scale">
+
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.anhgelus.world; object-src 'none'">
+
+	<title>{{ .Title }}</title>
+
+	<meta name="author" content="Anhgelus Morhtuuzh">
+	<meta name="color-scheme" content="light dark">
+	<meta name="theme-color" content="#282168">
+
+	{{ $styles := asset "styles.css" }}
+	<link rel="stylesheet" href="{{ $styles.Src }}" integrity="{{ $styles.Checksum }}" />
+
+	<link rel="shortcut icon" href="{{ static .Logo.Favicon }}">
+
+	<link rel="dns-prefetch" href="https://cdn.anhgelus.world">
+	<link rel="preconnect" href="https://cdn.anhgelus.world">
+
+
+	<link rel="canonical" href="https://{{.Domain}}{{.URL}}">
+	<link rel="alternate" href="/rss" type="application/rss+xml" title="RSS">
+	<meta name="description" content="{{ .PageDescription }}">
+
+	<!-- Open Graph -->
+	{{ $isArticle := (ne .PubDate "") }}
+	<meta property="og:type" content="{{if $isArticle}}article{{else}}website{{end}}">
+	<meta property="og:title" content="{{ .Title }}">
+	<meta property="og:url" content="https://{{ .Domain }}{{ .URL }}">
+	<meta property="og:site_name" content="{{ .SiteName }}">
+	{{ if ne (len .Image.Src) 0 }}
+	<meta property="og:image" content="{{ fullStatic .Image.Src }}">{{ end }}
+	<meta property="og:image:alt" content="{{.Image.Alt}}">
+	<meta property="og:description" content="{{ .PageDescription }}">
+	<meta property="og:local" content="fr_FR">
+	{{if $isArticle}}
+	<meta property="article:published_time" content="{{ .PubDate }}">{{end}}
+	{{ if ne .Linked "" }}{{ .Linked }}{{ end }}
+
+	<meta name="google" content="notranslate">
+
+	<script type="application/ld+json">
+			{
+				"@context": "http://schema.org",
+				"@type": "Person",
+				"name": "Anhgelus Morhtuuzh",
+				"image": "https://cdn.anhgelus.world/pfp.webp",
+				"alumniOf": [
+					{
+						"@context": "http://schema.org",
+						"@type": "CollegeOrUniversity",
+						"name": "Sorbonne Université",
+						"logo": "https://www.sorbonne-universite.fr/sites/default/files/media/2019-10/logo_4.svg",
+						"legalAddress": "21 rue de l'École-de-Médecine, 75006 Paris, France",
+						"sameAs": "https://www.sorbonne-universite.fr"
+					},
+					{
+						"@context": "http://schema.org",
+						"@type": "CollegeOrUniversity",
+						"name": "Université Paris Sciences & Lettres",
+						"logo": "https://psl.eu/themes/custom/oooooo/assets/images/Header-150x61.svg",
+						"legalAddress": "60 rue Mazarine, 75006 Paris, France",
+						"sameAs": "https://psl.eu"
+					},
+					{
+						"@context": "http://schema.org",
+						"@type": "EducationalOrganization",
+						"name": "Lycée Henri-IV",
+						"logo": "https://lycee-henri4.com/wp-content/themes/nq-lyceehenri4/assets/img/logo_H4c_header.png",
+						"legalAddress": "23 rue Clovis, 75005 Paris, France",
+						"sameAs": "https://lycee-henri4.fr"
+					}
+				],
+				"sameAs": [
+					"https://anhgelus.world",
+					"https://github.com/anhgelus",
+					"https://youtube.com/@anhgelus",
+					"https://bsky.app/profile/anhgelus.world"
+				]
+			}
+		</script>
+</head>
+
+<body>
+	<header>
+		<div class="titles">
+			<div class="titles__head">
+				<p>Perdu</p>
+				<p>sur</p>
+				<p>internet</p>
+			</div>
+			<div class="titles__sub">
+				<p>
+					<em>Vous</em>
+				</p>
+				<p>êtes là.</p>
+			</div>
+		</div>
+		<nav>
+			<img src="{{ static .Logo.Header }}" alt="Logo">
 			{{ $url := .URL }}
-			<nav>
-				<ul>
-					{{ range .Links }}<li>{{ .Render $url }}</li>{{ end }}
-				</ul>
-			</nav>
-		</header>
-		{{ template "body" .Custom }}
-		<footer>
-			<p>&copy; 2026 - Anhgelus Morthuuzh</p>
-			<p id="quote">«&thinsp;{{ .Quote }}&thinsp;»</p>
-			<p>
-				<a href="/legal">Mentions légales</a>,
-				<a href="https://tangled.org/anhgelus.world/small-web" target="_blank" rel="noreferrer">code source</a>.
-			</p>
-		</footer>
-	</body>
+			<ul>
+				{{ range .Links }}<li>{{ .Render $url }}</li>{{ end }}
+			</ul>
+		</nav>
+		<!-- TODO: generalize -->
+		{{ if $isArticle }}
+		<div class="presentation presentation--article">
+			<h1>{{ .Title }}</h1>
+			<ul class="meta">
+				<li>{{ .PubDate }}</li>
+				{{ range .Tags}}<li>{{ . }}</li>{{ end }}
+			</ul>
+			<p>{{ .PageDescription }}</p>
+			<figure>
+				<img src="{{ static .Image.Src }}" alt="{{ .Image.Alt }}">
+				<figcaption>{{ .Image.Legend }}</figcaption>
+			</figure>
+		</div>
+		{{ else }}
+		<div class="presentation presentation--home">
+			<p>Vous ne savez pas vraiment pourquoi,</p>
+			<p>mais cet endroit semble différent,</p>
+			<p>comme si tout ce que vous connaissiez d'avant</p>
+			<p>devenait soudainement faux.</p>
+			<h1>anhgelus.world</h1>
+		</div>
+		{{ end }}
+	</header>
+	{{ template "body" .Custom }}
+	<footer>
+		<p class="copyright">&copy; 2026 - Anhgelus Morhtuuzh</p>
+		<p class="quote">«&thinsp;{{ .Quote }}&thinsp;»</p>
+		<nav>
+			<ul>
+				<li><a href="/legal">Mentions légales</a></li>
+				<li><a href="https://github.com/anhgelus/small-web" target="_blank" rel="noreferrer">Code source</a></li>
+			</ul>
+		</nav>
+	</footer>
+</body>
+
 </html>

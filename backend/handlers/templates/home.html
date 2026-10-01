@@ -1,17 +1,13 @@
 {{ define "body" }}
-  <main id="content">
-    <div class="introduction">
-      <h1>{{ .Title }}</h1>
-      <p>{{ .Description }}</p>
-    </div>
-    <div class="sections">
-      {{ range .Sections }}
-        <section>
-          <h2>{{ .Name }}</h2>
-          <p>{{ .Description }}</p>
-          {{ template "section_display" . }}
-        </section>
-      {{ end }}
-    </div>
-  </main>
+<main class="home" id="content">
+	{{ range .Sections }}
+	<section>
+		<div class="intro">
+			<h2>{{ .Name }}</h2>
+			<p>{{ .Description }}</p>
+			{{ template "section_display" . }}
+		</div>
+	</section>
+	{{end}}
+</main>
 {{ end }}

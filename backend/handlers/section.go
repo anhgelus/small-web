@@ -76,11 +76,11 @@ func SectionArticle(sec *backend.Section) http.Handler {
 			NotFound().ServeHTTP(w, r)
 			return
 		}
-		err := render(r.Context(), w, "data", Data{
+		err := render(r.Context(), w, "simple", Data{
 			Title:           art.Title + " - " + sec.TitleName + " entry",
 			Custom:          art,
 			PubDate:         art.PubLocalDate.String(),
-			Image:           art.Image.Src,
+			Image:           art.Image,
 			URL:             "/" + path.Join(sec.URI, r.RequestURI),
 			PageDescription: art.Description,
 		})

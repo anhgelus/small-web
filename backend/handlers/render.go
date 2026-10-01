@@ -30,7 +30,8 @@ type Data struct {
 	// page
 	PageDescription string
 	URL             string
-	Image           string
+	Image           backend.ImageHeader
+	Tags            []string
 	PubDate         string
 	Title           string
 	quotes          []string
@@ -53,20 +54,6 @@ func funcMap(ctx context.Context) template.FuncMap {
 			return "https://" + cfg.Domain + s
 		},
 		"asset": func(path string) backend.AssetData { return getAsset(ctx, path) },
-		"first": func(sl []*backend.Article) *backend.Article {
-			if len(sl) == 0 {
-				return nil
-			}
-			return sl[0]
-		},
-		"queue": func(sl []*backend.Article) []*backend.Article {
-			if len(sl) < 2 {
-				return nil
-			}
-			return sl[1:]
-		},
-		"next":   func(i int) int { return i + 1 },
-		"before": func(i int) int { return i - 1 },
 		"uri": func(p string) string {
 			if len(p) == 0 {
 				return ""
