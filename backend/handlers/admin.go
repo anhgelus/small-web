@@ -47,7 +47,7 @@ func Admin() http.Handler {
 			Rows:        rows,
 			PagesNumber: page + max(len(rows)-storage.StatsPerPage+1, 0),
 			CurrentPage: page,
-		}})
+		}, First: false})
 		if err != nil {
 			panic(err)
 		}

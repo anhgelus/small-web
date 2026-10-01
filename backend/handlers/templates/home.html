@@ -1,7 +1,7 @@
 {{ define "body" }}
 <main class="home" id="content">
 	{{ range .Sections }}
-	<section>
+	<section id="{{ .Name }}">
 		<div class="intro">
 			<h2>{{ .Name }}</h2>
 			<p>{{ .Description }}</p>

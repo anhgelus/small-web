@@ -124,6 +124,7 @@ header nav {
 
 	img {
 		height: calc(1em * 1.5 + 4rem);
+		aspect-ratio: 1;
 	}
 
 	ul {
@@ -239,6 +240,18 @@ h1 {
 	color: var(--color-secondary);
 }
 
+main>* {
+	padding: 4rem 2rem;
+
+	>* {
+		max-width: var(--width-medium);
+		margin: 0 auto;
+
+		display: block;
+		width: 100%;
+	}
+}
+
 .home {
 	display: flex;
 	flex-direction: column;
@@ -249,7 +262,6 @@ h1 {
 	flex-direction: column;
 	gap: 4rem;
 	font-size: 1.125em;
-	padding: 4rem 2rem;
 
 	&:nth-child(2n+1) {
 		background: var(--color-primary);
@@ -265,11 +277,6 @@ h1 {
 		>article {
 			background: var(--color-primary);
 		}
-	}
-
-	>* {
-		max-width: var(--width-large);
-		margin: 0 auto;
 	}
 
 	h2 {
@@ -322,7 +329,7 @@ h1 {
 		article {
 			display: grid;
 			grid-template-columns: 1fr 2fr;
-			gap: 0.5rem;
+			gap: 1rem;
 			padding: 0.5rem 1rem;
 			align-items: center;
 
@@ -362,9 +369,6 @@ h1 {
 }
 
 .article article {
-	max-width: var(--width-medium);
-	margin: 0 auto;
-	padding: 4rem 2rem 0 2rem;
 	//text-wrap: balance;
 
 	display: flex;
@@ -512,4 +516,11 @@ figure {
 
 figcaption {
 	font-size: 0.85em;
+}
+
+.not-found>* {
+	display: flex;
+	gap: 1rem;
+	flex-direction: column;
+	font-size: 1.5em;
 }

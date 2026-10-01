@@ -3,7 +3,6 @@ package handlers
 import (
 	"net/http"
 	"path"
-	"strconv"
 
 	"anhgelus.world/small-web/backend"
 )
@@ -11,61 +10,6 @@ import (
 type SectionData struct {
 	*backend.Section
 	Articles []*backend.Article
-	// Pagination
-	Paginate    bool
-	LenMax      int
-	CurrentPage int
-	PagesNumber int
-}
-
-func paginate(articles []*backend.Article, maxLogs int, r *http.Request) (page int, arts []*backend.Article) {
-	rawPage := r.URL.Query().Get("page")
-	if rawPage == "" {
-		page = 1
-	} else {
-		var err error
-		page, err = strconv.Atoi(rawPage)
-		if err != nil || page < 1 {
-			backend.ContextLogger(r.Context()).Warn("invalid page number", "requested", rawPage)
-			return
-		}
-	}
-	if max(1, (len(articles)-1)/maxLogs+1) < page {
-		return
-	}
-	arts = articles[(page-1)*maxLogs : min(page*maxLogs, len(articles))]
-	return
-}
-
-func SectionHome(sec *backend.Section) http.Handler {
-	arts := sec.Articles()
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		page, current := paginate(arts, 7, r)
-		if page < 1 {
-			http.Error(w, "Bad request: invalid page number", http.StatusBadRequest)
-			return
-		}
-		if arts == nil {
-			NotFound().ServeHTTP(w, r)
-			return
-		}
-		v := SectionData{
-			Section:     sec,
-			Articles:    current,
-			Paginate:    true,
-			LenMax:      7,
-			CurrentPage: page,
-			PagesNumber: len(arts)/7 + 1,
-		}
-		err := render(r.Context(), w, "home_section", Data{
-			Title:  sec.TitleName,
-			Custom: v,
-			URL:    r.RequestURI,
-		})
-		if err != nil {
-			panic(err)
-		}
-	})
 }
 
 func SectionArticle(sec *backend.Section) http.Handler {
@@ -83,6 +27,7 @@ func SectionArticle(sec *backend.Section) http.Handler {
 			Image:           art.Image,
 			URL:             "/" + path.Join(sec.URI, r.RequestURI),
 			PageDescription: art.Description,
+			First:           r.Header.Get("Referer") == "https://"+backend.ContextConfig(r.Context()).Domain,
 		})
 		if err != nil {
 			panic(err)

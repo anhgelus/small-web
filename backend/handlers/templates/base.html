@@ -28,7 +28,7 @@
 	<meta name="description" content="{{ .PageDescription }}">
 
 	<!-- Open Graph -->
-	{{ $isArticle := (ne .PubDate "") }}
+	{{ $isArticle := (ne .URL "") }}
 	<meta property="og:type" content="{{if $isArticle}}article{{else}}website{{end}}">
 	<meta property="og:title" content="{{ .Title }}">
 	<meta property="og:url" content="https://{{ .Domain }}{{ .URL }}">
@@ -88,6 +88,7 @@
 
 <body>
 	<header>
+		{{ if .First }}
 		<div class="titles">
 			<div class="titles__head">
 				<p>Perdu</p>
@@ -101,6 +102,7 @@
 				<p>êtes là.</p>
 			</div>
 		</div>
+		{{ end }}
 		<nav>
 			<img src="{{ static .Logo.Header }}" alt="Logo">
 			{{ $url := .URL }}
@@ -108,7 +110,6 @@
 				{{ range .Links }}<li>{{ .Render $url }}</li>{{ end }}
 			</ul>
 		</nav>
-		<!-- TODO: generalize -->
 		{{ if $isArticle }}
 		<div class="presentation presentation--article">
 			<h1>{{ .Title }}</h1>

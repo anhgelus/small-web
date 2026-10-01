@@ -171,7 +171,7 @@ func main() {
 
 	for _, sec := range cfg.Sections {
 		g := ljus.NewGroup("GET /" + sec.Name + "/")
-		g.Add(ljus.NewRoute("GET /{$}", handlers.SectionHome(sec)).SetName("root"))
+		g.Add(ljus.NewRoute("/", handlers.NotFound()).SetName("not-found"))
 		g.Add(ljus.NewRoute("/{slug}", handlers.SectionArticle(sec)).SetName("article"))
 		g.Add(ljus.NewRoute("GET /rss", handlers.SectionRSS(sec)).SetName("rss"))
 		r.Handle(g.SetName("section " + sec.Name))

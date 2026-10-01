@@ -35,6 +35,7 @@ type Data struct {
 	PubDate         string
 	Title           string
 	quotes          []string
+	First           bool
 	Custom          any
 }
 

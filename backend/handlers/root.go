@@ -21,9 +21,7 @@ func Home() http.Handler {
 		for _, s := range cfg.Sections {
 			sec = append(sec, SectionData{
 				Section:  s,
-				Articles: s.FirstN(4),
-				Paginate: false,
-				LenMax:   4,
+				Articles: s.Articles(),
 			})
 		}
 		err := render(r.Context(), w, "home", Data{
@@ -33,6 +31,7 @@ func Home() http.Handler {
 				Description: cfg.Description,
 			},
 			PageDescription: cfg.Description,
+			First:           r.Header.Get("Referer") == "https://"+cfg.Domain,
 		})
 		if err != nil {
 			panic(err)
@@ -56,6 +55,7 @@ func Root() http.Handler {
 		err = render(r.Context(), w, "simple", Data{
 			Custom: art.Content(),
 			Title:  art.Title,
+			First:  r.Header.Get("Referer") == "https://"+cfg.Domain,
 		})
 		if err != nil {
 			panic(err)

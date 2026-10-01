@@ -14,7 +14,6 @@ func Join(fs ...fs.FS) *JoinFS {
 }
 
 func (j *JoinFS) Open(name string) (fs.File, error) {
-	println(name)
 	for _, ff := range j.fs {
 		f, err := ff.Open(name)
 		if err == nil {
