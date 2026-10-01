@@ -2,16 +2,16 @@
 	font-family: PT Serif;
 	src: local("PT Serif"),
 		local("PT Astra Serif"),
-		url("/fonts/PT_Serif/PTSerif-Regular.woff2"),
-		url("/fonts/PT_Serif/PTSerif-Regular.ttf");
+		url("/assets/PT_Serif/PTSerif-Regular.woff2"),
+		url("/assets/PT_Serif/PTSerif-Regular.ttf");
 }
 
 @font-face {
 	font-family: PT Serif;
 	src: local("PT Serif"),
 		local("PT Astra Serif"),
-		url("/fonts/PT_Serif/PTSerif-Italic.woff2"),
-		url("/fonts/PT_Serif/PTSerif-Italic.ttf");
+		url("/assets/PT_Serif/PTSerif-Italic.woff2"),
+		url("/assets/PT_Serif/PTSerif-Italic.ttf");
 	font-style: italic;
 }
 
@@ -19,8 +19,8 @@
 	font-family: PT Serif;
 	src: local("PT Serif"),
 		local("PT Astra Serif"),
-		url("/fonts/PT_Serif/PTSerif-Bold.woff2"),
-		url("/fonts/PT_Serif/PTSerif-Bold.ttf");
+		url("/assets/PT_Serif/PTSerif-Bold.woff2"),
+		url("/assets/PT_Serif/PTSerif-Bold.ttf");
 	font-weight: bold;
 }
 
@@ -28,8 +28,8 @@
 	font-family: PT Serif;
 	src: local("PT Serif"),
 		local("PT Astra Serif"),
-		url("/fonts/PT_Serif/PTSerif-BoldItalic.woff2"),
-		url("/fonts/PT_Serif/PTSerif-BoldItalic.ttf");
+		url("/assets/PT_Serif/PTSerif-BoldItalic.woff2"),
+		url("/assets/PT_Serif/PTSerif-BoldItalic.ttf");
 	font-weight: bold;
 	font-style: italic;
 }
@@ -37,16 +37,16 @@
 @font-face {
 	font-family: Lato;
 	src: local("Lato"),
-		url("/fonts/Lato/Lato-Black.woff2"),
-		url("/fonts/Lato/Lato-Black.ttf");
+		url("/assets/Lato/Lato-Black.woff2"),
+		url("/assets/Lato/Lato-Black.ttf");
 	font-weight: 900;
 }
 
 @font-face {
 	font-family: Lato;
 	src: local("Lato"),
-		url("/fonts/Lato/Lato-BlackItalic.woff2"),
-		url("/fonts/Lato/Lato-BlackItalic.ttf");
+		url("/assets/Lato/Lato-BlackItalic.woff2"),
+		url("/assets/Lato/Lato-BlackItalic.ttf");
 	font-weight: 900;
 	font-style: italic;
 }
@@ -54,16 +54,16 @@
 @font-face {
 	font-family: Lato;
 	src: local("Lato"),
-		url("/fonts/Lato/Lato-Bold.woff2"),
-		url("/fonts/Lato/Lato-Bold.ttf");
+		url("/assets/Lato/Lato-Bold.woff2"),
+		url("/assets/Lato/Lato-Bold.ttf");
 	font-weight: 700;
 }
 
 @font-face {
 	font-family: Lato;
 	src: local("Lato"),
-		url("/fonts/Lato/Lato-BoldItalic.woff2"),
-		url("/fonts/Lato/Lato-BoldItalic.ttf");
+		url("/assets/Lato/Lato-BoldItalic.woff2"),
+		url("/assets/Lato/Lato-BoldItalic.ttf");
 	font-weight: 700;
 	font-style: italic;
 }
@@ -71,14 +71,14 @@
 @font-face {
 	font-family: STIX Two Text;
 	src: local("STIX Two Text"),
-		url("/fonts/STIX_Two/STIXTwoText-VariableFont_wght.woff2"),
-		url("/fonts/STIX_Two/STIXTwoText-VariableFont_wght.ttf");
+		url("/assets/STIX_Two/STIXTwoText-VariableFont_wght.woff2"),
+		url("/assets/STIX_Two/STIXTwoText-VariableFont_wght.ttf");
 }
 
 @font-face {
 	font-family: STIX Two Text;
 	src: local("STIX Two Text"),
-		url("/fonts/STIX_Two/STIXTwoText-Italic-VariableFont_wght.woff2"),
-		url("/fonts/STIX_Two/STIXTwoText-Italic-VariableFont_wght.ttf");
+		url("/assets/STIX_Two/STIXTwoText-Italic-VariableFont_wght.woff2"),
+		url("/assets/STIX_Two/STIXTwoText-Italic-VariableFont_wght.ttf");
 	font-style: italic;
 }

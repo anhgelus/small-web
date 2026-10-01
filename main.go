@@ -6,6 +6,7 @@ import (
 	"embed"
 	"flag"
 	"io"
+	"io/fs"
 	"log/slog"
 	"log/syslog"
 	"mime"
@@ -31,7 +32,7 @@ import (
 	"github.com/nyttikord/logos"
 )
 
-//go:embed dist
+//go:embed dist frontend/fonts
 var embeds embed.FS
 
 var (
@@ -106,10 +107,18 @@ func main() {
 		syncDocuments(ctx, db, cfg, did)
 	}
 
-	assetsFS := handlers.UsableEmbedFS("dist", embeds)
+	assetsFS, err := fs.Sub(embeds, "dist")
+	if err != nil {
+		panic(err)
+	}
 	if dev {
 		assetsFS = os.DirFS("dist")
 	}
+	fontsFS, err := fs.Sub(embeds, "frontend/fonts")
+	if err != nil {
+		panic(err)
+	}
+	assetsFS = backend.Join(assetsFS, fontsFS)
 
 	r := ljus.New()
 
@@ -214,7 +223,7 @@ func publishDoc(
 	contribs := make([]*site.Contributor, 1, len(art.Contributors)+1)
 	contribs[0] = &site.Contributor{
 		DID:         did,
-		Role:        "Autheur",
+		Role:        "Author",
 		DisplayName: cfg.ATProto.DisplayName,
 	}
 	for k, v := range art.Contributors {

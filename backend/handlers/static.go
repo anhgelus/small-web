@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"embed"
 	"io/fs"
 	"net/http"
 	"os"
@@ -11,32 +10,6 @@ import (
 	"anhgelus.world/ljus"
 	"anhgelus.world/small-web/backend"
 )
-
-// httpEmbedFS is an implementation of fs.FS, fs.ReadDirFS and fs.ReadFileFS helping to manage embed.FS for http server
-type httpEmbedFS struct {
-	embed.FS
-	prefix string
-}
-
-func (h *httpEmbedFS) Open(name string) (fs.File, error) {
-	return h.FS.Open(h.prefix + "/" + name)
-}
-
-func (h *httpEmbedFS) ReadFile(name string) ([]byte, error) {
-	return h.FS.ReadFile(h.prefix + "/" + name)
-}
-
-func (h *httpEmbedFS) ReadDir(name string) ([]fs.DirEntry, error) {
-	return h.FS.ReadDir(h.prefix + "/" + name)
-}
-
-// UsableEmbedFS converts embed.FS into usable fs.FS
-func UsableEmbedFS(folder string, em embed.FS) fs.FS {
-	return &httpEmbedFS{
-		prefix: strings.Trim(folder, "/"),
-		FS:     em,
-	}
-}
 
 func StaticFiles(path string, root fs.FS) ljus.Route {
 	if !strings.HasSuffix(path, "/") {

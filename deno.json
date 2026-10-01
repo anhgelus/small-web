@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "dev:scss": "deno run --allow-env=SASS_PATH --allow-read --allow-write sass -w frontend/scss/main.scss dist/styles.css",
+    "build:scss": "deno run --allow-env=SASS_PATH --allow-read --allow-write sass --no-source-map --style=compressed frontend/scss/main.scss dist/styles.css",
+    "dev:back": "go run .",
+    "build": "deno run build:scss"
+  },
+  "imports": {
+    "sass": "npm:sass@^1.105.0",
+    "scss": "npm:scss@^0.2.4"
+  }
+}
