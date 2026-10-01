@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"path"
 	"strconv"
 
 	"anhgelus.world/small-web/backend"
@@ -56,7 +57,11 @@ func SectionHome(sec *backend.Section) http.Handler {
 			CurrentPage: page,
 			PagesNumber: len(arts)/7 + 1,
 		}
-		err := render(r.Context(), w, "home_section", Data{Title: sec.TitleName, Custom: v})
+		err := render(r.Context(), w, "home_section", Data{
+			Title:  sec.TitleName,
+			Custom: v,
+			URL:    r.RequestURI,
+		})
 		if err != nil {
 			panic(err)
 		}
@@ -72,9 +77,12 @@ func SectionArticle(sec *backend.Section) http.Handler {
 			return
 		}
 		err := render(r.Context(), w, "data", Data{
-			Title:   art.Title + " - " + sec.TitleName + " entry",
-			Custom:  art,
-			PubDate: art.PubLocalDate.String(),
+			Title:           art.Title + " - " + sec.TitleName + " entry",
+			Custom:          art,
+			PubDate:         art.PubLocalDate.String(),
+			Image:           art.Image.Src,
+			URL:             "/" + path.Join(sec.URI, r.RequestURI),
+			PageDescription: art.Description,
 		})
 		if err != nil {
 			panic(err)
