@@ -20,14 +20,14 @@ func SectionArticle(sec *backend.Section) http.Handler {
 			NotFound().ServeHTTP(w, r)
 			return
 		}
-		err := render(r.Context(), w, "simple", Data{
-			Title:           art.Title + " - " + sec.TitleName + " entry",
-			Custom:          art,
-			PubDate:         art.PubLocalDate.String(),
-			Image:           art.Image,
-			URL:             "/" + path.Join(sec.URI, r.RequestURI),
-			PageDescription: art.Description,
-			First:           r.Header.Get("Referer") == "https://"+backend.ContextConfig(r.Context()).Domain,
+		err := render(r.Context(), r, w, "simple", CommonData{
+			Ttl:         art.Title + " - " + sec.TitleName + " entry",
+			Cnt:         art.Content(),
+			Cus:         art,
+			RawPubDate:  art.PubLocalDate,
+			Img:         art.Image,
+			Uri:         "/" + path.Join(sec.URI, r.RequestURI),
+			Description: art.Description,
 		})
 		if err != nil {
 			panic(err)

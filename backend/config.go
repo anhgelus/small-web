@@ -18,17 +18,20 @@ type Link struct {
 }
 
 func (l *Link) Render(url string) template.HTML {
-	return func(content, href string) template.HTML {
-		anchor := dom.NewLiteralContentElement("a", template.HTML(content))
-		anchor.SetAttribute("href", href)
-		if href == url || (href != "/" && url != "/" && strings.HasPrefix(url, href)) {
-			anchor.ClassList().Add("target")
-		}
-		if markdown.ExternalLink.MatchString(href) {
-			anchor.SetAttribute("target", "_blank").SetAttribute("rel", "noreferrer")
-		}
-		return anchor.Render()
-	}(l.Name, l.URL)
+	if url == "" {
+		url = "/"
+	}
+	content := l.Name
+	href := l.URL
+	anchor := dom.NewLiteralContentElement("a", template.HTML(content))
+	anchor.SetAttribute("href", href)
+	if href == url || (href != "/" && url != "/" && strings.HasPrefix(url, href)) {
+		anchor.SetAttribute("enabled", "true")
+	}
+	if markdown.ExternalLink.MatchString(href) {
+		anchor.SetAttribute("target", "_blank").SetAttribute("rel", "noreferrer")
+	}
+	return anchor.Render()
 }
 
 type Logo struct {

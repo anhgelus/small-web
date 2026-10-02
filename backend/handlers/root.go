@@ -8,12 +8,6 @@ import (
 	"anhgelus.world/small-web/backend"
 )
 
-type HomeData struct {
-	Sections    []SectionData
-	Title       string
-	Description string
-}
-
 func Home() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cfg := backend.ContextConfig(r.Context())
@@ -24,14 +18,9 @@ func Home() http.Handler {
 				Articles: s.Articles(),
 			})
 		}
-		err := render(r.Context(), w, "home", Data{
-			Custom: HomeData{
-				Sections:    sec,
-				Title:       cfg.Name,
-				Description: cfg.Description,
-			},
-			PageDescription: cfg.Description,
-			First:           r.Header.Get("Referer") == "https://"+cfg.Domain,
+		err := render(r.Context(), r, w, "home", CommonData{
+			Description: cfg.Description,
+			Cus:         sec,
 		})
 		if err != nil {
 			panic(err)
@@ -52,10 +41,10 @@ func Root() http.Handler {
 			}
 			panic(err)
 		}
-		err = render(r.Context(), w, "simple", Data{
-			Custom: art.Content(),
-			Title:  art.Title,
-			First:  r.Header.Get("Referer") == "https://"+cfg.Domain,
+		err = render(r.Context(), r, w, "simple", CommonData{
+			Cnt: art.Content(),
+			Ttl: art.Title,
+			Uri: r.RequestURI,
 		})
 		if err != nil {
 			panic(err)

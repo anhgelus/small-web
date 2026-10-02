@@ -14,29 +14,88 @@ import (
 	"strings"
 
 	"anhgelus.world/small-web/backend"
+	"github.com/pelletier/go-toml/v2"
 )
 
 //go:embed templates
 var templates embed.FS
 
+type PageKind uint8
+
+const (
+	article PageKind = iota
+	home
+	root
+)
+
+type PageData interface {
+	PageDescription() string
+	URI() string
+	Image() backend.ImageHeader
+	Tags() []string
+	PubDate() string
+	Title() string
+	Content() template.HTML
+	Custom() any
+}
+
+type CommonData struct {
+	Description string
+	Uri         string
+	Img         backend.ImageHeader
+	Tgs         []string
+	RawPubDate  toml.LocalDate
+	Ttl         string
+	Cnt         template.HTML
+	Cus         any
+}
+
+func (c CommonData) PageDescription() string {
+	return c.Description
+}
+
+func (c CommonData) URI() string {
+	return c.Uri
+}
+
+func (c CommonData) Image() backend.ImageHeader {
+	return c.Img
+}
+
+func (c CommonData) Tags() []string {
+	return c.Tgs
+}
+
+func (c CommonData) PubDate() string {
+	return c.RawPubDate.String()
+}
+
+func (c CommonData) Title() string {
+	return c.Ttl
+}
+
+func (c CommonData) Content() template.HTML {
+	return c.Cnt
+}
+
+func (c CommonData) Custom() any {
+	return c.Cus
+}
+
 type Data struct {
 	// global
 	backend.Logo
-	Domain   string
-	SiteName string
-	Language string
-	Linked   template.HTML
-	Links    []backend.Link
-	// page
+	PageData
+	Domain          string
+	SiteName        string
+	Language        string
+	Linked          template.HTML
+	Links           []backend.Link
+	PageTitle       string
 	PageDescription string
-	URL             string
-	Image           backend.ImageHeader
-	Tags            []string
-	PubDate         string
-	Title           string
-	quotes          []string
 	First           bool
-	Custom          any
+	Kind            PageKind
+	quotes          []string
 }
 
 func (d *Data) Quote() string {
@@ -54,17 +113,14 @@ func funcMap(ctx context.Context) template.FuncMap {
 			}
 			return "https://" + cfg.Domain + s
 		},
-		"asset": func(path string) backend.AssetData { return getAsset(ctx, path) },
-		"uri": func(p string) string {
-			if len(p) == 0 {
-				return ""
-			}
-			return p + "/"
-		},
+		"asset":       func(path string) backend.AssetData { return getAsset(ctx, path) },
+		"kindArticle": func() PageKind { return article },
+		"kindRoot":    func() PageKind { return root },
+		"kindHome":    func() PageKind { return home },
 	}
 }
 
-func render(ctx context.Context, w http.ResponseWriter, file string, data Data) error {
+func render(ctx context.Context, r *http.Request, w http.ResponseWriter, file string, pageData PageData) error {
 	t, err := template.New("base.html").Funcs(funcMap(ctx)).ParseFS(
 		templates,
 		"templates/base.html",
@@ -75,20 +131,36 @@ func render(ctx context.Context, w http.ResponseWriter, file string, data Data) 
 		panic(err)
 	}
 	cfg := backend.ContextConfig(ctx)
+	var data Data
 	data.quotes = cfg.Quotes
 	data.Language = cfg.Language
 	data.Logo = cfg.Logo
 	data.Links = cfg.Links
 	data.SiteName = cfg.Name
 	data.Domain = cfg.Domain
-	if len(data.Title) != 0 {
-		data.Title += " - " + data.SiteName
+	data.First = r.Header.Get("Referer") == "https://"+cfg.Domain
+	pTitle := pageData.Title()
+	if len(pTitle) != 0 {
+		data.PageTitle = pTitle + " - " + data.SiteName
 	} else {
-		data.Title = data.SiteName
+		data.PageTitle = data.SiteName
 	}
-	if len(data.PageDescription) == 0 {
+	pDesc := pageData.PageDescription()
+	if len(pDesc) == 0 {
 		data.PageDescription = cfg.Description
+	} else {
+		data.PageDescription = pDesc
 	}
+	uri := pageData.URI()
+	switch {
+	case len(uri) == 0:
+		data.Kind = home
+	case pageData.PubDate() != "0000-00-00":
+		data.Kind = article
+	default:
+		data.Kind = root
+	}
+	data.PageData = pageData
 	return t.Execute(w, &data)
 }
 

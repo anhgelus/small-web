@@ -42,12 +42,12 @@ func Admin() http.Handler {
 		if err != nil {
 			panic(err)
 		}
-		err = render(ctx, w, "admin", Data{Custom: AdminData{
+		err = render(ctx, r, w, "admin", CommonData{Cus: AdminData{
 			Visits:      visits,
 			Rows:        rows,
 			PagesNumber: page + max(len(rows)-storage.StatsPerPage+1, 0),
 			CurrentPage: page,
-		}, First: false})
+		}})
 		if err != nil {
 			panic(err)
 		}
