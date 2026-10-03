@@ -36,20 +36,19 @@ type PageData interface {
 	PubDate() toml.LocalDate
 	Title() string
 	Content() template.HTML
-	Custom() any
 	Section() *backend.Section
+	Linked() template.HTML
 }
 
+type Any any
+
 type CommonData struct {
+	Any
 	Description string
 	Uri         string
 	Img         backend.ImageHeader
-	Tgs         []string
-	RawPubDate  toml.LocalDate
 	Ttl         string
 	Cnt         template.HTML
-	Cus         any
-	Sec         *backend.Section
 }
 
 func (c CommonData) PageDescription() string {
@@ -65,11 +64,11 @@ func (c CommonData) Image() backend.ImageHeader {
 }
 
 func (c CommonData) Tags() []string {
-	return c.Tgs
+	return nil
 }
 
 func (c CommonData) PubDate() toml.LocalDate {
-	return c.RawPubDate
+	return toml.LocalDate{}
 }
 
 func (c CommonData) Title() string {
@@ -80,12 +79,12 @@ func (c CommonData) Content() template.HTML {
 	return c.Cnt
 }
 
-func (c CommonData) Custom() any {
-	return c.Cus
+func (c CommonData) Section() *backend.Section {
+	return nil
 }
 
-func (c CommonData) Section() *backend.Section {
-	return c.Sec
+func (c CommonData) Linked() template.HTML {
+	return ""
 }
 
 type Data struct {
@@ -95,7 +94,6 @@ type Data struct {
 	Domain          string
 	SiteName        string
 	Language        string
-	Linked          template.HTML
 	Links           []backend.Link
 	PageTitle       string
 	PageDescription string

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"path"
 
 	"anhgelus.world/small-web/backend"
 )
@@ -20,17 +19,7 @@ func SectionArticle(sec *backend.Section) http.Handler {
 			NotFound().ServeHTTP(w, r)
 			return
 		}
-		err := render(r.Context(), r, w, "simple", CommonData{
-			Ttl:         art.Title,
-			Cnt:         art.Content(),
-			Cus:         art,
-			Tgs:         art.Tags,
-			RawPubDate:  art.PubLocalDate,
-			Img:         art.Image,
-			Uri:         "/" + path.Join(sec.URI, r.RequestURI),
-			Description: art.Description,
-			Sec:         sec,
-		})
+		err := render(r.Context(), r, w, "simple", art)
 		if err != nil {
 			panic(err)
 		}

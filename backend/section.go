@@ -36,11 +36,11 @@ func (s *Section) Get(slug string) *Article {
 }
 
 func (s *Section) Add(slug string, art *Article) {
-	s.articles.Insert(art.PubLocalDate, art)
+	s.articles.Insert(art.LocalDate, art)
 	if s.slugToDate == nil {
 		s.slugToDate = make(map[string]toml.LocalDate)
 	}
-	s.slugToDate[slug] = art.PubLocalDate
+	s.slugToDate[slug] = art.LocalDate
 }
 
 func (s *Section) FirstN(n int) []*Article {
@@ -79,7 +79,8 @@ func (s *Section) Init(basePath string) error {
 			return err
 		}
 		slug := strings.TrimSuffix(entry.Name(), ".md")
-		art.URI = "/" + s.URI + "/" + slug
+		art.Uri = "/" + path.Join(s.URI, slug)
+		art.Sec = s
 		s.Add(slug, art)
 	}
 	return nil
@@ -97,15 +98,17 @@ type ArticleContributor struct {
 }
 
 type Article struct {
-	Title        string                        `toml:"title"`
+	Tle          string                        `toml:"title"`
 	Description  string                        `toml:"description"`
-	Image        ImageHeader                   `toml:"image"`
-	Tags         []string                      `toml:"tags"`
-	PubLocalDate toml.LocalDate                `toml:"publication_date"`
+	Img          ImageHeader                   `toml:"image"`
+	Tgs          []string                      `toml:"tags"`
+	LocalDate    toml.LocalDate                `toml:"publication_date"`
 	Poem         bool                          `toml:"poem"`
 	Contributors map[string]ArticleContributor `toml:"contributors"`
 	filePath     string
-	URI          string `toml:"-"`
+	Uri          string        `toml:"-"`
+	Sec          *Section      `toml:"-"`
+	PubDocLink   template.HTML `toml:"-"`
 }
 
 func (a *Article) Content() template.HTML {
@@ -130,10 +133,46 @@ func (a *Article) Content() template.HTML {
 var now = time.Now()
 
 func (a *Article) PubDateRSS() string {
-	t := a.PubLocalDate.AsTime(time.Local)
+	t := a.LocalDate.AsTime(time.Local)
 	// if same day, assume that it's published now
 	if t.Year() == now.Year() && t.Month() == now.Month() && t.Day() == now.Day() {
 		t = now
 	}
 	return t.Format(time.RFC1123Z) // because RFC822 in go isn't RFC822???
+}
+
+func (a *Article) PubLocalDate() toml.LocalDate {
+	return a.LocalDate
+}
+
+func (a *Article) PageDescription() string {
+	return a.Description
+}
+
+func (a *Article) URI() string {
+	return a.Uri
+}
+
+func (a *Article) Image() ImageHeader {
+	return a.Img
+}
+
+func (a *Article) Tags() []string {
+	return a.Tgs
+}
+
+func (a *Article) PubDate() toml.LocalDate {
+	return a.LocalDate
+}
+
+func (a *Article) Title() string {
+	return a.Tle
+}
+
+func (a *Article) Section() *Section {
+	return a.Sec
+}
+
+func (a *Article) Linked() template.HTML {
+	return a.PubDocLink
 }

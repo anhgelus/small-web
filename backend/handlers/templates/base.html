@@ -14,14 +14,13 @@
 	<meta name="color-scheme" content="light dark">
 	<meta name="theme-color" content="#282168">
 
-	{{ $styles := asset "styles.css" }}
-	<link rel="stylesheet" href="{{ $styles.Src }}" integrity="{{ $styles.Checksum }}" />
+	{{ $styles := asset "styles.css" -}}
+	<link rel="stylesheet" href="{{ $styles.Src }}" integrity="{{ $styles.Checksum }}">
 
 	<link rel="shortcut icon" href="{{ static .Logo.Favicon }}">
 
 	<link rel="dns-prefetch" href="https://cdn.anhgelus.world">
 	<link rel="preconnect" href="https://cdn.anhgelus.world">
-
 
 	<link rel="canonical" href="https://{{.Domain}}{{.URI}}">
 	<link rel="alternate" href="/rss" type="application/rss+xml" title="RSS">

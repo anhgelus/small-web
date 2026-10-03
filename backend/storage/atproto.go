@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"anhgelus.world/xrpc/atproto"
 )
@@ -12,6 +13,22 @@ type PublishedDocument struct {
 	RecordKey     atproto.RecordKey
 	CID           *atproto.CIDAsString
 	ImageUploaded bool
+}
+
+func RecordKey(ctx context.Context, db *sql.DB, path string) (*atproto.RecordKey, error) {
+	row := db.QueryRowContext(
+		ctx,
+		"SELECT record_key FROM atproto_documents WHERE path = ?",
+		path)
+	var raw string
+	err := row.Scan(&raw)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return new(atproto.RecordKey(raw)), nil
 }
 
 func PublishedDocuments(ctx context.Context, db *sql.DB) (map[string]PublishedDocument, error) {

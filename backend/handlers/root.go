@@ -20,7 +20,7 @@ func Home() http.Handler {
 		}
 		err := render(r.Context(), r, w, "home", CommonData{
 			Description: cfg.Description,
-			Cus:         sec,
+			Any:         sec,
 		})
 		if err != nil {
 			panic(err)
@@ -43,7 +43,7 @@ func Root() http.Handler {
 		}
 		err = render(r.Context(), r, w, "simple", CommonData{
 			Cnt: art.Content(),
-			Ttl: art.Title,
+			Ttl: art.Title(),
 			Uri: r.RequestURI,
 		})
 		if err != nil {

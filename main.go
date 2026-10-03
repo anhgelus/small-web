@@ -105,6 +105,17 @@ func main() {
 
 	if sync {
 		syncDocuments(ctx, db, cfg, did)
+		return
+	}
+
+	docs, err := storage.PublishedDocuments(ctx, db)
+	for _, section := range cfg.Sections {
+		for _, art := range section.Articles() {
+			doc, ok := docs[art.Uri]
+			if ok {
+				art.PubDocLink = site.GetDocumentVerificationTag(did, doc.RecordKey)
+			}
+		}
 	}
 
 	assetsFS, err := fs.Sub(embeds, "dist")
@@ -237,25 +248,25 @@ func publishDoc(
 			DID:         d,
 		})
 	}
-	imgPath := &art.Image.Src
-	if v, ok := docs[art.URI]; ok && v.ImageUploaded {
+	imgPath := &art.Img.Src
+	if v, ok := docs[art.Uri]; ok && v.ImageUploaded {
 		imgPath = nil
 	}
 	res, rkey, err := s.PublishDoc(
 		ctx,
 		client,
-		art.Title,
-		art.URI,
-		art.PubLocalDate.AsTime(time.Local),
+		art.Title(),
+		art.Uri,
+		art.PubLocalDate().AsTime(time.Local),
 		art.Description,
 		imgPath,
-		art.Tags,
+		art.Tags(),
 		contribs)
 	if err != nil {
 		panic(err)
 	}
 	err = storage.SetPublishedDocument(ctx, db, storage.PublishedDocument{
-		Path:          art.URI,
+		Path:          art.Uri,
 		RecordKey:     rkey,
 		CID:           res.CID,
 		ImageUploaded: imgPath != nil,
