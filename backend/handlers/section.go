@@ -21,13 +21,15 @@ func SectionArticle(sec *backend.Section) http.Handler {
 			return
 		}
 		err := render(r.Context(), r, w, "simple", CommonData{
-			Ttl:         art.Title + " - " + sec.TitleName + " entry",
+			Ttl:         art.Title,
 			Cnt:         art.Content(),
 			Cus:         art,
+			Tgs:         art.Tags,
 			RawPubDate:  art.PubLocalDate,
 			Img:         art.Image,
 			Uri:         "/" + path.Join(sec.URI, r.RequestURI),
 			Description: art.Description,
+			Sec:         sec,
 		})
 		if err != nil {
 			panic(err)

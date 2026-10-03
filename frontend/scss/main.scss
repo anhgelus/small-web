@@ -33,6 +33,8 @@
 	PT Serif,
 	serif;
 	font-variant-ligatures: common-ligatures;
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-tertiary) var(--color-primary);
 }
 
 h1,
@@ -121,6 +123,7 @@ header nav {
 	align-items: center;
 	font-size: 2rem;
 	overflow: auto;
+	scrollbar-width: none;
 
 	img {
 		height: calc(1em * 1.5 + 4rem);
@@ -304,6 +307,7 @@ main>* {
 	}
 
 	>article {
+		box-sizing: border-box;
 		display: flex;
 		flex-direction: column;
 		padding: 1rem;

@@ -33,10 +33,11 @@ type PageData interface {
 	URI() string
 	Image() backend.ImageHeader
 	Tags() []string
-	PubDate() string
+	PubDate() toml.LocalDate
 	Title() string
 	Content() template.HTML
 	Custom() any
+	Section() *backend.Section
 }
 
 type CommonData struct {
@@ -48,6 +49,7 @@ type CommonData struct {
 	Ttl         string
 	Cnt         template.HTML
 	Cus         any
+	Sec         *backend.Section
 }
 
 func (c CommonData) PageDescription() string {
@@ -66,8 +68,8 @@ func (c CommonData) Tags() []string {
 	return c.Tgs
 }
 
-func (c CommonData) PubDate() string {
-	return c.RawPubDate.String()
+func (c CommonData) PubDate() toml.LocalDate {
+	return c.RawPubDate
 }
 
 func (c CommonData) Title() string {
@@ -80,6 +82,10 @@ func (c CommonData) Content() template.HTML {
 
 func (c CommonData) Custom() any {
 	return c.Cus
+}
+
+func (c CommonData) Section() *backend.Section {
+	return c.Sec
 }
 
 type Data struct {
@@ -95,6 +101,7 @@ type Data struct {
 	PageDescription string
 	First           bool
 	Kind            PageKind
+	PubDate         string
 	quotes          []string
 }
 
@@ -140,7 +147,11 @@ func render(ctx context.Context, r *http.Request, w http.ResponseWriter, file st
 	data.Domain = cfg.Domain
 	data.First = r.Header.Get("Referer") == "https://"+cfg.Domain
 	pTitle := pageData.Title()
+	sec := pageData.Section()
 	if len(pTitle) != 0 {
+		if sec != nil {
+			pTitle += " - " + sec.TitleName + " entry"
+		}
 		data.PageTitle = pTitle + " - " + data.SiteName
 	} else {
 		data.PageTitle = data.SiteName
@@ -155,11 +166,12 @@ func render(ctx context.Context, r *http.Request, w http.ResponseWriter, file st
 	switch {
 	case len(uri) == 0:
 		data.Kind = home
-	case pageData.PubDate() != "0000-00-00":
+	case sec != nil:
 		data.Kind = article
 	default:
 		data.Kind = root
 	}
+	data.PubDate = pageData.PubDate().String()
 	data.PageData = pageData
 	return t.Execute(w, &data)
 }
