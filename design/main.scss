@@ -209,6 +209,10 @@ header .presentation {
 	&--article {
 		font-size: 2rem;
 		text-wrap: wrap;
+
+		figcaption {
+			font-size: 1rem;
+		}
 	}
 
 
