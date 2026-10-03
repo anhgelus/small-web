@@ -28,63 +28,18 @@ const (
 	root
 )
 
-type PageData interface {
-	PageDescription() string
-	URI() string
-	Image() backend.ImageHeader
-	Tags() []string
-	PubDate() toml.LocalDate
-	Title() string
-	Content() template.HTML
-	Section() *backend.Section
-	Linked() template.HTML
-}
+type Any = any
 
-type Any any
-
-type CommonData struct {
+type PageData = struct {
 	Any
 	Description string
-	Uri         string
-	Img         backend.ImageHeader
-	Ttl         string
-	Cnt         template.HTML
-}
-
-func (c CommonData) PageDescription() string {
-	return c.Description
-}
-
-func (c CommonData) URI() string {
-	return c.Uri
-}
-
-func (c CommonData) Image() backend.ImageHeader {
-	return c.Img
-}
-
-func (c CommonData) Tags() []string {
-	return nil
-}
-
-func (c CommonData) PubDate() toml.LocalDate {
-	return toml.LocalDate{}
-}
-
-func (c CommonData) Title() string {
-	return c.Ttl
-}
-
-func (c CommonData) Content() template.HTML {
-	return c.Cnt
-}
-
-func (c CommonData) Section() *backend.Section {
-	return nil
-}
-
-func (c CommonData) Linked() template.HTML {
-	return ""
+	URI         string
+	Image       backend.ImageHeader
+	Tags        []string
+	PubDate     toml.LocalDate
+	Title       string
+	Section     *backend.Section
+	Linked      template.HTML
 }
 
 type Data struct {
@@ -143,9 +98,9 @@ func render(ctx context.Context, r *http.Request, w http.ResponseWriter, file st
 	data.Links = cfg.Links
 	data.SiteName = cfg.Name
 	data.Domain = cfg.Domain
-	data.First = r.Header.Get("Referer") == "https://"+cfg.Domain
-	pTitle := pageData.Title()
-	sec := pageData.Section()
+	data.First = !strings.HasPrefix(r.Header.Get("Referer"), "https://"+cfg.Domain)
+	pTitle := pageData.Title
+	sec := pageData.Section
 	if len(pTitle) != 0 {
 		if sec != nil {
 			pTitle += " - " + sec.TitleName + " entry"
@@ -154,13 +109,13 @@ func render(ctx context.Context, r *http.Request, w http.ResponseWriter, file st
 	} else {
 		data.PageTitle = data.SiteName
 	}
-	pDesc := pageData.PageDescription()
+	pDesc := pageData.Description
 	if len(pDesc) == 0 {
 		data.PageDescription = cfg.Description
 	} else {
 		data.PageDescription = pDesc
 	}
-	uri := pageData.URI()
+	uri := pageData.URI
 	switch {
 	case len(uri) == 0:
 		data.Kind = home
@@ -169,7 +124,7 @@ func render(ctx context.Context, r *http.Request, w http.ResponseWriter, file st
 	default:
 		data.Kind = root
 	}
-	data.PubDate = pageData.PubDate().String()
+	data.PubDate = pageData.PubDate.String()
 	data.PageData = pageData
 	return t.Execute(w, &data)
 }

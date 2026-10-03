@@ -18,7 +18,7 @@ func Home() http.Handler {
 				Articles: s.Articles(),
 			})
 		}
-		err := render(r.Context(), r, w, "home", CommonData{
+		err := render(r.Context(), r, w, "home", PageData{
 			Description: cfg.Description,
 			Any:         sec,
 		})
@@ -41,10 +41,10 @@ func Root() http.Handler {
 			}
 			panic(err)
 		}
-		err = render(r.Context(), r, w, "simple", CommonData{
-			Cnt: art.Content(),
-			Ttl: art.Title(),
-			Uri: r.RequestURI,
+		err = render(r.Context(), r, w, "simple", PageData{
+			Any:   art,
+			Title: art.Title,
+			URI:   r.RequestURI,
 		})
 		if err != nil {
 			panic(err)

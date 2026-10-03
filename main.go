@@ -111,7 +111,7 @@ func main() {
 	docs, err := storage.PublishedDocuments(ctx, db)
 	for _, section := range cfg.Sections {
 		for _, art := range section.Articles() {
-			doc, ok := docs[art.Uri]
+			doc, ok := docs[art.URI]
 			if ok {
 				art.PubDocLink = site.GetDocumentVerificationTag(did, doc.RecordKey)
 			}
@@ -248,25 +248,25 @@ func publishDoc(
 			DID:         d,
 		})
 	}
-	imgPath := &art.Img.Src
-	if v, ok := docs[art.Uri]; ok && v.ImageUploaded {
+	imgPath := &art.Image.Src
+	if v, ok := docs[art.URI]; ok && v.ImageUploaded {
 		imgPath = nil
 	}
 	res, rkey, err := s.PublishDoc(
 		ctx,
 		client,
-		art.Title(),
-		art.Uri,
-		art.PubLocalDate().AsTime(time.Local),
+		art.Title,
+		art.URI,
+		art.PubDate.AsTime(time.Local),
 		art.Description,
 		imgPath,
-		art.Tags(),
+		art.Tags,
 		contribs)
 	if err != nil {
 		panic(err)
 	}
 	err = storage.SetPublishedDocument(ctx, db, storage.PublishedDocument{
-		Path:          art.Uri,
+		Path:          art.URI,
 		RecordKey:     rkey,
 		CID:           res.CID,
 		ImageUploaded: imgPath != nil,

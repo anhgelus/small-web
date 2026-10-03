@@ -19,7 +19,17 @@ func SectionArticle(sec *backend.Section) http.Handler {
 			NotFound().ServeHTTP(w, r)
 			return
 		}
-		err := render(r.Context(), r, w, "simple", art)
+		err := render(r.Context(), r, w, "simple", PageData{
+			Any:         art,
+			URI:         art.URI,
+			Section:     art.Section,
+			Image:       art.Image,
+			Tags:        art.Tags,
+			PubDate:     art.PubDate,
+			Description: art.Description,
+			Title:       art.Title,
+			Linked:      art.PubDocLink,
+		})
 		if err != nil {
 			panic(err)
 		}
