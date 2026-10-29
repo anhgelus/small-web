@@ -201,9 +201,12 @@ func main() {
 
 	var l net.Listener
 	if strings.HasPrefix(address, "/") {
-		l, err = ljus.ListenSocket(address, 0o666)
+		l, err = new(net.ListenConfig).Listen(ctx, "unix", address)
+		if err == nil {
+			err = os.Chmod(address, 0o666)
+		}
 	} else {
-		l, err = net.Listen("tcp", address)
+		l, err = new(net.ListenConfig).Listen(ctx, "tcp", address)
 	}
 	if err != nil {
 		panic(err)
