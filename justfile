@@ -7,5 +7,5 @@ build:
     deno run build
     go build -ldflags "-w -s" .
 
-install: build
+install:
     install -m 755 small-web /usr/local/bin/

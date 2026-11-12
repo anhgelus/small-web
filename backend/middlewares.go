@@ -10,19 +10,19 @@ import (
 )
 
 func ContextMiddleware(assets map[string]AssetData, cfg *Config, debug bool, db *sql.DB) ljus.Middleware {
-	return func(next ljus.Handler, w *ljus.StatusWriter, r *http.Request) {
+	return func(next http.Handler, w http.ResponseWriter, r *http.Request) {
 		ctx := SetContext(
 			r.Context(),
 			cfg,
 			assets,
 			debug,
 			db)
-		next(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
 
 func RateLimitMiddleware() ljus.Middleware {
-	return func(next ljus.Handler, w *ljus.StatusWriter, r *http.Request) {
+	return func(next http.Handler, w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		if isRateLimited(ctx) {
 			http.Error(w, "Too many requests", http.StatusTooManyRequests)
@@ -42,6 +42,6 @@ func RateLimitMiddleware() ljus.Middleware {
 			}
 		}
 		ctx = SetContextConnected(ctx, ok)
-		next(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }

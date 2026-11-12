@@ -133,7 +133,7 @@ func main() {
 
 	r := ljus.New()
 
-	r.Use(func(next ljus.Handler, w *ljus.StatusWriter, r *http.Request) {
+	r.Use(func(next http.Handler, w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		var ip string
 		if fcgi {
@@ -150,7 +150,7 @@ func main() {
 		if strings.Contains(ip, ":") {
 			ip = strings.Split(ip, ":")[0]
 		}
-		next(w, r.WithContext(backend.SetContextIP(ctx, ip)))
+		next.ServeHTTP(w, r.WithContext(backend.SetContextIP(ctx, ip)))
 	})
 
 	r.Use(middleware.Log(slog.Default(), false, false))

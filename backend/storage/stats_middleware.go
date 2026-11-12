@@ -11,8 +11,8 @@ import (
 )
 
 func StatsMiddleware() ljus.Middleware {
-	return func(next ljus.Handler, w *ljus.StatusWriter, r *http.Request) {
-		next(w, r)
+	return func(next http.Handler, w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r)
 		go func(r *http.Request) {
 			if strings.HasPrefix(r.RequestURI, "/static") || r.RequestURI == "/robots.txt" {
 				return
@@ -24,7 +24,7 @@ func StatsMiddleware() ljus.Middleware {
 				logger.Debug("not updating stats because user is admin logged")
 				return
 			}
-			statusCode := w.Code
+			statusCode := w.(*ljus.StatusWriter).Code
 			if statusCode >= 299 && r.RequestURI != HumanPageLoad {
 				logger.Debug("not updating stats for status code above 299", "status", statusCode)
 				return
